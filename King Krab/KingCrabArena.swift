@@ -106,10 +106,33 @@ enum ArenaConfig {
     static let approachRush: Double = 5.5
     /// Smashed: flung away, spinning, shrinking into the sand.
     static let smashDuration = 0.46
-    /// The retreat every remaining crab makes when the attempt is over.
-    static let burrowDuration = 0.42
+    /// The retreat every remaining crab makes when the attempt is over. It is
+    /// long enough to read as an animal digging itself in — a crab that hunkers
+    /// down, scrabbles, and sinks — rather than as one being switched off.
+    static let burrowDuration = 0.88
+    /// The share of the dig spent hunkering down and scrabbling before the sand
+    /// actually starts swallowing the crab. A crab digs itself in tail first,
+    /// and the working is most of what you see.
+    static let burrowSquatShare = 0.38
+    /// How often a digging crab throws up a fresh spray of sand. The spray is
+    /// what tells the player the sand is being *moved*.
+    static let burrowPuffInterval = 0.065
+
+    /// Handing the answer over: the right crab reaches its shell up to the King
+    /// and gives it to him. A crab that got the answer right is on the King's
+    /// side, so it is never swept aside — it hands over and digs itself in.
+    static let deliverDuration = 0.62
     /// Swept aside by the King's own blow, which throws them much further.
     static let sweptDuration = 0.62
+
+    /// With every wrong answer taken, the right one stops being careful and
+    /// runs the rest of the way to the King. This is how much faster than its
+    /// own walk it covers what is left.
+    static let rushSpeed: Double = 3.2
+    /// It breaks into the run rather than snapping to full speed.
+    static let rushRamp = 0.30
+    /// Sand thrown up behind a running crab.
+    static let rushPuffInterval = 0.10
 
     // MARK: The King
 
@@ -285,6 +308,9 @@ struct AnswerCrab: Identifiable {
         case arrived
         /// Hit by the player.
         case smashed
+        /// Handing its shell to the King, which is what a crab carrying the
+        /// right answer does when it gets there.
+        case delivering
         /// Digging itself back into the sand: the attempt is over.
         case burrowing
         /// Thrown aside by the King's blow.
@@ -339,11 +365,33 @@ struct AnswerCrab: Identifiable {
     /// Where a smashed or swept crab is being thrown, and how fast it tumbles.
     var flingVelocity: CGPoint = .zero
     var spin: Double = 0
+    /// Set on the right answer once it is the only one left walking: it runs
+    /// the rest of the way in rather than strolling into an empty arena.
+    var isRushing = false
+    /// How long it has been running, which is what eases it up to speed.
+    var rushAge: Double = 0
+    /// Time to the next spray of sand, for whatever this crab is doing to the
+    /// sea floor: running across it or digging into it.
+    var puffCountdown: Double = 0
+    /// Where the King's claws are, in this crab's own coordinates: the point it
+    /// reaches its shell out to while handing the answer over.
+    var handOver: CGPoint = .zero
+    /// True once the King has the shell. It never comes back: a crab that has
+    /// given its answer away digs itself in empty-handed.
+    var hasDelivered = false
+    /// Set when the session has already counted this crab's answer. From that
+    /// moment it is no longer part of the wave — it is the tail of the last
+    /// one, running its shell up to the King while the next sum is already
+    /// walking in behind it.
+    var hasAnswered = false
 
-    var isLive: Bool { phase == .waiting || phase == .walking }
+    /// Whether this crab is still one of the answers on offer. A crab whose
+    /// answer has been counted is finished with, however much of its own
+    /// animation is left to play.
+    var isLive: Bool { (phase == .waiting || phase == .walking) && !hasAnswered }
     /// Whether a tap may still take this crab. A crab still waiting its turn is
     /// out of sight, so a tap near the edge must never take it blind.
-    var isTappable: Bool { phase == .walking }
+    var isTappable: Bool { phase == .walking && !hasAnswered }
 
     /// Moves the whole walk when the arena itself moves under it.
     mutating func shift(by delta: CGPoint) {
@@ -541,6 +589,9 @@ final class KingCrabArena: ObservableObject {
     /// Guards the tap handler against a second touch landing in the same frame
     /// as the one that ended the attempt.
     private var isResolvingWave = false
+    /// Counts down from a hand-over to the moment the King has the shell and
+    /// sends it up to the score.
+    private var shellHandOver: Double?
 
     // At the start, one to three hidden question numbers are picked across the
     // whole board. This makes a 2x crab possible near the beginning or near the
@@ -798,6 +849,7 @@ final class KingCrabArena: ObservableObject {
         celebration.removeAll()
         round = nil
         sweepGather = nil
+        shellHandOver = nil
         entranceCompletion = nil
         completionElapsed = nil
         completionCallback = nil
@@ -836,6 +888,7 @@ final class KingCrabArena: ObservableObject {
         crabs.removeAll()
         carriers.removeAll()
         celebration.removeAll()
+        shellHandOver = nil
         completionElapsed = 0
         completionCallback = completion
         completionSpeckCountdown = 0
@@ -937,6 +990,8 @@ final class KingCrabArena: ObservableObject {
             if !crabs.contains(where: { $0.isLive }) {
                 onTutorialEvent?(.clearedWave)
             }
+            // With that one gone the right answer may be alone out there.
+            rushLoneCorrectCrab()
         }
     }
 
@@ -978,9 +1033,54 @@ final class KingCrabArena: ObservableObject {
     /// unmistakable: the attempt is over, and the next one is seconds away.
     private func burrowLiveCrabs() {
         for index in crabs.indices where crabs[index].isLive {
+            let wasWalking = crabs[index].phase == .walking
             crabs[index].phase = .burrowing
             crabs[index].phaseAge = 0
-            burst(at: crabs[index].position, strength: 0.55)
+            crabs[index].isRushing = false
+            // The dig throws sand from the first frame; `moveCrabs` keeps it
+            // coming for as long as the crab is still working its way down. A
+            // crab that never made it on screen digs in out of sight, and must
+            // not throw sand across the edge of the arena to announce it.
+            crabs[index].puffCountdown = ArenaConfig.burrowPuffInterval
+            if wasWalking { burst(at: crabs[index].position, strength: 0.7) }
+        }
+    }
+
+    /// Every wrong answer has been taken and the right one is the only crab
+    /// left walking, so there is nothing left to choose between: it drops the
+    /// caution, breaks into a run and carries its shell to the King itself.
+    ///
+    /// The sum goes with it. Nothing about the round is undecided any more, so
+    /// the session is told the answer here rather than when the crab arrives —
+    /// the next sum and its own wave come on while this one is still running,
+    /// which is what keeps a cleared wave from turning into a wait. The crab
+    /// itself plays out in full: it is no longer an answer, only the finish of
+    /// the last one.
+    ///
+    /// The walkthrough is the one place this is wrong — there the point of the
+    /// step is that the *player* takes the right crab — so it stays a walk.
+    private func rushLoneCorrectCrab() {
+        guard !tutorialPlan.isActive else { return }
+        let live = crabs.indices.filter { crabs[$0].isLive }
+        guard live.count == 1, let index = live.first,
+              crabs[index].isCorrect, !crabs[index].isRushing
+        else { return }
+
+        crabs[index].isRushing = true
+        crabs[index].rushAge = 0
+        crabs[index].puffCountdown = ArenaConfig.rushPuffInterval
+        // If the session cannot take the answer yet — feedback still playing,
+        // the round already settled — the crab simply runs it up to the King
+        // and it is counted on arrival, exactly as it always was.
+        crabs[index].hasAnswered = onGuardedArrival?(crabs[index].optionID) == true
+
+        // One still waiting its turn off screen has nothing left to wait for.
+        if crabs[index].phase == .waiting {
+            crabs[index].startDelay = 0
+            crabs[index].phase = .walking
+            crabs[index].phaseAge = 0
+        } else {
+            burst(at: crabs[index].position, strength: 0.5)
         }
     }
 
@@ -1165,6 +1265,7 @@ final class KingCrabArena: ObservableObject {
         spawnLifeCrabIfDue(dt)
         spawnTutorialCrabIfDue(dt)
         resolveSweepIfDue(dt)
+        emitHandedOverShellIfDue(dt)
         restartWaveIfReady()
         refillWaveIfEmpty(dt)
         // Publish only after every part of this frame has been simulated, so
@@ -1205,7 +1306,16 @@ final class KingCrabArena: ObservableObject {
                 // waddle and the scuttle only make it look like walking, never
                 // like drifting. The scuttle averages out over its own cycle,
                 // so the six seconds still hold.
-                let scuttle = 1 + 0.32 * sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
+                // A crab that has broken into a run stops hesitating: the
+                // scuttle's stop-start is what a *careful* crab does.
+                var run = 0.0
+                if crab.isRushing {
+                    crab.rushAge += dt
+                    let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
+                    run = ramp * ramp
+                }
+                let scuttle = 1 + 0.32 * (1 - 0.8 * run)
+                    * sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
                 // The on-screen stretch is the one the duration is about; the
                 // rush over the last of the off-screen stretch eases out of
                 // itself, so the crab arrives in view already walking.
@@ -1215,6 +1325,7 @@ final class KingCrabArena: ObservableObject {
                     let left = 1 - crab.progress / crab.entryProgress
                     rate *= 1 + (ArenaConfig.approachRush - 1) * left * left
                 }
+                rate *= 1 + (ArenaConfig.rushSpeed - 1) * run
                 crab.progress = min(1, crab.progress + dt * speedMultiplier * scuttle * rate)
                 let eased = crab.progress
                 let base = CGPoint(
@@ -1232,6 +1343,17 @@ final class KingCrabArena: ObservableObject {
                 crab.walked += hypot(stepped.x - crab.position.x,
                                      stepped.y - crab.position.y)
                 crab.position = stepped
+                // A run kicks up the sea floor behind it. Only once the crab
+                // is actually on screen: sand thrown from off the edge would
+                // announce a crab the player cannot see yet.
+                if crab.isRushing, crab.progress > crab.entryProgress {
+                    crab.puffCountdown -= dt
+                    if crab.puffCountdown <= 0 {
+                        crab.puffCountdown = ArenaConfig.rushPuffInterval
+                        burst(at: crab.position, strength: 0.3,
+                              drift: -crab.facing * 120)
+                    }
+                }
                 if crab.progress >= 1 {
                     crab.phase = .arrived
                     crab.phaseAge = 0
@@ -1249,9 +1371,36 @@ final class KingCrabArena: ObservableObject {
                 crab.position.y += crab.flingVelocity.y * CGFloat(dt)
                 crab.flingVelocity.y += 1_050 * CGFloat(dt)
 
+            case .delivering:
+                // Standing at the King's claw, holding the shell up to him. It
+                // steadies itself over its own feet while it lets go.
+                let settle = min(1, crab.phaseAge / ArenaConfig.deliverDuration)
+                crab.position = CGPoint(x: crab.target.x, y: crab.target.y)
+                if settle >= 1 {
+                    // Handed over. Its work is done, so it digs itself in like
+                    // every other crab whose wave is finished — but without the
+                    // shell, which is the King's now.
+                    crab.hasDelivered = true
+                    crab.phase = .burrowing
+                    crab.phaseAge = 0
+                    crab.puffCountdown = 0
+                }
+
             case .burrowing:
-                // Straight down into the sand, no travel.
-                break
+                // Straight down into the sand, no travel — but the digging
+                // itself throws sand out for as long as it lasts, and the
+                // legs are what is doing the throwing, so the spray keeps
+                // coming from under the crab rather than once at the start.
+                crab.puffCountdown -= dt
+                if crab.puffCountdown <= 0,
+                   crab.phaseAge < ArenaConfig.burrowDuration * 0.86,
+                   arena.contains(crab.position) {
+                    crab.puffCountdown = ArenaConfig.burrowPuffInterval
+                    // It bites deeper as it goes: the last of the sand is
+                    // thrown hardest, just as the crab pulls itself under.
+                    let bite = 0.34 + 0.5 * (crab.phaseAge / ArenaConfig.burrowDuration)
+                    burst(at: crab.position, strength: CGFloat(bite))
+                }
             }
             crabs[index] = crab
         }
@@ -1313,6 +1462,15 @@ final class KingCrabArena: ObservableObject {
         let arrived = crabs.indices.filter { crabs[$0].phase == .arrived }
         guard !arrived.isEmpty else { return }
 
+        // A crab whose answer the session has already taken is not answering
+        // anything here: it is finishing the errand it was counted for. It
+        // hands the shell over and nothing else about the round moves.
+        for index in arrived where crabs[index].hasAnswered {
+            deliver(index: index)
+        }
+        let contenders = arrived.filter { !crabs[$0].hasAnswered }
+        guard !contenders.isEmpty else { return }
+
         king.sweepAge = 0
         king.sweepDirection = Bool.random() ? 1 : -1
         onSweep?()
@@ -1320,23 +1478,48 @@ final class KingCrabArena: ObservableObject {
         // Wrong answers land first: they are what the King is being hit with,
         // and the right answer is what he is left holding.
         var scored = false
-        for index in arrived where !crabs[index].isCorrect {
+        for index in contenders where !crabs[index].isCorrect {
             onBreach?()
         }
-        if let index = arrived.first(where: { crabs[$0].isCorrect }) {
+        if let index = contenders.first(where: { crabs[$0].isCorrect }) {
             scored = onGuardedArrival?(crabs[index].optionID) == true
         }
 
-        for index in arrived {
-            fling(index: index)
-        }
-        if scored {
-            // The sum is about to change, so nothing else is left walking.
-            for index in crabs.indices where crabs[index].isLive {
+        for index in contenders {
+            // The blow is for the crabs that brought the King a wrong answer.
+            // One that brought the right one is not an attacker: it hands its
+            // shell over and digs itself in afterwards.
+            if crabs[index].isCorrect, scored {
+                deliver(index: index)
+            } else {
                 fling(index: index)
             }
-            emitShell()
         }
+        if scored {
+            // The sum is about to change, so everything else gives up and digs
+            // itself back in rather than waiting to be swept.
+            burrowLiveCrabs()
+        } else {
+            // A wrong answer the King has just swept aside can leave the right
+            // one alone on the sea floor exactly as a tap does.
+            rushLoneCorrectCrab()
+        }
+    }
+
+    /// The right answer, delivered by hand. The crab reaches its shell up to
+    /// the King's claws; `moveCrabs` sends it digging itself in once it lets go.
+    private func deliver(index: Int) {
+        var crab = crabs[index]
+        crab.phase = .delivering
+        crab.phaseAge = 0
+        crab.isRushing = false
+        // Where the King's claws are, seen from the crab.
+        crab.handOver = CGPoint(x: king.position.x - crab.position.x,
+                                y: king.position.y - kingSize * 0.30 - crab.position.y)
+        crabs[index] = crab
+        // The King's own shell goes up to the score as he takes it, not before:
+        // the hand-over has to happen first for it to be a gift.
+        shellHandOver = ArenaConfig.deliverDuration * 0.62
     }
 
     private func fling(index: Int) {
@@ -1350,6 +1533,19 @@ final class KingCrabArena: ObservableObject {
                                      y: dy / length * 260 - CGFloat.random(in: 180...260))
         crab.spin = Double.random(in: -13...13)
         crabs[index] = crab
+    }
+
+    /// The King sends the shell up to the score only once the crab has actually
+    /// put it in his claws.
+    private func emitHandedOverShellIfDue(_ dt: Double) {
+        guard var remaining = shellHandOver else { return }
+        remaining -= dt
+        guard remaining <= 0 else {
+            shellHandOver = remaining
+            return
+        }
+        shellHandOver = nil
+        emitShell()
     }
 
     /// The shell a scored answer sends to the HUD, along a curve that leaves the
@@ -1552,7 +1748,9 @@ final class KingCrabArena: ObservableObject {
 
     /// A puff of sand. Used by everything that meets the sea floor hard enough
     /// to disturb it: an emerging crab, a smashed one, a burrowing one.
-    private func burst(at point: CGPoint, strength: CGFloat) {
+    /// `drift` throws the whole puff one way, for sand that is being kicked
+    /// backwards by something moving rather than knocked straight up.
+    private func burst(at point: CGPoint, strength: CGFloat, drift: CGFloat = 0) {
         let count = max(3, Int(CGFloat(ArenaPerformanceBudget.grainsPerBurst) * strength))
         for _ in 0..<count {
             let angle = Double.random(in: -Double.pi ... 0)
@@ -1560,7 +1758,7 @@ final class KingCrabArena: ObservableObject {
             grains.append(SandGrain(
                 position: CGPoint(x: point.x + CGFloat.random(in: -6...6),
                                   y: point.y + crabSize * 0.30 + CGFloat.random(in: -4...4)),
-                velocity: CGPoint(x: CGFloat(cos(angle)) * speed,
+                velocity: CGPoint(x: CGFloat(cos(angle)) * speed + drift * CGFloat.random(in: 0.6...1.2),
                                   y: CGFloat(sin(angle)) * speed),
                 radius: CGFloat.random(in: 1.6...4.4) * (0.7 + strength * 0.5),
                 tone: Double.random(in: 0...1),

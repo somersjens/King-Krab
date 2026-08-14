@@ -541,7 +541,6 @@ private struct AnswerCrabView: View {
         switch crab.phase {
         case .smashed:   return CGFloat(1 - exit * 0.75)
         case .swept:     return CGFloat(1 - exit * 0.8)
-        case .burrowing: return CGFloat(1 - exit * 0.55)
         default:         return 1
         }
     }
@@ -549,9 +548,72 @@ private struct AnswerCrabView: View {
     private var opacity: Double {
         switch crab.phase {
         case .smashed, .swept: return 1 - exit * exit
-        case .burrowing: return 1 - exit
-        default:         return 1
+        default:               return 1
         }
+    }
+
+    // MARK: Digging in
+
+    /// Where the sand's surface is, in shares of the body width below the
+    /// crab's middle: the line its own feet stand on. Everything about the dig
+    /// is measured from it, because it is the line the crab goes *through*.
+    private static let groundLine: CGFloat = 0.82
+
+    /// How far a crab has already settled onto its legs by the time it has
+    /// finished handing its shell over. The dig picks the pose up at exactly
+    /// this point, which is what makes the give and the burrow one movement
+    /// instead of two animations played back to back.
+    private static let handOverSettle: CGFloat = 0.62
+
+    /// The share of the dig spent crouching. A crab that has just handed its
+    /// answer over is more than half way into the crouch already, so it only
+    /// has to finish the movement it is in.
+    private var squatShare: Double {
+        crab.hasDelivered
+            ? ArenaConfig.burrowSquatShare * 0.42
+            : ArenaConfig.burrowSquatShare
+    }
+
+    /// The crouch: before anything sinks, the crab hunkers down over the spot
+    /// and starts working. A crab that simply slid downwards would read as a
+    /// lift going down rather than as an animal digging.
+    private var squat: CGFloat {
+        let base: CGFloat = crab.hasDelivered ? Self.handOverSettle : 0
+        let t = min(1, exit / squatShare)
+        return base + (1 - base) * CGFloat(t * t * (3 - 2 * t))
+    }
+
+    /// How far into the sand it has pulled itself, 0 → 1. Nothing here happens
+    /// until the crouch is done, and then it goes: the sand it has been digging
+    /// out from under itself gives way, and it drops through the floor.
+    private var dig: CGFloat {
+        let t = (exit - squatShare) / max(0.01, 1 - squatShare)
+        return CGFloat(pow(min(1, max(0, t)), 2.1))
+    }
+
+    /// Far enough that the shell it is holding is under the sand too.
+    private var sinkDepth: CGFloat { bodyWidth * 2.6 * dig }
+
+    /// The shimmy. A burrowing crab does not slide under: it screws itself down,
+    /// rocking hard from one side to the other, and that rocking is most of what
+    /// makes the sinking read as the animal's own doing. It works fastest while
+    /// it is still digging and eases off as the sand closes over it.
+    /// Four crabs digging in together must not rock as one, so each starts its
+    /// own rhythm somewhere else — except one that has just handed its shell
+    /// over, which starts from rest because it is already mid-movement.
+    private var rockPhase: Double { crab.hasDelivered ? 0 : crab.gaitOffset }
+
+    private var shimmy: CGFloat {
+        let rock = sin(crab.phaseAge * 30 + rockPhase)
+        return CGFloat(rock) * (1 - 0.5 * dig)
+    }
+
+    /// The heave: each half of the shimmy is a push, and a crab pushing itself
+    /// down bobs against the sand rather than sliding through it. Twice the
+    /// shimmy's rate, because both sides of the rock take a bite.
+    private var heave: CGFloat {
+        CGFloat(abs(sin(crab.phaseAge * 30 + rockPhase)))
+            * bodyWidth * 0.07 * squat * (1 - dig)
     }
 
     /// Where the crab is headed, as a unit vector: it is what its eyes follow.
@@ -565,11 +627,72 @@ private struct AnswerCrabView: View {
     /// The shell's own lean and sway this frame. The hands are placed off the
     /// same two numbers, which is what keeps them on its rim while it swings.
     private var cardSway: Double { sin(crab.age * crab.waddleRate - 0.6) }
-    private var cardAngle: Double { crab.cardLean + cardSway * 3.4 }
-    private var cardCentre: CGPoint {
+    /// A running crab cannot hold its shell as steady as a walking one.
+    private var cardAngle: Double { crab.cardLean + cardSway * 3.4 * (1 + 0.8 * run) }
+    /// Where the shell rides while it is simply being carried.
+    private var carriedShell: CGPoint {
         let cardHeight = ArenaConfig.cardHeight(isPad: isPad)
         return CGPoint(x: CGFloat(cardSway) * bodyWidth * 0.025,
                        y: -bodyWidth * 0.75 - cardHeight * (ArenaConfig.cardLift - 0.5))
+    }
+
+    /// Where the hands are `t` of the way through handing the shell over: out
+    /// towards the King's claws, and down off the crab's own head as it lets
+    /// go — which is what keeps the whole movement inside an arm's own span.
+    /// The reach is capped at what an arm can actually cover; the rest of the
+    /// journey is the King's, and he makes it as the shell he sends to the
+    /// score.
+    private func offeredShell(_ t: CGFloat) -> CGPoint {
+        let base = carriedShell
+        let offered = CGPoint(x: base.x, y: base.y * (1 - 0.32 * t))
+        let dx = crab.handOver.x - offered.x
+        let dy = crab.handOver.y - offered.y
+        let span = max(1, hypot(dx, dy))
+        let reach = min(bodyWidth * 0.45, span) * t / span
+        return CGPoint(x: offered.x + dx * reach, y: offered.y + dy * reach)
+    }
+
+    private var cardCentre: CGPoint {
+        switch crab.phase {
+        case .delivering:
+            return offeredShell(handOver)
+        case .burrowing:
+            // The claws come in as the crouch finishes — from wherever the
+            // hand-over left them, so a crab that has just given its shell away
+            // carries straight on into the dig without resetting its pose. One
+            // still holding its shell pulls it down over itself first: nothing
+            // goes under the sand while it is held out at arm's length.
+            let start: CGFloat = crab.hasDelivered ? Self.handOverSettle : 0
+            let closed = (squat - start) / max(0.01, 1 - start)
+            let from = crab.hasDelivered ? offeredShell(1) : carriedShell
+            let to = CGPoint(x: 0, y: carriedShell.y * (crab.hasDelivered ? 0.10 : 0.45))
+            return CGPoint(x: from.x + (to.x - from.x) * closed,
+                           y: from.y + (to.y - from.y) * closed)
+        default:
+            return carriedShell
+        }
+    }
+
+    // MARK: Handing the answer over
+
+    /// How far through the hand-over this crab is, eased so the shell leaves
+    /// slowly and lands in the King's claws.
+    private var handOver: CGFloat {
+        guard crab.phase == .delivering else { return 0 }
+        let t = min(1, crab.phaseAge / ArenaConfig.deliverDuration)
+        return CGFloat(t * t * (3 - 2 * t))
+    }
+
+    /// The reach itself, as one arc: the crab comes up onto its toes to put the
+    /// shell in the King's claws and comes straight back down out of it. It
+    /// ends where it started, so nothing snaps when the dig takes over.
+    private var handOverArc: Double { sin(Double(handOver) * .pi) }
+
+    /// …and having let go, it is already settling onto its legs. This is the
+    /// front half of the crouch the burrow then finishes.
+    private var handOverCrouch: CGFloat {
+        let t = min(1, max(0, Double(handOver) - 0.45) / 0.55)
+        return Self.handOverSettle * CGFloat(t * t * (3 - 2 * t))
     }
 
     /// The two lower corners of the shell's rim, carried through its lean into
@@ -596,28 +719,55 @@ private struct AnswerCrabView: View {
     private var rig: CrabArmRig {
         CrabArmRig(bodyWidth: bodyWidth,
                    stepPhase: gait,
-                   isWalking: crab.phase == .walking,
+                   isWalking: isStepping,
                    facing: crab.facing,
                    hold: hold)
     }
 
-    /// The walk cycle, measured off the ground the crab has actually covered.
+    /// The legs work both when the crab is covering ground and when it is
+    /// digging: a crab burrows with the same six legs it walks on.
+    private var isStepping: Bool {
+        crab.phase == .walking || crab.phase == .burrowing
+    }
+
+    /// The shell fades out of the crab's claws as the King takes it: the same
+    /// shell leaves his own claws for the score a moment later.
+    private var shellOpacity: Double {
+        if crab.hasDelivered { return 0 }
+        guard crab.phase == .delivering else { return 1 }
+        return 1 - Double(max(0, handOver - 0.45) / 0.55)
+    }
+
+    /// The walk cycle, measured off the ground the crab has actually covered —
+    /// except while digging, where no ground is covered at all and the legs are
+    /// scrabbling against the sand rather than carrying the animal over it.
     private var gait: Double {
-        Double(crab.walked / max(1, bodyWidth * CrabSprite.strideLength * crab.strideFactor))
+        guard crab.phase != .burrowing else {
+            return crab.phaseAge * 34 + crab.gaitOffset
+        }
+        return Double(crab.walked
+            / max(1, bodyWidth * CrabSprite.strideLength * crab.strideFactor))
             * 2 * .pi + crab.gaitOffset
+    }
+
+    /// How far into its run the crab is, 0 → 1, once it is the last one left.
+    private var run: Double {
+        guard crab.isRushing, crab.phase == .walking else { return 0 }
+        let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
+        return ramp * ramp
     }
 
     var body: some View {
         let tint: CrabTint = isGolden ? .gold : .enemy
 
-        return CrabSprite(bodyWidth: bodyWidth,
-                          tint: tint,
-                          stepPhase: gait,
-                          isWalking: crab.phase == .walking,
-                          facing: crab.facing,
-                          gaze: gaze,
-                          strideFactor: crab.strideFactor,
-                          palette: palette)
+        let crabAndShell = CrabSprite(bodyWidth: bodyWidth,
+                                      tint: tint,
+                                      stepPhase: gait,
+                                      isWalking: isStepping,
+                                      facing: crab.facing,
+                                      gaze: gaze,
+                                      strideFactor: crab.strideFactor,
+                                      palette: palette)
             .overlay {
                 AnswerShell(text: crab.text,
                             palette: palette,
@@ -626,20 +776,120 @@ private struct AnswerCrabView: View {
                     // The shell swings a beat behind the body, the way anything
                     // held over your head does.
                     .rotationEffect(.degrees(cardAngle))
+                    .scaleEffect(1 - 0.18 * handOver)
                     .offset(x: cardCentre.x, y: cardCentre.y)
+                    .opacity(shellOpacity)
             }
             // The arms go on last, over the shell: a claw behind the rim looks
             // like a crab standing under its answer, and a claw over the rim
             // looks like a crab carrying it. Drawn whole, they take their own
             // outline with them.
             .overlay { CrabArmsView(rig: rig, colors: tint.shell, line: tint.line) }
-            // A burrowing crab sinks straight down into the sand; a smashed or
-            // swept one tumbles away with the blow that sent it.
-            .offset(y: crab.phase == .burrowing ? bodyWidth * 0.5 * CGFloat(exit) : 0)
-            .rotationEffect(.radians(crab.spin * exit))
-            .scaleEffect(scale)
-            .opacity(opacity)
-            .accessibilityHidden(true)
+
+        return Group {
+            if crab.phase == .burrowing {
+                digging(crabAndShell)
+            } else {
+                crabAndShell
+                    // Running, it throws itself forward over its own legs.
+                    .rotationEffect(.degrees(Double(crab.facing) * 7 * run),
+                                    anchor: .bottom)
+                    // Handing the shell over: up onto its toes and leaning in
+                    // on the reach, back down onto its legs as it lets go.
+                    .rotationEffect(.degrees(handOverArc * -5 * Double(crab.facing)),
+                                    anchor: .bottom)
+                    .offset(y: -bodyWidth * 0.09 * CGFloat(handOverArc))
+                    // …and straight on into the crouch the dig starts from.
+                    .scaleEffect(x: 1 + 0.14 * handOverCrouch,
+                                 y: 1 - 0.22 * handOverCrouch,
+                                 anchor: .bottom)
+                    // A smashed or swept crab tumbles away with the blow.
+                    .rotationEffect(.radians(crab.spin * exit))
+                    .scaleEffect(scale)
+                    .opacity(opacity)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    /// The dig. A crab giving up on the wave does not fade away: it hunkers
+    /// down where it stands, works the sand out from under itself, and screws
+    /// itself through the sea floor — and the sea floor cuts it off cleanly at
+    /// the surface, which is the whole reason the sinking reads as going *into*
+    /// something rather than as shrinking.
+    private func digging<Content: View>(_ crabAndShell: Content) -> some View {
+        ZStack {
+            burrowPit
+            crabAndShell
+                // The rock, taken about the feet: the crab screws itself down.
+                .rotationEffect(.degrees(Double(shimmy) * 11), anchor: .bottom)
+                .offset(x: shimmy * bodyWidth * 0.075, y: sinkDepth - heave)
+                // It squats onto its legs and squeezes into its own hole.
+                .scaleEffect(x: 1 + 0.14 * squat, y: 1 - 0.22 * squat, anchor: .bottom)
+                .mask { seaFloor }
+            // The sand it has thrown out piles up around the hole, and the last
+            // of it slides back in over the top of the crab.
+            burrowMound
+        }
+    }
+
+    /// Sand is opaque: whatever has gone below its surface is simply not there
+    /// any more. One rectangle ending at the crab's own footline does that.
+    private var seaFloor: some View {
+        let reach = bodyWidth * 8
+        return Rectangle()
+            .frame(width: reach, height: reach)
+            .offset(y: Self.groundLine * bodyWidth - reach / 2)
+    }
+
+    /// How wide the disturbed sand is this frame. It opens while the crab works
+    /// its way down, and settles back once there is nothing left to dig around.
+    private var pitWidth: CGFloat {
+        let open = CGFloat(min(1, exit / 0.45))
+        let closed = CGFloat(max(0, (exit - 0.7) / 0.3))
+        return bodyWidth * (0.5 + 0.8 * open) * (1 - 0.55 * closed * closed)
+    }
+
+    private var pitFade: Double { 1 - max(0, (exit - 0.78) / 0.22) }
+
+    /// The hole itself, drawn behind the crab: the dark of an open burrow.
+    private var burrowPit: some View {
+        Ellipse()
+            .fill(
+                RadialGradient(colors: [palette.sandDeep.opacity(0.85 * pitFade),
+                                        palette.sandDeep.opacity(0.15 * pitFade)],
+                               center: .center,
+                               startRadius: 0,
+                               endRadius: max(1, pitWidth * 0.55))
+            )
+            .frame(width: pitWidth, height: pitWidth * 0.36)
+            .offset(y: Self.groundLine * bodyWidth)
+    }
+
+    /// The spoil heap, drawn in *front* of the crab: sand does not stay in the
+    /// hole it came out of, and a rim rising over the crab's back is what turns
+    /// a sinking sprite into an animal being covered up.
+    private var burrowMound: some View {
+        let rise = CGFloat(min(1, exit / 0.62))
+        let width = pitWidth * 1.12
+        return ZStack {
+            // The near lip: a crescent of sand banked up on the player's side.
+            Ellipse()
+                .fill(
+                    LinearGradient(colors: [palette.sand,
+                                            palette.sand.opacity(0.85)],
+                                   startPoint: .top, endPoint: .bottom)
+                )
+                .frame(width: width, height: width * 0.30 * rise)
+                .overlay {
+                    Ellipse()
+                        .stroke(palette.sandDeep.opacity(0.25), lineWidth: 1)
+                        .frame(width: width, height: width * 0.30 * rise)
+                }
+                .offset(y: Self.groundLine * bodyWidth + width * 0.10 * rise)
+                .blur(radius: 0.8)
+        }
+        .opacity(pitFade)
     }
 }
 
