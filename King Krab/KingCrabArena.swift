@@ -128,7 +128,7 @@ enum ArenaConfig {
     /// With every wrong answer taken, the right one stops being careful and
     /// runs the rest of the way to the King. This is how much faster than its
     /// own walk it covers what is left.
-    static let rushSpeed: Double = 3.2
+    static let rushSpeed: Double = 6.4
     /// It breaks into the run rather than snapping to full speed.
     static let rushRamp = 0.30
     /// Sand thrown up behind a running crab.
@@ -136,10 +136,10 @@ enum ArenaConfig {
 
     // MARK: The King
 
-    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 185 : 136 }
+    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 222 : 163.2 }
     /// Where a walking crab stops: on a ring around the King, wide enough that
     /// four arrivals stand around him rather than on top of him.
-    static let arrivalRingFactor: CGFloat = 0.98
+    static let arrivalRingFactor: CGFloat = 0.72
     /// Arrivals inside this window are answered by a single sweep, so two crabs
     /// reaching the King together never produce two separate animations.
     static let sweepGather = 0.14
@@ -177,6 +177,10 @@ enum ArenaConfig {
     static let clawThrowQueue = 3
     /// How long the thrown sand takes to reach what it was thrown at.
     static let sandFlightDuration = 0.18
+    /// How long a tapped crab holds still before the sand actually reaches it
+    /// and it starts flying: the same span the claw takes to wind up and
+    /// release, plus the sand's own time in the air.
+    static let sandImpactDelay = clawThrowDuration * clawReleaseShare + sandFlightDuration
     /// The pincer at rest, as a share of the King's size from his centre. The
     /// sand leaves from here so it comes out of a claw, not out of his middle.
     static let clawTip = CGSize(width: 0.353, height: -0.255)
@@ -341,6 +345,9 @@ struct AnswerCrab: Identifiable {
         case walking
         /// Standing at the King's ring, waiting for the sweep that answers it.
         case arrived
+        /// Tapped, and holding still while the thrown sand is still on its way
+        /// to it. It only starts flying once the sand actually arrives.
+        case hit
         /// Hit by the player.
         case smashed
         /// Handing its shell to the King, which is what a crab carrying the
@@ -801,8 +808,9 @@ final class KingCrabArena: ObservableObject {
         self.maximumRounds = max(1, maximumRounds)
     }
 
-    /// Installs a round. Called only when the sum actually changes, so smashing
-    /// the guarded answer leaves the same sum standing.
+    /// Installs a round. Called whenever the sum changes — including right
+    /// after the guarded answer was smashed directly, which still moves on to
+    /// a fresh sum rather than repeating the one just given away.
     func load(round: GameRound?) {
         let previousRoundNumber = self.round?.number
         self.round = round
@@ -903,9 +911,12 @@ final class KingCrabArena: ObservableObject {
             lastFrameTargetTimestamp = nil
             let link = CADisplayLink(target: displayLinkTarget,
                                      selector: #selector(DisplayLinkTarget.advance(_:)))
+            let currentScreen = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first?.screen
             let maximumFPS = ArenaPerformanceBudget.isConstrained
                 ? 60
-                : max(60, UIScreen.main.maximumFramesPerSecond)
+                : max(60, currentScreen?.maximumFramesPerSecond ?? 60)
             link.preferredFrameRateRange = CAFrameRateRange(
                 minimum: 60,
                 maximum: Float(maximumFPS),
@@ -1099,11 +1110,11 @@ final class KingCrabArena: ObservableObject {
             // The session has the final say. If it does not take it — feedback
             // still playing, round already resolved — nothing happens at all.
             guard onSmashedGuard?() == true else { return }
-            isResolvingWave = true
-            pendingWaveRestart = true
             smash(index: index)
             // Every other crab gives up and digs itself back in, so the arena
-            // is clear for the next attempt without a long wait.
+            // is clear for the next attempt without a long wait. The next sum
+            // is on its way — `load(round:)` starts the new wave once it
+            // lands, exactly as it does after a correct delivery or a breach.
             burrowLiveCrabs()
         } else {
             smash(index: index)
@@ -1136,7 +1147,10 @@ final class KingCrabArena: ObservableObject {
 
     private func smash(index: Int) {
         var crab = crabs[index]
-        crab.phase = .smashed
+        // The crab holds still, tapped but not yet hit: it only starts flying
+        // once the thrown sand actually reaches it in `moveCrabs`, rather than
+        // the instant the player's finger lands.
+        crab.phase = .hit
         crab.phaseAge = 0
         // The King throws sand at whatever the player picks, so the crab is
         // thrown away from *him* and up out of the sand: the blast and the crab
@@ -1150,7 +1164,6 @@ final class KingCrabArena: ObservableObject {
                                      y: dy / length * 90 - CGFloat.random(in: 240...330))
         crab.spin = Double.random(in: -9...9)
         crabs[index] = crab
-        burst(at: crab.position, strength: 1.0)
         if crab.isCorrect { onSmash?(true) }
     }
 
@@ -1252,9 +1265,12 @@ final class KingCrabArena: ObservableObject {
                 target: target,
                 position: start,
                 entryProgress: entryProgress,
-                duration: GameConfig.crabWalkDuration
-                    * Double.random(in: GameConfig.crabWalkVariation),
-                startDelay: Double.random(in: GameConfig.crabStartStagger),
+                // Every crab in a wave shares the same duration and start time
+                // so all four reach the King's ring together — the King can
+                // then answer the whole wave at once rather than crabs
+                // trickling in one at a time.
+                duration: GameConfig.crabWalkDuration,
+                startDelay: 0,
                 waddleAmplitude: crabSize * CGFloat.random(in: 0.05...0.10),
                 // One sway per pair of steps: the body leans onto the legs that
                 // are carrying it.
@@ -1324,7 +1340,14 @@ final class KingCrabArena: ObservableObject {
 
     private func restartWaveIfReady() {
         guard pendingWaveRestart, isLive else { return }
-        guard !crabs.contains(where: { $0.isLive }) else { return }
+        // A crab already at the ring — credited or not — is still waiting on
+        // `resolveSweepIfDue` to hand its shell over or fling it aside.
+        // Starting the next wave out from under it would strand it there,
+        // frozen, until some unrelated later crab happens to arrive and
+        // re-arms the gather timer that was supposed to free it.
+        guard !crabs.contains(where: { $0.isLive || $0.phase == .arrived }),
+              sweepGather == nil
+        else { return }
         pendingWaveRestart = false
         beginWave()
     }
@@ -1490,6 +1513,14 @@ final class KingCrabArena: ObservableObject {
                 // Held at the ring, shuffling in place until the King answers.
                 let jitter = CGFloat(sin(crab.age * 11)) * crabSize * 0.02
                 crab.position = CGPoint(x: crab.target.x + jitter, y: crab.target.y)
+
+            case .hit:
+                // Held in place until the sand actually lands on it.
+                if crab.phaseAge >= ArenaConfig.sandImpactDelay {
+                    crab.phase = .smashed
+                    crab.phaseAge = 0
+                    burst(at: crab.position, strength: 1.0)
+                }
 
             case .smashed, .swept:
                 crab.position.x += crab.flingVelocity.x * CGFloat(dt)
@@ -1700,7 +1731,7 @@ final class KingCrabArena: ObservableObject {
         let dy = target.y - origin.y
         let span = max(kingSize * 0.5, hypot(dx, dy))
         let heading = atan2(Double(dy), Double(dx))
-        let count = max(9, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 2.2))
+        let count = max(16, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 3.8))
         for _ in 0..<count {
             let angle = heading + Double.random(in: -0.26...0.26)
             let speed = span / CGFloat(ArenaConfig.sandFlightDuration)

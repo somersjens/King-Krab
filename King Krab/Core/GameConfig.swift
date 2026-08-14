@@ -46,12 +46,6 @@ nonisolated public enum GameConfig {
     /// read, judged and acted on inside this window, so it is the single most
     /// important number of the game.
     public static let crabWalkDuration = 6.0
-    /// Small honest differences between the four walkers, so they never march
-    /// as one block and never all arrive on the same frame.
-    public static let crabWalkVariation: ClosedRange<Double> = 0.94...1.07
-    /// How long after the wave opens each crab sets off. They start together;
-    /// this only keeps the four from being a single stamped shape.
-    public static let crabStartStagger: ClosedRange<Double> = 0...0.35
 
     /// A crab carrying a wrong answer that reaches the King costs half a life.
     /// The round itself carries on: the right answer is still out there.

@@ -11,11 +11,11 @@
       "localizations" : [
         {
           "description" : "99 levels per topic, your choice of characters, and no ads.",
-          "displayName" : "Jumping Fox Premium",
+          "displayName" : "King Crab Premium",
           "locale" : "en_US"
         }
       ],
-      "productID" : "premium_unlock_all_number_reef",
+      "productID" : "premium_unlock_all_king_crab",
       "referenceName" : "Premium - Unlock All Levels and Characters",
       "type" : "NonConsumable"
     }

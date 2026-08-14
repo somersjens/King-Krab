@@ -18,6 +18,21 @@ import SwiftUI
 import UIKit
 #endif
 
+/// `.numericText(value:)` picks a roll-up/roll-down direction from the value
+/// and only exists from iOS 17; the app's floor is 16.4, so older systems fall
+/// back to the direction-less transition instead of losing the digit roll entirely.
+private struct NumericCountTransition: ViewModifier {
+    let value: Double
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content.contentTransition(.numericText(value: value))
+        } else {
+            content.contentTransition(.numericText())
+        }
+    }
+}
+
 /// Everything a session needs to start: which level to draw questions from and
 /// how many answer cards each round lays out.
 struct GameSessionRequest: Identifiable {
@@ -163,7 +178,7 @@ struct GameView: View {
             }
         }
 #endif
-        .onChange(of: model.isGameOver) { _, isOver in
+        .onChange(of: model.isGameOver) { isOver in
             // There is nothing left to teach on a finished board.
             if isOver { tutorial.finish() }
             guard isOver else {
@@ -300,7 +315,7 @@ struct GameView: View {
             }
         }
         .ignoresSafeArea()
-        .onChange(of: model.streakAnnouncementID) { _, id in
+        .onChange(of: model.streakAnnouncementID) { id in
             guard id > 0 else { return }
             showStreakBanner(for: id)
         }
@@ -395,7 +410,7 @@ struct GameView: View {
                 .font(.system(size: hudNumberSize, weight: .heavy, design: .rounded))
                 .monospacedDigit()
                 .lineLimit(1)
-                .contentTransition(.numericText(value: Double(model.cards)))
+                .modifier(NumericCountTransition(value: Double(model.cards)))
             CurrencyIcon(size: hudSymbolSize)
                 .background {
                     GeometryReader { proxy in

@@ -153,7 +153,7 @@ struct HomeView: View {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { viewportWidth = proxy.size.width }
-                        .onChange(of: proxy.size.width) { _, width in viewportWidth = width }
+                        .onChange(of: proxy.size.width) { width in viewportWidth = width }
                 }
             )
             .onPreferenceChange(ControlAnchorKey.self) { controlAnchors = $0 }
@@ -228,7 +228,7 @@ struct HomeView: View {
             synchronizeUnlockPrompt(animated: false)
             openTutorialLevelIfRequested()
         }
-        .onChange(of: totalCards) { _, _ in
+        .onChange(of: totalCards) { _ in
             // A returning session banks its cards before any of the celebration
             // is visible. Hold the old prompt until that flow releases it;
             // iCloud or restored progress may update it right away.
@@ -239,7 +239,7 @@ struct HomeView: View {
             AppAudio.shared.prepare()
             AppAudio.shared.startMusic()
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             guard phase == .active else { return }
             AppAudio.shared.startMusic()
         }

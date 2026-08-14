@@ -169,18 +169,18 @@ struct ResultView: View {
                 character.artwork
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 130 * scale, height: 92 * scale)
+                    .frame(width: 156 * scale, height: 110.4 * scale)
                     .scaleEffect(isPresented ? 1 : 0.4)
                     .rotationEffect(.degrees(isPresented ? 0 : -25))
                     .animation(.spring(response: 0.55, dampingFraction: 0.5),
                                value: isPresented)
             }
-            .frame(height: 92 * scale)
+            .frame(height: 110.4 * scale)
         } else {
             character.artwork
                 .resizable()
                 .scaledToFit()
-                .frame(width: 130 * scale, height: 92 * scale)
+                .frame(width: 156 * scale, height: 110.4 * scale)
         }
     }
 

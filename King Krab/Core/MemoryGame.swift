@@ -310,8 +310,10 @@ nonisolated public final class MemoryGame {
     }
 
     /// The player smashed the crab carrying the right answer. It costs a whole
-    /// life, the attempt is over at once, and the same sum comes back around
-    /// with a fresh wave — exactly what a wrong answer has always cost here.
+    /// life and the attempt is over at once, but the sum still moves on to a
+    /// fresh one — the player has already seen this exact sum and its answer,
+    /// so bringing it straight back would just be asking the same question
+    /// again rather than testing anything new.
     @discardableResult
     public func smashGuardedAnswer() -> AnswerOutcome {
         guard state == .answering,
@@ -322,14 +324,16 @@ nonisolated public final class MemoryGame {
 
         selectedOptionID = correct.id
         state = .resolving
-        let outcome = penaliseGuardedAnswer(correctOptionID: correct.id)
+        let outcome = penaliseGuardedAnswer(correctOptionID: correct.id, repeatsRound: false)
         lastOutcome = outcome
         return outcome
     }
 
-    /// Shared by both ways of losing the right answer: the whole life, the
-    /// broken streak and the repeat of this very sum.
-    private func penaliseGuardedAnswer(correctOptionID: UUID) -> AnswerOutcome {
+    /// Shared by both ways of losing the right answer: the whole life and the
+    /// broken streak. `repeatsRound` decides whether the same sum comes back
+    /// (a plain wrong tap, which has not revealed the right answer) or a fresh
+    /// one is installed (the guarded answer was smashed directly, which has).
+    private func penaliseGuardedAnswer(correctOptionID: UUID, repeatsRound: Bool = true) -> AnswerOutcome {
         result.wrongAnswers += 1
         correctStreak = 0
         if appliesWrongAnswerPenalty {
@@ -337,9 +341,7 @@ nonisolated public final class MemoryGame {
             // the King was waiting for is the one mistake that always hurts.
             spendLifeHalves(GameConfig.wrongAnswerCostHalves)
         }
-        // The sum stays up; `advance` puts this very round back into play
-        // instead of installing the next one.
-        repeatsRound = true
+        self.repeatsRound = repeatsRound
         return .wrong(correctOptionID: correctOptionID, lostHalfLife: false)
     }
 

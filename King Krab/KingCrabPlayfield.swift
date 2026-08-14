@@ -13,6 +13,9 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - Playfield
 
@@ -60,9 +63,6 @@ struct KingCrabPlayfield: View {
     var onTutorialEvent: (CrabTutorialEvent) -> Void = { _ in }
 
     @StateObject private var arena = KingCrabArena()
-    /// Where the touch being handled started. One touch may only take one crab,
-    /// however long the finger stays down or however far it slides.
-    @State private var handledTouchStart: CGPoint?
 
     private var palette: ReefPalette { ReefPalette(character: character) }
 
@@ -76,9 +76,12 @@ struct KingCrabPlayfield: View {
             + (tutorialPlan.isActive ? ArenaConfig.tutorialMessageReserve(isPad: isPad) : 0)
     }
 
-    private func arenaRect(in size: CGSize) -> CGRect {
+    /// `top` overrides `arenaTop` for callers that already hold a newer value
+    /// than the view does — an `onChange` closure on iOS 16 sees the previous
+    /// `arenaTop`, so the one it is handed has to be passed in explicitly.
+    private func arenaRect(in size: CGSize, top: CGFloat? = nil) -> CGRect {
         let bottom = size.height - bottomReserve - ArenaConfig.floorInset(isPad: isPad)
-        let top = min(arenaTop, max(0, bottom - 120))
+        let top = min(top ?? arenaTop, max(0, bottom - 120))
         return CGRect(x: 0, y: top, width: size.width, height: max(1, bottom - top))
     }
 
@@ -115,8 +118,7 @@ struct KingCrabPlayfield: View {
                              palette: palette,
                              isPad: isPad,
                              clock: arena.clock,
-                             hasBonusPower: arena.hasBonusAura,
-                             isStreakBoostActive: isStreakBoostActive)
+                             hasBonusPower: arena.hasBonusAura)
                     .position(arena.king.position)
                     .allowsHitTesting(false)
 
@@ -166,21 +168,25 @@ struct KingCrabPlayfield: View {
             }
             .frame(width: size.width, height: size.height)
             .contentShape(Rectangle())
+#if canImport(UIKit)
+            // A plain SwiftUI gesture only ever tracks one active touch, so a
+            // child throwing sand with both thumbs at once — one crab on each
+            // side — would have the second finger simply ignored until the
+            // first lifts. This UIKit view underneath sees every finger down
+            // as its own event, so simultaneous taps on either side of the
+            // screen both land.
+            .overlay(
+                MultiTouchTapView { point in arena.tap(at: point) }
+            )
+#else
             .gesture(
                 // Reacting on touch-down rather than on lift keeps smashing a
                 // crab as immediate as hitting one: a child taps fast, and a
                 // gesture that waits for the finger to leave feels broken.
                 DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        // Keyed to where the finger landed rather than to a
-                        // plain flag: a cancelled gesture that never reports
-                        // its end can then never wedge the whole arena.
-                        guard handledTouchStart != value.startLocation else { return }
-                        handledTouchStart = value.startLocation
-                        arena.tap(at: value.startLocation)
-                    }
-                    .onEnded { _ in handledTouchStart = nil }
+                    .onChanged { value in arena.tap(at: value.startLocation) }
             )
+#endif
             .allowsHitTesting(!playsLevelCompletion)
             // See the note on the type: the arena is a simulated space, so it
             // keeps its own orientation whatever the language reads like.
@@ -215,47 +221,53 @@ struct KingCrabPlayfield: View {
                                                completion: onLevelCompletionFinished)
                 }
             }
-            .onChange(of: size) { _, newSize in
+            .onChange(of: size) { newSize in
                 arena.layout(size: newSize, arena: arenaRect(in: newSize), isPad: isPad)
             }
-            .onChange(of: arenaTop) { _, _ in
-                arena.layout(size: size, arena: arenaRect(in: size), isPad: isPad)
+            .onChange(of: arenaTop) { newTop in
+                arena.layout(size: size, arena: arenaRect(in: size, top: newTop), isPad: isPad)
             }
         }
         // A new sum sends in a fresh wave. Smashing the guarded answer keeps the
         // same round, so this deliberately does not fire for it.
-        .onChange(of: round?.id) { _, _ in
-            arena.load(round: round)
+        // Deliberately observes the round itself rather than its id: on iOS 16
+        // `onChange(of:perform:)` runs its closure against the view value from
+        // *before* the update, so reading `round` in here would still see the
+        // previous one — nil on the very first round, which left the arena
+        // without a wave and the sum blank. Only the value handed to the
+        // closure is current, so the new round has to be the value observed.
+        .onChange(of: round) { newRound in
+            arena.load(round: newRound)
         }
-        .onChange(of: isLive) { _, live in
+        .onChange(of: isLive) { live in
             arena.setLive(live)
         }
-        .onChange(of: isRunning) { _, running in
+        .onChange(of: isRunning) { running in
             arena.setRunning(running)
         }
-        .onChange(of: hasBonusPower) { _, active in
+        .onChange(of: hasBonusPower) { active in
             arena.setBonusAura(active)
         }
-        .onChange(of: isLifeCrabAvailable) { _, available in
+        .onChange(of: isLifeCrabAvailable) { available in
             arena.setLifeCrabAvailable(available)
         }
-        .onChange(of: isStreakBoostActive) { _, active in
+        .onChange(of: isStreakBoostActive) { active in
             arena.setSpeedMultiplier(active ? GameConfig.streakSpeedMultiplier : 1)
         }
-        .onChange(of: scoreTarget) { _, target in
+        .onChange(of: scoreTarget) { target in
             arena.setScoreTarget(target)
         }
-        .onChange(of: tutorialPlan) { _, plan in
+        .onChange(of: tutorialPlan) { plan in
             withAnimation(.easeInOut(duration: 0.25)) {
                 arena.applyTutorial(plan)
             }
         }
-        .onChange(of: playsKingEntrance) { _, shouldPlay in
+        .onChange(of: playsKingEntrance) { shouldPlay in
             if shouldPlay {
                 arena.beginKingEntrance(completion: onKingEntranceComplete)
             }
         }
-        .onChange(of: playsLevelCompletion) { _, shouldPlay in
+        .onChange(of: playsLevelCompletion) { shouldPlay in
             if shouldPlay {
                 arena.beginLevelCompletion(reduceMotion: reduceMotion,
                                            completion: onLevelCompletionFinished)
@@ -307,19 +319,33 @@ private struct QuestionBanner: View {
             .opacity(isVisible ? 1 : 0)
             .scaleEffect(isVisible ? 1 : 0.96)
             .onAppear { shownPrompt = prompt }
-            .onChange(of: roundID) { _, _ in revealNewQuestion() }
+            // The round's id and its sum are observed together: the id is what
+            // says a new question has come up (two rounds running may ask the
+            // same sum), while the prompt has to travel with it because on
+            // iOS 16 `onChange(of:perform:)` sees the view as it was *before*
+            // the update — reading `prompt` in the closure would still give the
+            // previous sum, and the empty one on the very first round.
+            .onChange(of: Question(id: roundID, prompt: prompt)) { question in
+                revealNewQuestion(question.prompt)
+            }
             .accessibilityIdentifier("question-card")
             .accessibilityLabel(Text(L("game.question \(prompt)")))
     }
 
-    private func revealNewQuestion() {
+    /// The sum being asked, as one value so a single `onChange` carries both.
+    private struct Question: Equatable {
+        let id: UUID?
+        let prompt: String
+    }
+
+    private func revealNewQuestion(_ newPrompt: String) {
         guard !shownPrompt.isEmpty else {
-            shownPrompt = prompt
+            shownPrompt = newPrompt
             return
         }
         withAnimation(.easeOut(duration: 0.10)) { isVisible = false }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.11) {
-            shownPrompt = prompt
+            shownPrompt = newPrompt
             withAnimation(.easeOut(duration: 0.20)) { isVisible = true }
         }
     }
@@ -337,7 +363,6 @@ private struct KingCrabView: View {
     let isPad: Bool
     let clock: Double
     let hasBonusPower: Bool
-    let isStreakBoostActive: Bool
 
     private var size: CGFloat { ArenaConfig.kingSize(isPad: isPad) }
 
@@ -459,10 +484,6 @@ private struct KingCrabView: View {
                 .offset(y: size * groundDrop + king.lift)
                 .blur(radius: 5)
 
-            if isStreakBoostActive {
-                streakRing
-            }
-
             if let sweep, sweep < 1 {
                 shockwave(progress: sweep)
             }
@@ -569,21 +590,6 @@ private struct KingCrabView: View {
                 .offset(y: -size * (0.52 + 0.34 * CGFloat(progress)))
                 .opacity(1 - progress)
         }
-    }
-
-    private var streakRing: some View {
-        let beat = (sin(clock * 4.2) + 1) / 2
-        return Circle()
-            .stroke(
-                LinearGradient(colors: [Color(red: 1.0, green: 0.86, blue: 0.32),
-                                        Color(red: 0.98, green: 0.60, blue: 0.10)],
-                               startPoint: .topLeading, endPoint: .bottomTrailing),
-                style: StrokeStyle(lineWidth: isPad ? 6 : 4.5, dash: [10, 7])
-            )
-            .frame(width: size * 1.12, height: size * 1.12)
-            .rotationEffect(.radians(clock * 0.6))
-            .opacity(0.55 + 0.35 * beat)
-            .shadow(color: .yellow.opacity(0.6), radius: 8)
     }
 
     private var bonusBadge: some View {
@@ -3071,3 +3077,49 @@ private struct PlantBladeShape: Shape {
         return path
     }
 }
+
+// MARK: - Multi-touch tapping
+
+#if canImport(UIKit)
+/// A transparent UIKit view that reports every finger as it touches down,
+/// rather than the one active touch a SwiftUI `Gesture` is limited to. Two
+/// hands throwing sand at once — one crab on each side of the screen — need
+/// both touches recognised in the same frame, not the second one queued
+/// behind the first.
+private final class MultiTouchPassthroughView: UIView {
+    var onTouchesBegan: ((CGPoint) -> Void)?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isMultipleTouchEnabled = true
+        isUserInteractionEnabled = true
+        backgroundColor = .clear
+        isOpaque = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        for touch in touches {
+            onTouchesBegan?(touch.location(in: self))
+        }
+    }
+}
+
+private struct MultiTouchTapView: UIViewRepresentable {
+    let onTap: (CGPoint) -> Void
+
+    func makeUIView(context: Context) -> MultiTouchPassthroughView {
+        let view = MultiTouchPassthroughView()
+        view.onTouchesBegan = onTap
+        return view
+    }
+
+    func updateUIView(_ uiView: MultiTouchPassthroughView, context: Context) {
+        uiView.onTouchesBegan = onTap
+    }
+}
+#endif
