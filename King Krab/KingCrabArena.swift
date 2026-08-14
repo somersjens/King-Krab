@@ -83,12 +83,12 @@ enum ArenaConfig {
     // MARK: Crabs
 
     /// Body width of a walking crab; everything about it is measured from this.
-    static func crabSize(isPad: Bool) -> CGFloat { isPad ? 82 : 60 }
+    static func crabSize(isPad: Bool) -> CGFloat { isPad ? 66 : 48 }
     /// The answer shell a crab carries over its head. It is deliberately wider
     /// than the crab itself: the number is the thing being read, and a small
     /// crab under a big shell is what makes it read as *carried*.
-    static func cardWidth(isPad: Bool) -> CGFloat { isPad ? 118 : 86 }
-    static func cardHeight(isPad: Bool) -> CGFloat { isPad ? 95 : 70 }
+    static func cardWidth(isPad: Bool) -> CGFloat { isPad ? 106 : 77 }
+    static func cardHeight(isPad: Bool) -> CGFloat { isPad ? 86 : 64 }
     /// How far the shell floats above the body's centre, as a share of its own
     /// height. The claws are placed from the same number. It clears the crab's
     /// head: the arms have to be visibly holding the shell *up*, not propping
@@ -100,8 +100,10 @@ enum ArenaConfig {
     /// finger, and a near miss that costs a life would be unfair.
     static func tapRadius(isPad: Bool) -> CGFloat { isPad ? 88 : 66 }
 
-    /// Crabs come out of the sand rather than sliding in from nowhere.
-    static let emergeDuration = 0.30
+    /// A crab comes on at a scurry and settles into its walk exactly as its
+    /// answer becomes readable. Crabs scuttle in bursts anyway, and a wave that
+    /// strolls into view keeps the player waiting on the numbers.
+    static let approachRush: Double = 5.5
     /// Smashed: flung away, spinning, shrinking into the sand.
     static let smashDuration = 0.46
     /// The retreat every remaining crab makes when the attempt is over.
@@ -111,7 +113,7 @@ enum ArenaConfig {
 
     // MARK: The King
 
-    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 168 : 124 }
+    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 185 : 136 }
     /// Where a walking crab stops: on a ring around the King, wide enough that
     /// four arrivals stand around him rather than on top of him.
     static let arrivalRingFactor: CGFloat = 0.98
@@ -276,8 +278,8 @@ struct AnswerCrab: Identifiable {
     /// an arrival, the end of an attempt — is expressed as one of these, so a
     /// crab can never be smashed twice or arrive after it has been swept away.
     enum Phase: Equatable {
-        /// Rising out of the sand at its corner.
-        case emerging
+        /// Standing off the side of the screen, waiting for its turn to walk on.
+        case waiting
         case walking
         /// Standing at the King's ring, waiting for the sweep that answers it.
         case arrived
@@ -295,14 +297,19 @@ struct AnswerCrab: Identifiable {
     let text: String
     let isCorrect: Bool
 
+    /// Off the side of the screen: a crab walks in rather than appearing.
     private(set) var start: CGPoint
     private(set) var target: CGPoint
     var position: CGPoint
-    /// 0 → at its corner, 1 → at the King.
+    /// 0 → off screen, 1 → at the King.
     var progress: Double = 0
-    /// Seconds this crab needs for the whole walk.
+    /// The share of the walk that happens before the answer is fully in view.
+    /// It is covered at a scurry, so the shell shows up early; everything after
+    /// it is walked at the pace the game has always had.
+    let entryProgress: Double
+    /// Seconds this crab needs for the part of the walk that is on screen.
     let duration: Double
-    /// Seconds before it climbs out of the sand.
+    /// Seconds it waits out of sight before setting off.
     var startDelay: Double
 
     /// Small honest differences, so four crabs never march as one shape.
@@ -325,7 +332,7 @@ struct AnswerCrab: Identifiable {
     /// claw on that side and looks where it is going.
     let facing: CGFloat
 
-    var phase: Phase = .emerging
+    var phase: Phase = .waiting
     /// Time spent in the current phase, which drives every exit animation.
     var phaseAge: Double = 0
     var age: Double = 0
@@ -333,9 +340,10 @@ struct AnswerCrab: Identifiable {
     var flingVelocity: CGPoint = .zero
     var spin: Double = 0
 
-    var isLive: Bool { phase == .emerging || phase == .walking }
-    /// Whether a tap may still take this crab.
-    var isTappable: Bool { phase == .walking || phase == .emerging }
+    var isLive: Bool { phase == .waiting || phase == .walking }
+    /// Whether a tap may still take this crab. A crab still waiting its turn is
+    /// out of sight, so a tap near the edge must never take it blind.
+    var isTappable: Bool { phase == .walking }
 
     /// Moves the whole walk when the arena itself moves under it.
     mutating func shift(by delta: CGPoint) {
@@ -978,9 +986,9 @@ final class KingCrabArena: ObservableObject {
 
     // MARK: Waves
 
-    /// Sends one crab in from each corner: the right answer and three wrong
-    /// ones, in a fresh arrangement every time, so nothing about where the
-    /// answer comes from can be learned.
+    /// Walks one crab in from each side of the screen: the right answer and
+    /// three wrong ones, in a fresh arrangement every time, so nothing about
+    /// where the answer comes from can be learned.
     private func beginWave() {
         // Anything already thrown or digging itself in keeps its animation: the
         // new wave arrives over the top of the old one leaving.
@@ -992,15 +1000,25 @@ final class KingCrabArena: ObservableObject {
 
         let options = waveOptions(from: round)
         guard !options.isEmpty else { return }
-        let corners = Array(cornerPoints.shuffled().prefix(options.count))
+        let entries = Array(entryPoints.shuffled().prefix(options.count))
         let ring = kingSize * ArenaConfig.arrivalRingFactor
 
         for (index, option) in options.enumerated() {
-            let start = corners[index]
-            let angle = atan2(Double(start.y - king.position.y),
-                              Double(start.x - king.position.x))
+            let entry = entries[index]
+            let angle = atan2(Double(entry.y - king.position.y),
+                              Double(entry.x - king.position.x))
             let target = CGPoint(x: king.position.x + ring * CGFloat(cos(angle)),
                                  y: king.position.y + ring * CGFloat(sin(angle)))
+            let start = offscreenStart(for: entry)
+            // Where along the walk the answer can be read: the number sits in
+            // the middle of the shell, so that happens well before the crab is
+            // all the way in. Up to there it hurries; from there it walks, so
+            // the time the player has to read an answer is the time they have
+            // always had — they just get it sooner.
+            let span = target.x - start.x
+            let entryProgress = abs(span) < 1
+                ? 0
+                : min(0.6, max(0, Double((readablePoint(for: entry) - start.x) / span)))
             crabs.append(AnswerCrab(
                 optionID: option.id,
                 text: option.text,
@@ -1008,6 +1026,7 @@ final class KingCrabArena: ObservableObject {
                 start: start,
                 target: target,
                 position: start,
+                entryProgress: entryProgress,
                 duration: GameConfig.crabWalkDuration
                     * Double.random(in: GameConfig.crabWalkVariation),
                 startDelay: Double.random(in: GameConfig.crabStartStagger),
@@ -1025,12 +1044,14 @@ final class KingCrabArena: ObservableObject {
         }
     }
 
-    /// The four corners of the walking area, tucked just inside it so a crab is
-    /// fully visible from the moment it climbs out of the sand.
-    private var cornerPoints: [CGPoint] {
+    /// The four points a crab is fully on screen at, one per corner of the
+    /// walking area. A crab starts outside the screen level with one of these
+    /// and walks in through it, which is what keeps the pace of the walk from
+    /// here on exactly what it has always been.
+    private var entryPoints: [CGPoint] {
         let side = crabSize * 0.85 + ArenaConfig.sideInset(isPad: isPad)
-        // The card is carried above the head, so the two upper corners start
-        // low enough that a fresh answer never overlaps the sum.
+        // The shell is carried above the head, so the two upper lanes run low
+        // enough that a fresh answer never overlaps the sum.
         let top = crabSize * 0.75 + ArenaConfig.cardHeight(isPad: isPad) * 1.1
         let bottom = crabSize * 0.75
         return [
@@ -1039,6 +1060,23 @@ final class KingCrabArena: ObservableObject {
             CGPoint(x: arena.minX + side, y: arena.maxY - bottom),
             CGPoint(x: arena.maxX - side, y: arena.maxY - bottom)
         ]
+    }
+
+    /// Where a crab starts: level with the point it walks in at, and only just
+    /// far enough past the side of the screen to be out of sight. Any further
+    /// out is ground it has to cover before the answer can be read.
+    private func offscreenStart(for entry: CGPoint) -> CGPoint {
+        let clearance = ArenaConfig.cardWidth(isPad: isPad) * 0.54 + 6
+        return CGPoint(x: entry.x < arena.midX ? arena.minX - clearance
+                                              : arena.maxX + clearance,
+                       y: entry.y)
+    }
+
+    /// How far in a crab has to be for the number it carries to be readable:
+    /// the shell's middle, and with it the answer, is over the screen by then.
+    private func readablePoint(for entry: CGPoint) -> CGFloat {
+        let inset = ArenaConfig.cardWidth(isPad: isPad) * 0.20
+        return entry.x < arena.midX ? arena.minX + inset : arena.maxX - inset
     }
 
     /// The right answer and three wrong ones, shuffled. A walkthrough step may
@@ -1153,28 +1191,31 @@ final class KingCrabArena: ObservableObject {
             crab.phaseAge += dt
 
             switch crab.phase {
-            case .emerging:
-                if crab.startDelay > 0 {
-                    crab.startDelay -= dt
-                    // The clock on the climb out only starts once its turn has
-                    // come, so the stagger is a wait, not a slower crab.
-                    crab.phaseAge = 0
-                    if crab.startDelay <= 0 {
-                        burst(at: crab.position, strength: 0.5)
-                    }
-                } else if crab.phaseAge >= ArenaConfig.emergeDuration {
+            case .waiting:
+                // It stands off the side of the screen until its turn in the
+                // stagger comes, and then simply starts walking on.
+                crab.startDelay -= dt
+                if crab.startDelay <= 0 {
                     crab.phase = .walking
                     crab.phaseAge = 0
                 }
 
             case .walking:
-                // The walk is a straight line from the corner to the King; the
+                // The walk is a straight line from off screen to the King; the
                 // waddle and the scuttle only make it look like walking, never
                 // like drifting. The scuttle averages out over its own cycle,
                 // so the six seconds still hold.
                 let scuttle = 1 + 0.32 * sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
-                crab.progress = min(1, crab.progress
-                                    + dt * speedMultiplier * scuttle / crab.duration)
+                // The on-screen stretch is the one the duration is about; the
+                // rush over the last of the off-screen stretch eases out of
+                // itself, so the crab arrives in view already walking.
+                let onScreen = max(0.05, 1 - crab.entryProgress)
+                var rate = onScreen / crab.duration
+                if crab.progress < crab.entryProgress {
+                    let left = 1 - crab.progress / crab.entryProgress
+                    rate *= 1 + (ArenaConfig.approachRush - 1) * left * left
+                }
+                crab.progress = min(1, crab.progress + dt * speedMultiplier * scuttle * rate)
                 let eased = crab.progress
                 let base = CGPoint(
                     x: crab.start.x + (crab.target.x - crab.start.x) * CGFloat(eased),

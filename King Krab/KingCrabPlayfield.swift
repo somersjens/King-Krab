@@ -535,15 +535,10 @@ private struct AnswerCrabView: View {
         }
     }
 
-    private var emergence: Double {
-        guard crab.phase == .emerging else { return 1 }
-        guard crab.startDelay <= 0 else { return 0 }
-        return min(1, crab.phaseAge / ArenaConfig.emergeDuration)
-    }
-
+    /// A crab arrives at full size: it walks on from off the screen, so there
+    /// is nothing to fade or pop in.
     private var scale: CGFloat {
         switch crab.phase {
-        case .emerging:  return CGFloat(emergence)
         case .smashed:   return CGFloat(1 - exit * 0.75)
         case .swept:     return CGFloat(1 - exit * 0.8)
         case .burrowing: return CGFloat(1 - exit * 0.55)
@@ -553,7 +548,6 @@ private struct AnswerCrabView: View {
 
     private var opacity: Double {
         switch crab.phase {
-        case .emerging:  return emergence
         case .smashed, .swept: return 1 - exit * exit
         case .burrowing: return 1 - exit
         default:         return 1
@@ -614,21 +608,15 @@ private struct AnswerCrabView: View {
     }
 
     var body: some View {
-        let rig = self.rig
-        let colors = (isGolden ? CrabTint.gold : CrabTint.enemy).shell
+        let tint: CrabTint = isGolden ? .gold : .enemy
 
         return CrabSprite(bodyWidth: bodyWidth,
-                          tint: isGolden ? .gold : .enemy,
+                          tint: tint,
                           stepPhase: gait,
                           isWalking: crab.phase == .walking,
                           facing: crab.facing,
                           gaze: gaze,
                           strideFactor: crab.strideFactor,
-                          rig: rig,
-                          // The hands go on above the shell instead, so the
-                          // pincers close in front of its rim rather than
-                          // disappearing behind it.
-                          drawsHands: false,
                           palette: palette)
             .overlay {
                 AnswerShell(text: crab.text,
@@ -640,7 +628,11 @@ private struct AnswerCrabView: View {
                     .rotationEffect(.degrees(cardAngle))
                     .offset(x: cardCentre.x, y: cardCentre.y)
             }
-            .overlay { CrabHandsView(rig: rig, colors: colors) }
+            // The arms go on last, over the shell: a claw behind the rim looks
+            // like a crab standing under its answer, and a claw over the rim
+            // looks like a crab carrying it. Drawn whole, they take their own
+            // outline with them.
+            .overlay { CrabArmsView(rig: rig, colors: tint.shell, line: tint.line) }
             // A burrowing crab sinks straight down into the sand; a smashed or
             // swept one tumbles away with the blow that sent it.
             .offset(y: crab.phase == .burrowing ? bodyWidth * 0.5 * CGFloat(exit) : 0)
@@ -718,9 +710,10 @@ private struct AnswerShellShape: Shape {
         CGPoint(x: 0.02 + 0.96 * t, y: 0.56 - 0.52 * sin(.pi * t))
     }
 
-    /// Where the left claw closes: high enough up the shoulder to be on the
-    /// widest part of the shell, low enough to still read as carrying it.
-    static var grip: CGPoint { shoulderPoint(0.82) }
+    /// Where the left claw closes: down on the shell's bottom corner, so the
+    /// crab holds it underneath and its arms stay short. Reaching further up
+    /// the shoulder stretches them into stilts.
+    static var grip: CGPoint { shoulderPoint(0.58) }
 
     /// A point along the shoulder curve, from the hinge (0) to the rim (1).
     private static func shoulderPoint(_ t: CGFloat) -> CGPoint {
@@ -832,20 +825,14 @@ private struct CarrierCrabView: View {
                           facing: carrier.facing,
                           gaze: CGSize(width: carrier.facing, height: 0),
                           strideFactor: carrier.strideFactor,
-                          rig: rig,
-                          drawsHands: !carrier.isCarryingReward,
                           palette: palette)
             .overlay {
                 token
                     .offset(y: carrier.size * Self.tokenCentre)
                     .opacity(carrier.isCarryingReward ? 1 : 0)
             }
-            // While it is carrying, the pincers close in front of the token.
-            .overlay {
-                if carrier.isCarryingReward {
-                    CrabHandsView(rig: rig, colors: tint.shell)
-                }
-            }
+            // The claws close in front of the token it is carrying.
+            .overlay { CrabArmsView(rig: rig, colors: tint.shell, line: tint.line) }
             .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
             .accessibilityHidden(true)
     }
@@ -890,19 +877,32 @@ private enum CrabTint {
     var shell: (Color, Color) {
         switch self {
         case .enemy:
-            return (Color(red: 0.93, green: 0.36, blue: 0.20),
-                    Color(red: 0.68, green: 0.14, blue: 0.05))
+            return (Color(red: 0.95, green: 0.40, blue: 0.22),
+                    Color(red: 0.78, green: 0.19, blue: 0.06))
         case .gold:
             return (Color(red: 1.00, green: 0.84, blue: 0.34),
-                    Color(red: 0.80, green: 0.52, blue: 0.04))
+                    Color(red: 0.85, green: 0.55, blue: 0.05))
         case .bonus:
             return (Color(red: 1.00, green: 0.78, blue: 0.24),
-                    Color(red: 0.85, green: 0.45, blue: 0.03))
+                    Color(red: 0.88, green: 0.48, blue: 0.04))
         case .life:
-            return (Color(red: 0.44, green: 0.82, blue: 0.52),
-                    Color(red: 0.13, green: 0.51, blue: 0.29))
+            return (Color(red: 0.46, green: 0.84, blue: 0.54),
+                    Color(red: 0.16, green: 0.56, blue: 0.32))
         }
     }
+
+    /// The one colour every edge of the animal is drawn in. A single ink line
+    /// around the whole silhouette — body, legs, arms, claws — is what makes
+    /// the parts read as one character instead of as assembled pieces.
+    var line: Color {
+        switch self {
+        case .enemy: return Color(red: 0.51, green: 0.10, blue: 0.03)
+        case .gold:  return Color(red: 0.58, green: 0.34, blue: 0.02)
+        case .bonus: return Color(red: 0.60, green: 0.29, blue: 0.02)
+        case .life:  return Color(red: 0.08, green: 0.34, blue: 0.19)
+        }
+    }
+
 }
 
 /// A small cartoon crab: a domed shell, two slim arms, six walking legs and a
@@ -923,12 +923,6 @@ private struct CrabSprite: View {
     /// and the footfall together — they have to agree exactly, or the planted
     /// foot creeps.
     var strideFactor: CGFloat = 1
-    /// The arms, already solved against whatever this crab is holding. Nil just
-    /// raises them.
-    var rig: CrabArmRig?
-    /// A crab whose load is drawn over the sprite hands its pincers back, so
-    /// they can be drawn again on top and close in front of the load's edge.
-    var drawsHands: Bool = true
     let palette: ReefPalette
 
     /// The shell is this much of its own width tall. The arm rig measures from
@@ -955,17 +949,21 @@ private struct CrabSprite: View {
         Self.roll(stepPhase: stepPhase, isWalking: isWalking, facing: facing)
     }
 
-    private var armRig: CrabArmRig {
-        rig ?? CrabArmRig(bodyWidth: bodyWidth,
-                          stepPhase: stepPhase,
-                          isWalking: isWalking,
-                          facing: facing,
-                          hold: .raised(bodyWidth: bodyWidth))
+    /// How thick the ink line around the animal is, on each side of an edge.
+    var outline: CGFloat { max(0.75, bodyWidth * 0.026) }
+
+    /// A point on the body, carried through the body's own roll and bob. It is
+    /// what lets a limb be hinged to the shell while being drawn outside it.
+    private func onBody(_ point: CGPoint) -> CGPoint {
+        let radians = roll * .pi / 180
+        let cosine = CGFloat(cos(radians))
+        let sine = CGFloat(sin(radians))
+        return CGPoint(x: point.x * cosine - point.y * sine,
+                       y: point.x * sine + point.y * cosine + bob)
     }
 
     var body: some View {
         let colors = tint.shell
-        let rig = armRig
 
         return ZStack {
             Ellipse()
@@ -974,25 +972,17 @@ private struct CrabSprite: View {
                 .offset(y: bodyHeight * 0.68)
                 .blur(radius: 3)
 
-            // The arms are drawn first so both shoulders disappear under the
-            // shell's edge. They are not inside the body's roll: the rig has
-            // already carried the shoulders through it, and the hands have to
-            // stay on what they are holding while the body swings under them.
-            CrabArmsView(rig: rig, colors: colors)
+            // The legs are drawn outside the body's roll: their hips are
+            // carried through it, but a planted foot has to stay where it was
+            // put. Rolling the feet with the shell skates them across the sand.
+            legs(colors: colors)
 
             ZStack {
-                // Legs sit behind the shell, but far enough out that the shell
-                // never swallows them.
-                legs(colors: colors)
                 shell(colors: colors)
                 face(colors: colors)
             }
             .rotationEffect(.degrees(roll))
             .offset(y: bob)
-
-            if drawsHands {
-                CrabHandsView(rig: rig, colors: colors)
-            }
         }
         .frame(width: bodyWidth * 1.7, height: bodyWidth * 1.5)
     }
@@ -1000,6 +990,19 @@ private struct CrabSprite: View {
     // MARK: The shell
 
     private func shell(colors: (Color, Color)) -> some View {
+        ZStack {
+            // The body's edge is inked underneath and painted over, exactly the
+            // way every limb is. Stroking it instead would draw the line half
+            // inside the shape, leaving the body outlined twice as heavily as
+            // the legs growing out of it — which is what makes a joint look
+            // like a join.
+            CarapaceShape().inked(tint.line, width: outline)
+            carapace(colors: colors)
+        }
+        .frame(width: bodyWidth, height: bodyHeight)
+    }
+
+    private func carapace(colors: (Color, Color)) -> some View {
         CarapaceShape()
             .fill(
                 LinearGradient(stops: [
@@ -1025,11 +1028,6 @@ private struct CrabSprite: View {
                         LinearGradient(colors: [.white, .white.opacity(0.15), .clear],
                                        startPoint: .top, endPoint: .bottom)
                     }
-            }
-            .overlay {
-                CarapaceShape()
-                    .stroke(colors.1, lineWidth: max(1, bodyWidth * 0.030))
-                    .opacity(0.9)
             }
             .frame(width: bodyWidth, height: bodyHeight)
     }
@@ -1068,42 +1066,74 @@ private struct CrabSprite: View {
     /// Two eyes that follow where the crab is going, and a small smile. A crab
     /// with a face is something a child aims at; a red blob is something they
     /// hesitate over.
+    ///
+    /// The eyes are big and they stand *over* the top of the shell rather than
+    /// sitting inside it — a crab's eyes are on stalks, and the two domes
+    /// breaking the carapace's outline are what make it read as an animal
+    /// looking up at the player.
     private func face(colors: (Color, Color)) -> some View {
-        VStack(spacing: bodyHeight * 0.13) {
-            HStack(spacing: bodyWidth * 0.12) {
+        ZStack {
+            // A warm cheek either side of the mouth, kept inside the shell so
+            // it reads as colour in the skin rather than as a sticker on it.
+            ZStack {
+                cheek.offset(x: -bodyWidth * 0.29, y: bodyHeight * 0.06)
+                cheek.offset(x: bodyWidth * 0.29, y: bodyHeight * 0.06)
+            }
+            .mask { CarapaceShape().frame(width: bodyWidth, height: bodyHeight) }
+
+            mouth
+                .offset(y: bodyHeight * 0.06)
+
+            HStack(spacing: bodyWidth * 0.055) {
                 eye()
                 eye()
             }
-            SmileShape()
-                .stroke(colors.1.opacity(0.95),
-                        style: StrokeStyle(lineWidth: max(1.5, bodyWidth * 0.045),
-                                           lineCap: .round))
-                .frame(width: bodyWidth * 0.22, height: bodyWidth * 0.10)
+            .offset(y: -bodyHeight * 0.44)
         }
-        .offset(y: -bodyHeight * 0.10)
+    }
+
+    private var cheek: some View {
+        Ellipse()
+            .fill(
+                RadialGradient(colors: [.white.opacity(0.34), .white.opacity(0)],
+                               center: .center, startRadius: 0,
+                               endRadius: bodyWidth * 0.10)
+            )
+            .frame(width: bodyWidth * 0.20, height: bodyWidth * 0.13)
+    }
+
+    /// A wide grin with an inside to it. At the size this animal actually is,
+    /// one clean shape in the ink colour reads as a smile where a lip, a throat
+    /// and a tongue turn into a smudge.
+    private var mouth: some View {
+        MouthShape()
+            .fill(tint.line)
+            .frame(width: bodyWidth * 0.34, height: bodyWidth * 0.15)
     }
 
     private func eye() -> some View {
-        let diameter = bodyWidth * 0.215
-        let look = CGSize(width: gaze.width * diameter * 0.16,
-                          height: gaze.height * diameter * 0.16)
+        let diameter = bodyWidth * 0.30
+        let look = CGSize(width: gaze.width * diameter * 0.14,
+                          height: gaze.height * diameter * 0.14)
         return Circle()
             .fill(.white)
             .overlay {
                 Circle()
                     .fill(Color(red: 0.11, green: 0.13, blue: 0.22))
-                    .frame(width: diameter * 0.44, height: diameter * 0.44)
-                    .offset(x: look.width, y: look.height + diameter * 0.04)
+                    .frame(width: diameter * 0.46, height: diameter * 0.46)
+                    .offset(x: look.width, y: look.height + diameter * 0.05)
             }
             .overlay(alignment: .topLeading) {
                 // The catchlight, which is most of what makes an eye alive.
                 Circle()
                     .fill(.white)
-                    .frame(width: diameter * 0.20, height: diameter * 0.20)
-                    .offset(x: diameter * 0.20, y: diameter * 0.16)
+                    .frame(width: diameter * 0.19, height: diameter * 0.19)
+                    .offset(x: diameter * 0.24, y: diameter * 0.20)
             }
+            // An eye standing clear of the shell carries the same ink line as
+            // the rest of the animal, or it dissolves into what is behind it.
             .overlay {
-                Circle().stroke(.black.opacity(0.10), lineWidth: 1)
+                Circle().stroke(tint.line, lineWidth: outline * 1.6)
             }
             .frame(width: diameter, height: diameter)
     }
@@ -1118,10 +1148,15 @@ private struct CrabSprite: View {
     /// further out and plant lower — which is what gives a face-on crab depth.
     ///
     /// hip x, hip y, foot x, foot y, limb length.
+    ///
+    /// Every hip sits on the shell's *lower* flank and well inside its outline.
+    /// A leg hinged at the widest line comes out of the animal's shoulder and
+    /// kinks straight away; hinged below it, the three legs leave the body in
+    /// an even fan and the first bend happens clear of the shell.
     private static let legPlan: [(CGFloat, CGFloat, CGFloat, CGFloat, CGFloat)] = [
-        (0.33, -0.06, 0.44, 0.78, 0.72),
-        (0.35, 0.14, 0.62, 0.98, 0.80),
-        (0.27, 0.32, 0.52, 1.14, 0.76)
+        (0.32, 0.08, 0.46, 0.78, 0.74),
+        (0.30, 0.24, 0.62, 0.98, 0.82),
+        (0.22, 0.38, 0.52, 1.14, 0.78)
     ]
 
     /// The share of the cycle a foot spends on the ground. Above a half means
@@ -1135,31 +1170,61 @@ private struct CrabSprite: View {
 
     private var legLift: CGFloat { bodyWidth * 0.14 }
 
+    /// One leg's pose this frame, so the same solved geometry can be drawn
+    /// twice: once as the ink line under everything, once as the limb itself.
+    private struct LegPose {
+        var limb: LimbShape
+        var rest: CGFloat
+        var toe: CGFloat
+        var contact: Double
+    }
+
     private func legs(colors: (Color, Color)) -> some View {
-        let shade = AnyShapeStyle(LinearGradient(
+        let poses = legPoses
+        let shade = LinearGradient(
             stops: [.init(color: colors.0, location: 0),
-                    .init(color: colors.1, location: 0.55)],
+                    .init(color: colors.1, location: 0.62)],
             startPoint: .top, endPoint: .bottom
-        ))
+        )
+        // Every leg's outline is laid down before any leg's colour, so where
+        // two of them cross there is no ink line between them: six legs read as
+        // six legs of one animal, not as six cut-outs.
         return ZStack {
-            ForEach(Array(Self.legPlan.enumerated()), id: \.offset) { index, plan in
-                // Alternating tripod: left 1 and 3 swing with right 2, and the
-                // other way about — with a small lag down the row, the way the
-                // wave actually runs along a crab.
-                let lag = Double(index) * 0.22
-                let leftPhase = stepPhase + (index == 1 ? .pi : 0) + lag
-                let rightPhase = stepPhase + (index == 1 ? 0 : .pi) + lag
-                leg(plan: plan, side: -1, phase: leftPhase, color: shade)
-                leg(plan: plan, side: 1, phase: rightPhase, color: shade)
+            ForEach(poses.indices, id: \.self) { index in
+                Ellipse()
+                    .fill(palette.sandDeep.opacity(0.30 * poses[index].contact))
+                    .frame(width: bodyWidth * 0.13, height: bodyWidth * 0.05)
+                    .offset(x: poses[index].toe, y: poses[index].rest)
+            }
+            ForEach(poses.indices, id: \.self) { index in
+                poses[index].limb.inked(tint.line, width: outline)
+            }
+            ForEach(poses.indices, id: \.self) { index in
+                poses[index].limb.fill(shade)
             }
         }
     }
 
-    /// One walking leg, solved rather than drawn: the foot is placed first —
+    /// Six walking legs, solved rather than drawn: each foot is placed first —
     /// planted and sliding backwards under the body through the stance, then
     /// lifted and swung forward — and the knee is whatever angle reaches it.
-    private func leg(plan: (CGFloat, CGFloat, CGFloat, CGFloat, CGFloat),
-                     side: CGFloat, phase: Double, color: AnyShapeStyle) -> some View {
+    private var legPoses: [LegPose] {
+        Self.legPlan.enumerated().flatMap { index, plan -> [LegPose] in
+            // Alternating tripod: left 1 and 3 swing with right 2, and the
+            // other way about — with a small lag down the row, the way the
+            // wave actually runs along a crab.
+            let lag = Double(index) * 0.22
+            return [
+                pose(plan: plan, side: -1,
+                     phase: stepPhase + (index == 1 ? .pi : 0) + lag),
+                pose(plan: plan, side: 1,
+                     phase: stepPhase + (index == 1 ? 0 : .pi) + lag)
+            ]
+        }
+    }
+
+    private func pose(plan: (CGFloat, CGFloat, CGFloat, CGFloat, CGFloat),
+                      side: CGFloat, phase: Double) -> LegPose {
         let cycle = (phase / (2 * .pi)).truncatingRemainder(dividingBy: 1)
         let t = cycle < 0 ? cycle + 1 : cycle
 
@@ -1179,7 +1244,8 @@ private struct CrabSprite: View {
         let stride = isWalking
             ? bodyWidth * Self.strideLength * strideFactor * CGFloat(Self.stanceShare)
             : 0
-        let hip = CGPoint(x: side * bodyWidth * plan.0, y: bodyHeight * plan.1)
+        // The hip rides the body; the foot belongs to the ground.
+        let hip = onBody(CGPoint(x: side * bodyWidth * plan.0, y: bodyHeight * plan.1))
         let foot = CGPoint(x: side * bodyWidth * plan.2 + facing * stride * travel,
                            y: bodyHeight * plan.3 - lift)
         let limb = bodyWidth * plan.4
@@ -1188,24 +1254,20 @@ private struct CrabSprite: View {
         let knee = crabJoint(from: hip, to: foot,
                              first: limb * 0.56, second: limb * 0.50, bend: side)
 
-        return ZStack {
-            // The dimple the planted foot presses into the sand. It fades as
-            // the leg picks up, which is what sells the contact.
-            Ellipse()
-                .fill(palette.sandDeep.opacity(0.30 * (1 - Double(lift / legLift))))
-                .frame(width: bodyWidth * 0.13, height: bodyWidth * 0.05)
-                .offset(x: foot.x, y: bodyHeight * plan.3 + bodyWidth * 0.02)
-
-            CrabLegShape(hip: hip, knee: knee, foot: foot, width: bodyWidth * 0.125)
-                .fill(color)
-
-            // A knuckle at the knee: without it the two segments read as one
-            // bent stick rather than as a jointed limb.
-            Circle()
-                .fill(color)
-                .frame(width: bodyWidth * 0.112, height: bodyWidth * 0.112)
-                .offset(x: knee.x, y: knee.y)
-        }
+        return LegPose(
+            // Thick where it leaves the body, closing to the point a crab
+            // actually walks on. The root is wide enough that the leg is still
+            // at full thickness where it clears the shell's edge — a limb that
+            // has already tapered by then looks pinned on rather than grown.
+            limb: LimbShape(points: [hip, knee, foot],
+                            widths: [bodyWidth * 0.088, bodyWidth * 0.056,
+                                     bodyWidth * 0.018]),
+            rest: bodyHeight * plan.3 + bodyWidth * 0.02,
+            toe: foot.x,
+            // The dimple the planted foot presses into the sand fades as the
+            // leg picks up, which is what sells the contact.
+            contact: 1 - Double(lift / legLift)
+        )
     }
 
 }
@@ -1229,61 +1291,115 @@ private func crabJoint(from root: CGPoint, to end: CGPoint,
                    y: root.y + uy * along - ux * out * bend)
 }
 
-/// A leg drawn as one tapered limb: thick at the hinge, narrower at the knee,
-/// and closing to the point a crab actually walks on.
-private struct CrabLegShape: Shape {
-    let hip: CGPoint
-    let knee: CGPoint
-    let foot: CGPoint
-    let width: CGFloat
+/// One limb, drawn as a single closed outline through a chain of points with a
+/// width at each: hip to knee to toe, or shoulder to elbow to palm, or the
+/// finger of a claw. There are no separate segments and no knuckle discs to
+/// give a joint away — the outline runs round the whole limb once, and the
+/// bends in it are curves rather than corners.
+///
+/// The points are in the sprite's own centred coordinates, so a limb can be
+/// laid over the same frame as everything else it belongs to.
+private struct LimbShape: Shape {
+    var points: [CGPoint]
+    /// Half-widths, one per point.
+    var widths: [CGFloat]
 
     func path(in rect: CGRect) -> Path {
+        guard points.count >= 2, widths.count == points.count else { return Path() }
         let centre = CGPoint(x: rect.midX, y: rect.midY)
-        let a = CGPoint(x: centre.x + hip.x, y: centre.y + hip.y)
-        let b = CGPoint(x: centre.x + knee.x, y: centre.y + knee.y)
-        let c = CGPoint(x: centre.x + foot.x, y: centre.y + foot.y)
+        let spine = points.map { CGPoint(x: centre.x + $0.x, y: centre.y + $0.y) }
 
-        func normal(_ from: CGPoint, _ to: CGPoint) -> CGPoint {
-            let dx = to.x - from.x
-            let dy = to.y - from.y
-            let length = max(0.001, (dx * dx + dy * dy).squareRoot())
-            return CGPoint(x: -dy / length, y: dx / length)
+        // The direction of each segment, and the direction at each point: at a
+        // bend it is the average of the two, which is what keeps the outline
+        // from pinching on the inside of the joint.
+        var headings: [CGPoint] = []
+        for index in spine.indices {
+            let back = index > 0 ? direction(spine[index - 1], spine[index]) : nil
+            let ahead = index < spine.count - 1 ? direction(spine[index], spine[index + 1]) : nil
+            switch (back, ahead) {
+            case let (previous?, next?):
+                headings.append(normalised(CGPoint(x: previous.x + next.x,
+                                                   y: previous.y + next.y)))
+            case let (previous?, nil): headings.append(previous)
+            case let (nil, next?):     headings.append(next)
+            default:                   headings.append(CGPoint(x: 1, y: 0))
+            }
         }
 
-        let upper = normal(a, b)
-        let lower = normal(b, c)
-        // The knee's own normal is the average of the two segments', which is
-        // what keeps the outline smooth around the bend.
-        let joint = CGPoint(x: (upper.x + lower.x) / 2, y: (upper.y + lower.y) / 2)
-        let jointLength = max(0.001, (joint.x * joint.x + joint.y * joint.y).squareRoot())
-        let jointNormal = CGPoint(x: joint.x / jointLength, y: joint.y / jointLength)
-
-        // A gentle taper, not a spike: the foot ends in a soft tip the same
-        // way the claws and the shell do.
-        let hipWidth = width / 2
-        let kneeWidth = width * 0.58
-        let footWidth = width * 0.34
+        let left = spine.indices.map { index in
+            CGPoint(x: spine[index].x - headings[index].y * widths[index],
+                    y: spine[index].y + headings[index].x * widths[index])
+        }
+        let right = spine.indices.map { index in
+            CGPoint(x: spine[index].x + headings[index].y * widths[index],
+                    y: spine[index].y - headings[index].x * widths[index])
+        }
 
         var path = Path()
-        path.move(to: CGPoint(x: a.x + upper.x * hipWidth, y: a.y + upper.y * hipWidth))
-        path.addLine(to: CGPoint(x: b.x + jointNormal.x * kneeWidth,
-                                 y: b.y + jointNormal.y * kneeWidth))
-        path.addLine(to: CGPoint(x: c.x + lower.x * footWidth,
-                                 y: c.y + lower.y * footWidth))
-        path.addLine(to: CGPoint(x: c.x - lower.x * footWidth,
-                                 y: c.y - lower.y * footWidth))
-        path.addLine(to: CGPoint(x: b.x - jointNormal.x * kneeWidth,
-                                 y: b.y - jointNormal.y * kneeWidth))
-        path.addLine(to: CGPoint(x: a.x - upper.x * hipWidth, y: a.y - upper.y * hipWidth))
+        path.move(to: left[0])
+        trace(&path, along: left)
+        cap(&path, at: spine[spine.count - 1], from: left[left.count - 1],
+            to: right[right.count - 1], heading: headings[headings.count - 1],
+            width: widths[widths.count - 1])
+        trace(&path, along: right.reversed())
+        cap(&path, at: spine[0], from: right[0], to: left[0],
+            heading: CGPoint(x: -headings[0].x, y: -headings[0].y), width: widths[0])
         path.closeSubpath()
-        // A rounded shoulder where the leg leaves the shell, and a rounded toe
-        // where it meets the sand. Both also fill the corners of the outline,
-        // so no joint on this limb has a hard edge anywhere.
-        path.addEllipse(in: CGRect(x: a.x - hipWidth, y: a.y - hipWidth,
-                                   width: hipWidth * 2, height: hipWidth * 2))
-        path.addEllipse(in: CGRect(x: c.x - footWidth, y: c.y - footWidth,
-                                   width: footWidth * 2, height: footWidth * 2))
         return path
+    }
+
+    /// A smooth run down one side of the limb: every bend is taken as a curve
+    /// through the offset points rather than as a corner between two segments.
+    private func trace(_ path: inout Path, along side: [CGPoint]) {
+        guard side.count > 2 else {
+            if let last = side.last { path.addLine(to: last) }
+            return
+        }
+        for index in 1..<(side.count - 1) {
+            let next = index == side.count - 2
+                ? side[index + 1]
+                : CGPoint(x: (side[index].x + side[index + 1].x) / 2,
+                          y: (side[index].y + side[index + 1].y) / 2)
+            path.addQuadCurve(to: next, control: side[index])
+        }
+    }
+
+    /// The round end of the limb, drawn as two quarter turns through the point
+    /// straight ahead of it.
+    private func cap(_ path: inout Path, at point: CGPoint,
+                     from start: CGPoint, to end: CGPoint,
+                     heading: CGPoint, width: CGFloat) {
+        let ahead = CGPoint(x: point.x + heading.x * width, y: point.y + heading.y * width)
+        path.addQuadCurve(to: ahead,
+                          control: CGPoint(x: start.x + heading.x * width,
+                                           y: start.y + heading.y * width))
+        path.addQuadCurve(to: end,
+                          control: CGPoint(x: end.x + heading.x * width,
+                                           y: end.y + heading.y * width))
+    }
+
+    private func direction(_ from: CGPoint, _ to: CGPoint) -> CGPoint {
+        normalised(CGPoint(x: to.x - from.x, y: to.y - from.y))
+    }
+
+    private func normalised(_ point: CGPoint) -> CGPoint {
+        let length = max(0.0001, (point.x * point.x + point.y * point.y).squareRoot())
+        return CGPoint(x: point.x / length, y: point.y / length)
+    }
+}
+
+extension Shape {
+    /// The ink line for one piece of an animal: the piece itself, grown by the
+    /// line's width all the way round. Every piece of a limb is inked first and
+    /// filled afterwards, so the line only ever shows on the outside of the
+    /// silhouette and never between two pieces of the same creature.
+    func inked(_ colour: Color, width: CGFloat) -> some View {
+        self.fill(colour)
+            .overlay {
+                self.stroke(colour, style: StrokeStyle(lineWidth: width * 2,
+                                                       lineCap: .round,
+                                                       lineJoin: .round))
+            }
     }
 }
 
@@ -1318,13 +1434,20 @@ private struct CarapaceShape: Shape {
     }
 }
 
-/// The mouth: a shallow upward arc.
-private struct SmileShape: Shape {
+/// A grin: corners up, a shallow curve across the top and a deep one under it,
+/// so the mouth is widest where it is open and closes to a point at each end.
+private struct MouthShape: Shape {
     func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
         var path = Path()
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
         path.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY),
-                          control: CGPoint(x: rect.midX, y: rect.maxY * 1.9))
+                          control: CGPoint(x: rect.midX, y: rect.minY + h * 0.34))
+        path.addCurve(to: CGPoint(x: rect.minX, y: rect.minY),
+                      control1: CGPoint(x: rect.minX + w * 0.86, y: rect.minY + h * 1.5),
+                      control2: CGPoint(x: rect.minX + w * 0.14, y: rect.minY + h * 1.5))
+        path.closeSubpath()
         return path
     }
 }
@@ -1356,26 +1479,34 @@ private struct CrabHold {
 /// against a shell wider than the crab reads as *carrying something big*, where
 /// a heavy claw reads as a crab with a card stuck to it.
 private struct CrabArmRig {
+    /// One arm as the four shapes it is drawn from: the arm itself, the palm,
+    /// and the two fingers of the claw. They overlap on purpose — inked
+    /// together they are one silhouette with one line round it.
     struct Arm {
-        var shoulder: CGPoint
-        var elbow: CGPoint
-        var hand: CGPoint
-        /// Which way the open pincer points, in radians.
-        var bite: Double
+        var limb: LimbShape
+        /// The heel of the hand: a fat oval lying along the arm, not a dot. A
+        /// crab's claw is mostly palm, and it is the one part that stops two
+        /// fingers from reading as a fork on the end of a stick.
+        var palm: LimbShape
+        var fingers: [LimbShape]
     }
 
-    var upperWidth: CGFloat
-    var foreWidth: CGFloat
-    var handSize: CGFloat
+    var outline: CGFloat
+    /// The body this arm belongs to, where it is this frame. The arms are drawn
+    /// over everything the crab is carrying, so the body has to be cut back out
+    /// of them again — that is what puts a shoulder behind the shell it grows
+    /// from without breaking the arm into pieces to do it.
+    var bodySize: CGSize
+    var bodyRoll: Double
+    var bodyBob: CGFloat
     var left: Arm
     var right: Arm
 
     init(bodyWidth: CGFloat, stepPhase: Double, isWalking: Bool,
          facing: CGFloat, hold: CrabHold) {
         let bodyHeight = bodyWidth * CrabSprite.heightRatio
-        upperWidth = bodyWidth * 0.13
-        foreWidth = bodyWidth * 0.108
-        handSize = bodyWidth * 0.25
+        outline = max(0.75, bodyWidth * 0.026)
+        bodySize = CGSize(width: bodyWidth, height: bodyHeight)
 
         // The shoulders ride with the body: the rig is drawn outside the roll,
         // so it has to apply that roll to its own two anchor points.
@@ -1385,6 +1516,10 @@ private struct CrabArmRig {
         let bob = CrabSprite.bob(bodyWidth: bodyWidth,
                                  stepPhase: stepPhase,
                                  isWalking: isWalking)
+        bodyRoll = CrabSprite.roll(stepPhase: stepPhase,
+                                   isWalking: isWalking,
+                                   facing: facing)
+        bodyBob = bob
         let cosine = CGFloat(cos(roll))
         let sine = CGFloat(sin(roll))
         func onBody(_ point: CGPoint) -> CGPoint {
@@ -1392,128 +1527,135 @@ private struct CrabArmRig {
                     y: point.x * sine + point.y * cosine + bob)
         }
 
-        // High on the flank, so the arm leaves from under the shell's edge.
-        let shoulder = CGPoint(x: bodyWidth * 0.38, y: -bodyHeight * 0.16)
-        let upper = bodyWidth * 0.50
-        let fore = bodyWidth * 0.46
+        // Well inside the shell, so the arm runs out from under the body rather
+        // than being pinned to its outline. The body is masked back out of the
+        // arms, so this end is never seen.
+        let shoulder = CGPoint(x: bodyWidth * 0.30, y: -bodyHeight * 0.06)
+        // Short segments: a crab's arms are stubby, and holding the load low
+        // means the elbow has somewhere to bend to.
+        let upper = bodyWidth * 0.42
+        let fore = bodyWidth * 0.38
+        let hand = bodyWidth * 0.30
 
-        func arm(shoulder: CGPoint, hand: CGPoint, bend: CGFloat) -> Arm {
-            Arm(shoulder: shoulder,
-                elbow: crabJoint(from: shoulder, to: hand,
-                                 first: upper, second: fore, bend: bend),
-                hand: hand,
-                bite: atan2(Double(hold.centre.y - hand.y),
-                            Double(hold.centre.x - hand.x)))
+        func arm(shoulder: CGPoint, grip: CGPoint, bend: CGFloat) -> Arm {
+            let toLoad = CGPoint(x: hold.centre.x - grip.x, y: hold.centre.y - grip.y)
+            let span = max(0.0001, (toLoad.x * toLoad.x + toLoad.y * toLoad.y).squareRoot())
+            let bite = CGPoint(x: toLoad.x / span, y: toLoad.y / span)
+            // The palm stays outside the edge it holds and only the two finger
+            // tips cross it. A claw whose whole hand sits on the shell reads as
+            // stuck to it; one that closes on the edge reads as pinching it.
+            let palm = CGPoint(x: grip.x - bite.x * hand * 0.55,
+                               y: grip.y - bite.y * hand * 0.55)
+            let heel = CGPoint(x: palm.x - bite.x * hand * 0.30,
+                               y: palm.y - bite.y * hand * 0.30)
+            let elbow = crabJoint(from: shoulder, to: palm,
+                                  first: upper, second: fore, bend: bend)
+            let axis = atan2(Double(bite.y), Double(bite.x))
+
+            /// One jaw. It leaves the palm splayed and curls back in on its way
+            /// to the tip, so the two of them close on the edge like a pincer
+            /// rather than forking away from it.
+            func jaw(degrees: Double, length: CGFloat, root: CGFloat, tip: CGFloat) -> LimbShape {
+                func point(_ turn: Double, _ reach: CGFloat) -> CGPoint {
+                    let angle = axis + turn * .pi / 180
+                    return CGPoint(x: palm.x + CGFloat(cos(angle)) * reach,
+                                   y: palm.y + CGFloat(sin(angle)) * reach)
+                }
+                return LimbShape(points: [palm,
+                                          point(degrees * 1.30, length * 0.52),
+                                          point(degrees * 0.78, length)],
+                                 widths: [root, (root + tip) * 0.5, tip])
+            }
+
+            return Arm(
+                // As thick as the legs at the shoulder: an arm carrying a shell
+                // twice the animal's width cannot be the thinnest thing on it.
+                limb: LimbShape(points: [shoulder, elbow, palm],
+                                widths: [bodyWidth * 0.075, bodyWidth * 0.060,
+                                         bodyWidth * 0.052]),
+                palm: LimbShape(points: [heel, palm],
+                                widths: [hand * 0.30, hand * 0.38]),
+                // A short movable jaw over a longer fixed one, near enough
+                // closed that the shell's edge shows in the gap between them.
+                fingers: [
+                    jaw(degrees: -22, length: hand * 0.78,
+                        root: hand * 0.20, tip: hand * 0.085),
+                    jaw(degrees: 19, length: hand * 0.92,
+                        root: hand * 0.23, tip: hand * 0.10)
+                ]
+            )
         }
 
         // The elbows bow away from the body, which is what leaves the shell's
         // face clear and the arms reading as raised rather than folded.
         left = arm(shoulder: onBody(CGPoint(x: -shoulder.x, y: shoulder.y)),
-                   hand: hold.left,
+                   grip: hold.left,
                    bend: 1)
         right = arm(shoulder: onBody(shoulder),
-                    hand: hold.right,
+                    grip: hold.right,
                     bend: -1)
     }
 }
 
-/// The two arms: an upper arm, a forearm and a knuckle at the elbow. Without
-/// the knuckle the segments read as one bent stick rather than a jointed limb.
+/// Both arms, each drawn as one creature part rather than as a stack of
+/// segments: every piece of both arms is inked first and coloured afterwards,
+/// so no line ever falls between the arm and its own claw, or between a claw
+/// and the shell it is closed on. What is left is a silhouette with a single
+/// line round it — which is what an arm on a finished character looks like.
 private struct CrabArmsView: View {
     let rig: CrabArmRig
     let colors: (Color, Color)
+    let line: Color
+
+    private var shade: LinearGradient {
+        LinearGradient(stops: [.init(color: colors.0, location: 0.15),
+                               .init(color: colors.1, location: 1)],
+                       startPoint: .top, endPoint: .bottom)
+    }
 
     var body: some View {
         ZStack {
-            arm(rig.left)
-            arm(rig.right)
+            ink(rig.left)
+            ink(rig.right)
+            colour(rig.left)
+            colour(rig.right)
+        }
+        .compositingGroup()
+        // The body is taken back out, so each arm runs behind the shell it
+        // grows from and comes out over the one it is carrying — one drawing,
+        // with the crab's own back in front of its shoulder.
+        .mask {
+            ZStack {
+                // Well past the sprite's own frame: the claws reach above it to
+                // the shell they are holding, and a mask the size of the frame
+                // would cut them off there.
+                Rectangle().fill(.white).scaleEffect(4)
+                CarapaceShape()
+                    .frame(width: rig.bodySize.width, height: rig.bodySize.height)
+                    .rotationEffect(.degrees(rig.bodyRoll))
+                    .offset(y: rig.bodyBob)
+                    .blendMode(.destinationOut)
+            }
+            .compositingGroup()
         }
     }
 
-    private func arm(_ arm: CrabArmRig.Arm) -> some View {
-        ZStack {
-            segment(from: arm.shoulder, to: arm.elbow, width: rig.upperWidth)
-            segment(from: arm.elbow, to: arm.hand, width: rig.foreWidth)
-            Circle()
-                .fill(colors.1)
-                .frame(width: rig.foreWidth * 1.2, height: rig.foreWidth * 1.2)
-                .offset(x: arm.elbow.x, y: arm.elbow.y)
+    @ViewBuilder
+    private func ink(_ arm: CrabArmRig.Arm) -> some View {
+        arm.limb.inked(line, width: rig.outline)
+        arm.palm.inked(line, width: rig.outline)
+        ForEach(arm.fingers.indices, id: \.self) { index in
+            arm.fingers[index].inked(line, width: rig.outline)
         }
     }
 
-    private func segment(from start: CGPoint, to end: CGPoint, width: CGFloat) -> some View {
-        let dx = end.x - start.x
-        let dy = end.y - start.y
-        let length = max(1, (dx * dx + dy * dy).squareRoot())
-        return Capsule()
-            .fill(LinearGradient(colors: [colors.0, colors.1],
-                                 startPoint: .leading, endPoint: .trailing))
-            .frame(width: width, height: length + width * 0.5)
-            .rotationEffect(.radians(atan2(Double(dy), Double(dx)) + .pi / 2))
-            .offset(x: start.x + dx / 2, y: start.y + dy / 2)
-    }
-}
-
-/// The pincers, drawn apart from the arms so they can be layered in front of
-/// whatever the crab is holding: a hand behind the shell's rim looks like a
-/// crab standing under it, and a hand over the rim looks like a crab gripping.
-private struct CrabHandsView: View {
-    let rig: CrabArmRig
-    let colors: (Color, Color)
-
-    var body: some View {
-        ZStack {
-            hand(rig.left)
-            hand(rig.right)
+    @ViewBuilder
+    private func colour(_ arm: CrabArmRig.Arm) -> some View {
+        arm.limb.fill(shade)
+        arm.palm.fill(shade)
+        ForEach(arm.fingers.indices, id: \.self) { index in
+            arm.fingers[index].fill(shade)
         }
-    }
-
-    private func hand(_ arm: CrabArmRig.Arm) -> some View {
-        PincerView(size: rig.handSize, colors: colors)
-            .rotationEffect(.radians(arm.bite))
-            .offset(x: arm.hand.x, y: arm.hand.y)
-    }
-}
-
-/// A small pincer: a knuckle and two jaws splayed around whatever it is closing
-/// on. At the size a crab's hand actually is, two outlined capsules read as a
-/// claw where a fully modelled one reads as a smudge — the outline is doing the
-/// work, since the hand is usually sitting on the white face of a shell. It
-/// points along +x before it is turned.
-private struct PincerView: View {
-    let size: CGFloat
-    let colors: (Color, Color)
-
-    private var knuckle: CGPoint { CGPoint(x: -size * 0.26, y: 0) }
-    private var outline: CGFloat { max(1, size * 0.11) }
-
-    var body: some View {
-        ZStack {
-            // The jaws reach well clear of the knuckle: a hand that is mostly
-            // knuckle reads as a mitten, and the gap between the two fingers is
-            // the whole reason it reads as a grip.
-            jaw(degrees: -38, length: size * 1.15, width: size * 0.36)
-            jaw(degrees: 34, length: size * 0.92, width: size * 0.31)
-
-            Circle()
-                .fill(colors.0)
-                .overlay { Circle().stroke(colors.1, lineWidth: outline) }
-                .frame(width: size * 0.70, height: size * 0.70)
-                .offset(x: knuckle.x, y: knuckle.y)
-        }
-        .frame(width: size * 2.2, height: size * 2.2)
-        .shadow(color: .black.opacity(0.18), radius: max(1, size * 0.09), y: size * 0.05)
-    }
-
-    private func jaw(degrees: Double, length: CGFloat, width: CGFloat) -> some View {
-        let angle = degrees * .pi / 180
-        return Capsule()
-            .fill(colors.0)
-            .overlay { Capsule().stroke(colors.1, lineWidth: outline) }
-            .frame(width: width, height: length)
-            .rotationEffect(.radians(angle + .pi / 2))
-            .offset(x: knuckle.x + CGFloat(cos(angle)) * length * 0.52,
-                    y: knuckle.y + CGFloat(sin(angle)) * length * 0.52)
     }
 }
 
