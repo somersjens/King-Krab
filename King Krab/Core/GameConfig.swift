@@ -15,13 +15,13 @@ nonisolated public enum GameConfig {
 
     // MARK: Answers
 
-    /// How many answer bubbles a question offers. One fixed number for every
-    /// topic and every combination: the reef releases the same five answers,
-    /// over and over, for as long as the sum stands. It used to be a choice
-    /// between two, three and four, which made every level three separate
-    /// scoreboards aiming at three different targets — see `migrateToFixed
-    /// AnswerCount` for how those were merged back into one.
-    public static let answerBubbleCount = 5
+    /// How many answers a question offers. One fixed number for every topic and
+    /// every combination: one crab walks in from each of the four corners, so a
+    /// wave is always one right answer and three wrong ones. It used to be a
+    /// choice between two, three and four, which made every level three
+    /// separate scoreboards aiming at three different targets — see
+    /// `migrateToFixedAnswerCount` for how those were merged back into one.
+    public static let answerBubbleCount = 4
 
     /// Wrong answers a question must supply: every bubble but the right one.
     public static var distractorCount: Int { answerBubbleCount - 1 }
@@ -30,7 +30,7 @@ nonisolated public enum GameConfig {
 
     /// Lives a session starts with. Lives are tracked internally in half units.
     public static let startingLives = 3.0
-    /// A wrong answer costs one whole life.
+    /// Smashing the crab that carries the right answer costs one whole life.
     public static let wrongAnswerCost = 1.0
 
     /// Internal granularity: lives are stored as an integer number of halves,
@@ -39,6 +39,39 @@ nonisolated public enum GameConfig {
     public static let lifeGranularity = 2
     public static var startingLifeHalves: Int { Int(startingLives * Double(lifeGranularity)) }
     public static var wrongAnswerCostHalves: Int { Int(wrongAnswerCost * Double(lifeGranularity)) }
+
+    // MARK: King Crab
+
+    /// How long a crab needs from its corner to the King. The whole round is
+    /// read, judged and acted on inside this window, so it is the single most
+    /// important number of the game.
+    public static let crabWalkDuration = 6.0
+    /// Small honest differences between the four walkers, so they never march
+    /// as one block and never all arrive on the same frame.
+    public static let crabWalkVariation: ClosedRange<Double> = 0.94...1.07
+    /// How long after the wave opens each crab sets off. They start together;
+    /// this only keeps the four from being a single stamped shape.
+    public static let crabStartStagger: ClosedRange<Double> = 0...0.35
+
+    /// A crab carrying a wrong answer that reaches the King costs half a life.
+    /// The round itself carries on: the right answer is still out there.
+    public static let breachCostHalves = 1
+
+    // MARK: Life crab
+
+    /// The comeback crab appears at most once a game, and only from the moment
+    /// the player first drops to this many half-lives (one life) or fewer.
+    public static let lifeCrabCriticalHalves = 2
+    /// Correct answers required after that drop before it may set off, so the
+    /// reward follows recovered play rather than the damage itself.
+    public static let lifeCrabCorrectAnswers = 2
+    /// It never appears once the board is this far along — a comeback near the
+    /// finish line is no comeback at all.
+    public static let lifeCrabMaximumProgress = 0.9
+    /// Reaching the King hands back one whole life.
+    public static let lifeCrabRecoveryHalves = 2
+    /// It walks more slowly than an answer crab: this is a gift, not a test.
+    public static let lifeCrabWalkDuration = 7.5
 
     // MARK: Session
 
@@ -56,32 +89,21 @@ nonisolated public enum GameConfig {
 
     // MARK: Bonuses
 
-    /// Five correct answers in a row starts the fast 2x streak mode. It lasts
-    /// until the next wrong answer.
-    public static let streakThreshold = 5
+    /// Three correct answers in a row turn the crabs gold: the streak mode
+    /// pays double and lasts until the next mistake.
+    public static let streakThreshold = 3
     public static let streakMultiplier = 2
-    /// The reef already has an active base tempo. A streak adds a noticeable
-    /// push without making the denser answer stream overwhelming.
+    /// The gold crabs march a little faster, so the doubled points are earned
+    /// under real pressure rather than handed over.
     public static let streakSpeedMultiplier = 1.3
     /// The first mistake while the streak boost is active breaks the streak,
     /// but only costs half a life instead of a full one.
     public static let streakWrongAnswerCostHalves = 1
 
-    /// A 2x fish swims across the level this many times. Catching it doubles
-    /// the next correct answer; a missed fish simply leaves the screen.
+    /// A 2x crab scuttles across the level this many times. Tapping it doubles
+    /// the next correct answer; a missed one simply leaves the screen.
     public static let bonusFishCount = 1...3
     public static let bonusFishMultiplier = 2
-
-    /// Once a player has been hurt, this many correct answers earn a chance to
-    /// catch a heart fish. Missing it does not throw the work away: four more
-    /// correct answers bring it back.
-    public static let heartFishCorrectAnswers = 8
-    public static let heartFishRetryCorrectAnswers = 4
-    /// A normal catch restores half a life. At the last half-heart it restores
-    /// a whole life, giving the player a meaningful comeback without ever
-    /// exceeding the three-life starting capacity.
-    public static let heartFishRecoveryHalves = 1
-    public static let criticalHeartFishRecoveryHalves = 2
 
     // MARK: Timing (seconds)
     //
@@ -128,12 +150,12 @@ nonisolated public enum GameConfig {
     /// The second half of the catalog is Premium-exclusive: `nil` means the
     /// character cannot be earned with cards at all, no matter the total.
     public static let characterUnlockRequirements: [Int?] = [
-        0,          // octopus — from the start
-        500,        // crab
-        1_500,      // elephant
-        3_000,      // bear
-        5_000,      // fox
-        nil, nil, nil, nil, nil   // frog, penguin, bunny, dog, lion — Premium
+        0,          // crab — from the start
+        500,        // elephant
+        1_500,      // bear
+        3_000,      // fox
+        5_000,      // frog
+        nil, nil, nil, nil, nil   // penguin, bunny, dog, lion, octopus — Premium
     ]
 
     // MARK: Level progress

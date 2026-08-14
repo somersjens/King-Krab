@@ -42,9 +42,9 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var hasBonusFishPower = false
     @Published private(set) var correctStreak = 0
     @Published private(set) var isStreakBoostActive = false
-    @Published private(set) var isHeartFishAvailable = false
+    @Published private(set) var isLifeCrabAvailable = false
     /// Changes each time the streak boost starts, allowing the view to replay
-    /// its bubble-style announcement even after an earlier streak was broken.
+    /// its banner announcement even after an earlier streak was broken.
     @Published private(set) var streakAnnouncementID = 0
 
     /// Set by the tutorial, which needs to know about every answer the moment
@@ -57,10 +57,10 @@ final class GameViewModel: ObservableObject {
     private var hasRecordedResult = false
     private var isPaused = false
     /// A round-resolution callback that became due while the pause card was
-    /// covering the reef. It runs once on continue instead of behind the card.
+    /// covering the arena. It runs once on continue instead of behind the card.
     private var pendingScheduledWork: (() -> Void)?
-    /// The rules award cards immediately, while the HUD waits until the
-    /// matching currency bubble physically reaches it.
+    /// The rules award shells immediately, while the HUD waits until the
+    /// matching shell physically reaches it.
     private var pendingScoreRewards: [Int] = []
 
     var maximumRounds: Int { engine.maximumRounds }
@@ -75,7 +75,7 @@ final class GameViewModel: ObservableObject {
 
     // MARK: - Lifecycle
 
-    /// Builds the first two rounds while the level card (and then the fish
+    /// Builds the first two rounds while the level card (and then the King's
     /// entrance) is still on screen. Round generation is pure CPU work and
     /// does not belong on the frame that responds to Start.
     func prepare() {
@@ -122,9 +122,9 @@ final class GameViewModel: ObservableObject {
         sync()
     }
 
-    /// Opens a round for play. Under water there is nothing to memorise: the
-    /// sum stands on the coral from the first frame, so the round goes straight
-    /// through to accepting an answer.
+    /// Opens a round for play. There is nothing to memorise here: the sum
+    /// stands at the top of the screen from the first frame, so the round goes
+    /// straight through to accepting an answer.
     private func openRound() {
         engine.turnCardsOver()
         engine.beginAnswering()
@@ -229,14 +229,39 @@ final class GameViewModel: ObservableObject {
 
     // MARK: - Round flow
 
-    /// Forwards an answer bubble the fish touched. The engine decides whether
-    /// it counts; a touch that arrives while feedback is still playing comes
-    /// back as `.ignored` and changes nothing at all. The returned flag tells
-    /// the reef whether to burst the bubble.
+    /// Forwards the answer a crab carried to the King. The engine decides
+    /// whether it counts; an arrival that lands while feedback is still playing
+    /// comes back as `.ignored` and changes nothing at all. The returned flag
+    /// tells the arena whether the King's sweep actually scored.
     @discardableResult
     func select(optionID: UUID) -> Bool {
-        let outcome = engine.select(optionID: optionID,
-                                    usesBonusFish: hasBonusFishPower)
+        resolve(engine.select(optionID: optionID, usesBonusFish: hasBonusFishPower))
+    }
+
+    /// The player smashed the crab carrying the right answer. It costs a whole
+    /// life and the attempt starts over on the same sum.
+    @discardableResult
+    func smashGuardedAnswer() -> Bool {
+        resolve(engine.smashGuardedAnswer())
+    }
+
+    /// A wrong answer slipped through to the King: half a life, and the round
+    /// simply carries on.
+    @discardableResult
+    func absorbBreach() -> Bool {
+        let outcome = engine.absorbBreach()
+        guard case .absorbed(let endsSession) = outcome else { return false }
+        PlaytimeTracker.shared.registerInteraction()
+        if engine.appliesWrongAnswerPenalty {
+            AppAudio.shared.playHalfLife()
+        }
+        haptic(.error)
+        if endsSession { finishSession() }
+        sync()
+        return true
+    }
+
+    private func resolve(_ outcome: AnswerOutcome) -> Bool {
         guard outcome != .ignored else { return false }
         // Every real interaction advances the playtime clock. Without these the
         // tracker only ever sees one gap from the first touch to the last,
@@ -299,8 +324,21 @@ final class GameViewModel: ObservableObject {
         return true
     }
 
-    /// Called by the reef at the exact frame a collected currency bubble lands
-    /// on the HUD icon.
+    /// A crab was knocked off the sea floor. The blow is pure feedback: what it
+    /// cost, if anything, is decided by the engine through the calls above.
+    func crabSmashed() {
+        AppAudio.shared.playCardFlip()
+        haptic(.rigid)
+    }
+
+    /// The King answers everything that reached him with one blow.
+    func kingSweeps() {
+        AppAudio.shared.playFlamethrower()
+        haptic(.light)
+    }
+
+    /// Called by the arena at the exact frame a collected shell lands on the
+    /// HUD icon.
     func scoreBubbleArrived() {
         guard !pendingScoreRewards.isEmpty else { return }
         cards += pendingScoreRewards.removeFirst()
@@ -308,7 +346,7 @@ final class GameViewModel: ObservableObject {
         haptic(.light)
     }
 
-    /// Called by the reef when the player catches the passing 2x fish. Multiple
+    /// Called by the arena when the player taps the passing 2x crab. Multiple
     /// catches do not stack: one aura always represents one doubled answer.
     func catchBonusFish() {
         guard !hasBonusFishPower else { return }
@@ -317,12 +355,18 @@ final class GameViewModel: ObservableObject {
         haptic(.rigid)
     }
 
-    /// The heart fish is a direct life reward, not a power held for the next
-    /// answer, so the engine applies it immediately.
+    /// The life crab is a direct life reward, not a power held for the next
+    /// answer, so the engine applies it the moment it reaches the King.
     @discardableResult
-    func catchHeartFish() -> Bool {
-        let restoredHalves = engine.catchHeartFish()
-        guard restoredHalves > 0 else { return false }
+    func catchLifeCrab() -> Bool {
+        let restoredHalves = engine.catchLifeCrab()
+        guard restoredHalves > 0 else {
+            // Arriving with nothing to give still spends the comeback, so the
+            // crab cannot loop round for a second attempt.
+            engine.spendLifeCrab()
+            sync()
+            return false
+        }
         PlaytimeTracker.shared.registerInteraction()
         sync()
         AppAudio.shared.playLifeRestored()
@@ -330,34 +374,18 @@ final class GameViewModel: ObservableObject {
         return true
     }
 
-    func missHeartFish() {
-        engine.missHeartFish()
-        sync()
-    }
-
     // MARK: - Tutorial
 
-    /// The tutorial's free attempt: a wrong bubble may be tried once without
-    /// paying for it. The rule is untouched — only waived, and only there.
+    /// The tutorial's free attempt: a mistake may be made once without paying
+    /// for it. The rule is untouched — only waived, and only there.
     func setWrongAnswerPenalty(_ applies: Bool) {
         engine.appliesWrongAnswerPenalty = applies
     }
 
-    /// The tutorial's heart fish gives a whole life back, as its step promises.
-    func setHeartFishRestoresWholeLife(_ restores: Bool) {
-        engine.heartFishRestoresWholeLife = restores
-    }
-
-    /// Arms the heart fish directly, for the step that teaches it.
-    func makeHeartFishAvailable() {
-        engine.makeHeartFishAvailable()
+    /// Arms the life crab directly, for the step that teaches it.
+    func makeLifeCrabAvailable() {
+        engine.makeLifeCrabAvailable()
         sync()
-    }
-
-    /// Whether a caught heart fish would hand back a whole life right now, so
-    /// the swimming fish can carry a full heart rather than a half one.
-    var heartFishGivesWholeLife: Bool {
-        engine.heartFishRestoresWholeLife || livesRemaining <= 0.5
     }
 
     // MARK: - Finishing
@@ -365,7 +393,7 @@ final class GameViewModel: ObservableObject {
     private func finishSession() {
         AppAudio.shared.setGameplayRate(1)
         recordResultIfNeeded()
-        // Hide replay generation under the reef finale/result card too.
+        // Hide replay generation under the finale/result card too.
         startPreparation(pausedSession: nil)
     }
 
@@ -431,12 +459,12 @@ final class GameViewModel: ObservableObject {
         livesRemaining = engine.livesRemaining
         selectedOptionID = engine.selectedOptionID
         // Publish the completed result before the game-over flag. GameView
-        // uses its reason to decide whether to play the reef finale first.
+        // uses its reason to decide whether to play the arena finale first.
         if engine.state == .gameOver { result = engine.result }
         isGameOver = engine.state == .gameOver
         correctStreak = engine.correctStreak
         isStreakBoostActive = engine.isStreakBoostActive
-        isHeartFishAvailable = engine.isHeartFishAvailable
+        isLifeCrabAvailable = engine.isLifeCrabAvailable
         AppAudio.shared.setGameplayRate(isStreakBoostActive
                                         ? Float(GameConfig.streakSpeedMultiplier) : 1)
     }

@@ -1,15 +1,16 @@
 //
 //  GameView.swift
-//  Math Memory
+//  King Krab
 //
-//  The playing surface. A round runs on the reef: the sum stands on a piece of
-//  coral on the sea floor, the coral lets answer bubbles up through the water,
-//  and the player steers a fish into the bubble carrying the right answer.
+//  The playing surface. A round runs on the sea floor: the sum stands at the
+//  top of the screen, four crabs walk in from the corners carrying answer
+//  cards, and the player smashes the three wrong ones before they reach the
+//  King while letting the right one through.
 //
-//  All rules live in `MemoryGame` and the whole of the reef lives in
-//  `ReefGame.swift`; this file only puts the HUD, the reef and the helper
-//  together and hands every touched answer straight to the engine, which is the
-//  single place that decides whether it counts.
+//  All rules live in `MemoryGame` and the whole of the arena lives in
+//  `KingCrabArena.swift` and `KingCrabPlayfield.swift`; this file only puts the
+//  HUD and the arena together and hands every event straight to the engine,
+//  which is the single place that decides what it costs or pays.
 //
 
 import SwiftUI
@@ -59,15 +60,15 @@ struct GameView: View {
     /// separate from `showsIntro` lets a brand-new run still say Start while a
     /// pause made before the first answer already says Continue.
     @State private var showsPauseCard = false
-    /// After the card, the fish gets the stage to itself for one short looping
-    /// entrance. The first round only opens when that animation is finished.
-    @State private var playsFishEntrance = false
+    /// After the card, the King gets the stage to himself while he climbs out
+    /// of the sand. The first round only opens when that is finished.
+    @State private var playsKingEntrance = false
     @State private var showsStreakBanner = false
     @State private var streakBannerToken = 0
     /// Measured from the real HUD layout so the flying currency glyph can land
     /// pixel-for-pixel over its stationary twin on every device and score width.
     @State private var scoreIconCenter: CGPoint?
-    /// A completed board gets one last moment in the reef before its result
+    /// A completed board gets one last moment in the arena before its result
     /// card appears. Other endings (no lives, or leaving) remain immediate.
     @State private var playsLevelCompletion = false
     @State private var showsResult = false
@@ -105,7 +106,7 @@ struct GameView: View {
                 .ignoresSafeArea()
 
             // Keep the level visible underneath every card. The result is an
-            // overlay over the reef that was just played, exactly like the
+            // overlay over the arena that was just played, exactly like the
             // start and pause cards, rather than a replacement for the game.
             playfield
                 .transition(.opacity)
@@ -189,18 +190,19 @@ struct GameView: View {
             model.resume()
         } else {
             showsPauseCard = false
-            playsFishEntrance = true
+            playsKingEntrance = true
         }
     }
 
-    private func finishFishEntrance() {
-        guard playsFishEntrance else { return }
-        playsFishEntrance = false
+    private func finishKingEntrance() {
+        guard playsKingEntrance else { return }
+        playsKingEntrance = false
         Task {
             await model.begin()
-            // The walkthrough opens on the first round, once the fish has swum
-            // in and there is a reef to talk about. Disarming it here is what
-            // makes the pause card offer Continue rather than Start tutorial.
+            // The walkthrough opens on the first round, once the King is on his
+            // feet and there is an arena to talk about. Disarming it here is
+            // what makes the pause card offer Continue rather than Start
+            // tutorial.
             if isTutorialArmed, model.state != .intro {
                 isTutorialArmed = false
                 tutorial.begin(model: model)
@@ -226,40 +228,42 @@ struct GameView: View {
     // MARK: - Playfield
 
     private var playfield: some View {
-        // The reef is the whole screen — water from the very top edge down to
+        // The arena is the whole screen — water from the very top edge down to
         // the sea floor at the very bottom — with the HUD laid over it. Reading
-        // the insets here is what keeps the fish clear of the HUD and the sum
+        // the insets here is what keeps the sum clear of the HUD and the crabs
         // clear of the home indicator.
         // The HUD keeps a floor under it, so it still clears the status bar on
         // the very first frame, before the insets have been sampled.
         let topInset = max(screenInsets.top, isPad ? 24 : 16)
 
         return ZStack(alignment: .top) {
-            ReefPlayfield(round: model.round,
-                          maximumRounds: model.maximumRounds,
-                          character: character,
-                          isPad: isPad,
-                          isLive: model.acceptsInput,
-                          isRunning: isReefRunning,
-                          playsFishEntrance: playsFishEntrance,
-                          hasBonusFishPower: model.hasBonusFishPower,
-                          isHeartFishAvailable: model.isHeartFishAvailable,
-                          heartFishRestoresWholeLife: model.heartFishGivesWholeLife,
-                          isStreakBoostActive: model.isStreakBoostActive,
-                          playsLevelCompletion: playsLevelCompletion,
-                          reduceMotion: reduceMotion,
-                          tutorialPlan: tutorial.plan,
-                          topReserve: topInset + (isPad ? 54 : 42),
-                          bottomReserve: screenInsets.bottom,
-                          scoreTarget: scoreIconCenter,
-                          onHit: { model.select(optionID: $0) },
-                          onScoreBubbleArrived: model.scoreBubbleArrived,
-                          onBonusFishCaught: model.catchBonusFish,
-                          onHeartFishCaught: model.catchHeartFish,
-                          onHeartFishMissed: model.missHeartFish,
-                          onFishEntranceComplete: finishFishEntrance,
-                          onLevelCompletionFinished: finishLevelCompletion,
-                          onTutorialEvent: tutorial.handle)
+            KingCrabPlayfield(round: model.round,
+                              maximumRounds: model.maximumRounds,
+                              character: character,
+                              isPad: isPad,
+                              isLive: model.acceptsInput,
+                              isRunning: isArenaRunning,
+                              playsKingEntrance: playsKingEntrance,
+                              hasBonusPower: model.hasBonusFishPower,
+                              isLifeCrabAvailable: model.isLifeCrabAvailable,
+                              isStreakBoostActive: model.isStreakBoostActive,
+                              playsLevelCompletion: playsLevelCompletion,
+                              reduceMotion: reduceMotion,
+                              tutorialPlan: tutorial.plan,
+                              topReserve: topInset + (isPad ? 54 : 42),
+                              bottomReserve: screenInsets.bottom,
+                              scoreTarget: scoreIconCenter,
+                              onGuardedArrival: { model.select(optionID: $0) },
+                              onSmashedGuard: model.smashGuardedAnswer,
+                              onBreach: { model.absorbBreach() },
+                              onSmash: { _ in model.crabSmashed() },
+                              onSweep: model.kingSweeps,
+                              onShellArrived: model.scoreBubbleArrived,
+                              onBonusCrabCaught: model.catchBonusFish,
+                              onLifeCrabArrived: model.catchLifeCrab,
+                              onKingEntranceComplete: finishKingEntrance,
+                              onLevelCompletionFinished: finishLevelCompletion,
+                              onTutorialEvent: tutorial.handle)
 
             hud
                 .padding(.leading, max(isPad ? 28 : 16, screenInsets.leading + 12))
@@ -269,14 +273,14 @@ struct GameView: View {
                 .animation(.easeOut(duration: 0.22), value: playsLevelCompletion)
                 .allowsHitTesting(!playsLevelCompletion)
 
-            // The walkthrough speaks from just under the HUD, clear of both the
-            // sum on the coral and the water the first steps ask the player to
-            // cross. It never takes a touch: the reef stays fully steerable
-            // while a step is being read.
+            // The walkthrough speaks from just under the sum, in the water the
+            // arena keeps free for it while a plan is running. It never takes a
+            // touch: every crab stays tappable while a step is being read.
             if let message = tutorial.message, !playsLevelCompletion {
                 TutorialMessageCard(text: message, theme: character, isPad: isPad)
                     .padding(.horizontal, max(isPad ? 28 : 14, screenInsets.leading + 12))
-                    .padding(.top, topInset + (isPad ? 66 : 50))
+                    .padding(.top, topInset + (isPad ? 66 : 50)
+                             + ArenaConfig.bannerHeight(isPad: isPad))
                     // Scales up in place rather than sliding down: a card that
                     // travelled would cross the HUD on its way in.
                     .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .top)))
@@ -289,6 +293,7 @@ struct GameView: View {
                     // Steps down below the walkthrough's own card when one is
                     // on screen — the streak starts on a tutorial step.
                     .padding(.top, topInset + (isPad ? 70 : 52)
+                             + ArenaConfig.bannerHeight(isPad: isPad)
                              + (tutorial.message == nil ? 0 : (isPad ? 100 : 78)))
                     .transition(.scale(scale: 0.65).combined(with: .opacity))
                     .allowsHitTesting(false)
@@ -347,7 +352,7 @@ struct GameView: View {
         }
     }
 
-    /// Pausing freezes the reef in place and puts the level card over it. The
+    /// Pausing freezes the arena in place and puts the level card over it. The
     /// player can continue immediately or leave for the main menu from there.
     private var pauseButton: some View {
         Button {
@@ -381,7 +386,7 @@ struct GameView: View {
     private var pauseGlyphSize: CGFloat { isPad ? 22 : 16 }
     private var hudNumberSize: CGFloat { isPad ? 32 : 24 }
 
-    /// Just the bubbles banked this session. What the board holds is quoted on
+    /// Just the shells banked this session. What the board holds is quoted on
     /// the start card and again on the result card, so the playing field does
     /// not have to carry it too.
     private var progressCounter: some View {
@@ -409,10 +414,10 @@ struct GameView: View {
         .accessibilityLabel(Text(L("game.bubblesCollected \(model.cards)")))
     }
 
-    /// The reef only ticks while the level is actually being played: never
+    /// The arena only ticks while the level is actually being played: never
     /// behind the start card or the result card, and never while the app is in
     /// the background.
-    private var isReefRunning: Bool {
+    private var isArenaRunning: Bool {
         !showsIntro && (!model.isGameOver || playsLevelCompletion) && scenePhase == .active
     }
 }

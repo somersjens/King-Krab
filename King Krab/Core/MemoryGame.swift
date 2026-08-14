@@ -9,9 +9,12 @@
 //  This type is deliberately free of SwiftUI and of timers: the view drives it
 //  with explicit calls and asks it what to show. That keeps it fully testable.
 //
-//  The reef scene uses the same state machine: it opens a round straight
+//  The King Crab arena uses the same state machine: it opens a round straight
 //  through `turnCardsOver` and `beginAnswering` — there is nothing to memorise
-//  under water — and then hands over whichever answer bubble the fish touched.
+//  on the sea floor — and then reports the three things that can happen to a
+//  wave of crabs: the guarded answer arrives (`select`), the player smashes it
+//  themselves (`smashGuardedAnswer`), or a wrong answer slips through to the
+//  King (`absorbBreach`).
 //
 
 import Foundation
@@ -49,6 +52,15 @@ nonisolated public enum AnswerOutcome: Equatable, Sendable {
     case correct(cardsEarned: Int, usedBonusFish: Bool, startedStreak: Bool)
     case wrong(correctOptionID: UUID, lostHalfLife: Bool)
     /// The tap was ignored (wrong state, or the round was already answered).
+    case ignored
+}
+
+/// What a wrong answer reaching the King cost. The round is deliberately not
+/// ended by one: the crab carrying the right answer is still walking.
+nonisolated public enum BreachOutcome: Equatable, Sendable {
+    /// Half a life spent; `endsSession` is true when it was the last one.
+    case absorbed(endsSession: Bool)
+    /// The breach arrived in a state that no longer takes damage.
     case ignored
 }
 
@@ -99,27 +111,30 @@ nonisolated public final class MemoryGame {
     public private(set) var lastOutcome: AnswerOutcome?
     public private(set) var result = SessionResult()
     public private(set) var correctStreak = 0
-    public private(set) var heartFishProgress = 0
-    public private(set) var heartFishTarget = GameConfig.heartFishCorrectAnswers
-    public private(set) var isHeartFishAvailable = false
+    /// Correct answers given since the player first dropped to their last life.
+    public private(set) var lifeCrabProgress = 0
+    public private(set) var lifeCrabTarget = GameConfig.lifeCrabCorrectAnswers
+    /// True once the comeback crab may set off from a corner.
+    public private(set) var isLifeCrabAvailable = false
+    /// The comeback happens at most once a game, whether or not it was used.
+    public private(set) var hasSpentLifeCrab = false
+    /// Set the first time the player is down to a single life, which is what
+    /// starts counting toward the comeback.
+    private var isCounting = false
 
     /// Set once the session is over; nil while playing.
     public private(set) var gameOverReason: GameOverReason?
 
-    /// A wrong answer costs a life but leaves the sum standing: the coral keeps
-    /// offering the same answers until the right one is caught. Only a correct
-    /// answer moves the session on to the next sum.
+    /// Smashing the guarded answer costs a life but leaves the sum standing:
+    /// a fresh wave of crabs carries the same answers around again. Only a
+    /// safe arrival moves the session on to the next sum.
     private var repeatsRound = false
 
-    /// The tutorial's "collect the right answer" step lets a wrong bubble be
-    /// tried without paying for it. Every other run, and every later step,
-    /// leaves this on — the rule itself is unchanged, it is only waived while
-    /// the player is being shown what the bubbles are.
+    /// The walkthrough's first steps let a mistake be made without paying for
+    /// it. Every other run, and every later step, leaves this on — the rule
+    /// itself is unchanged, it is only waived while the player is being shown
+    /// what the crabs are.
     public var appliesWrongAnswerPenalty = true
-    /// The tutorial's heart fish hands back a whole life whatever the damage,
-    /// because that is what its step promises. Normal play keeps the graded
-    /// recovery, which only reaches a whole life at the last half-heart.
-    public var heartFishRestoresWholeLife = false
 
     // MARK: Derived
 
@@ -191,9 +206,13 @@ nonisolated public final class MemoryGame {
         result.bonusCards = session.bonusCards
         result.cardsEarned = session.cards
         correctStreak = session.correctStreak ?? 0
-        heartFishProgress = session.heartFishProgress ?? 0
-        heartFishTarget = session.heartFishTarget ?? GameConfig.heartFishCorrectAnswers
-        isHeartFishAvailable = session.isHeartFishAvailable ?? false
+        lifeCrabProgress = session.heartFishProgress ?? 0
+        lifeCrabTarget = session.heartFishTarget ?? GameConfig.lifeCrabCorrectAnswers
+        isLifeCrabAvailable = session.isHeartFishAvailable ?? false
+        hasSpentLifeCrab = session.hasSpentLifeCrab ?? false
+        // A run resumed on its last life keeps counting toward the comeback
+        // rather than waiting for a drop that already happened.
+        isCounting = lifeHalves <= GameConfig.lifeCrabCriticalHalves
         round = factory.makeRound(number: roundNumber)
         preparedRound = factory.makeRound(number: roundNumber + 1)
         state = .memorising
@@ -216,9 +235,12 @@ nonisolated public final class MemoryGame {
                              flamethrowersUsed: 0,
                              correctStreak: correctStreak,
                              hasBonusFishPower: hasBonusFishPower,
-                             heartFishProgress: heartFishProgress,
-                             heartFishTarget: heartFishTarget,
-                             isHeartFishAvailable: isHeartFishAvailable)
+                             // Legacy field names: they now carry the life
+                             // crab's meter, so old saves stay decodable.
+                             heartFishProgress: lifeCrabProgress,
+                             heartFishTarget: lifeCrabTarget,
+                             isHeartFishAvailable: isLifeCrabAvailable,
+                             hasSpentLifeCrab: hasSpentLifeCrab)
     }
 
     /// The tap that turns the answer cards face down and brings the question
@@ -241,9 +263,9 @@ nonisolated public final class MemoryGame {
 
     // MARK: - Answering
 
-    /// Resolves a tap on an answer card. Any tap that arrives in the wrong
-    /// state — a second tap on the same round, a tap during feedback, a tap on
-    /// a burned card — is ignored without touching score or lives.
+    /// Resolves an answer reaching the King. Anything that arrives in the wrong
+    /// state — a second arrival in the same round, an arrival during feedback —
+    /// is ignored without touching score or lives.
     @discardableResult
     public func select(optionID: UUID, usesBonusFish: Bool = false) -> AnswerOutcome {
         guard state == .answering,
@@ -274,61 +296,102 @@ nonisolated public final class MemoryGame {
             }
             result.bonusCards += earned - GameConfig.normalCardReward
             correctStreak += 1
-            advanceHeartFishProgressIfNeeded()
+            advanceLifeCrabProgressIfNeeded()
             let startedStreak = !streakWasActive && isStreakBoostActive
             outcome = .correct(cardsEarned: earned,
                                usedBonusFish: usesBonusFish,
                                startedStreak: startedStreak)
         } else {
-            let streakWasActive = isStreakBoostActive
-            result.wrongAnswers += 1
-            correctStreak = 0
-            if appliesWrongAnswerPenalty {
-                spendLifeHalves(streakWasActive
-                                ? GameConfig.streakWrongAnswerCostHalves
-                                : GameConfig.wrongAnswerCostHalves)
-            }
-            // The sum stays on the coral; `advance` puts this very round back
-            // into play instead of installing the next one.
-            repeatsRound = true
-            outcome = .wrong(correctOptionID: round.correctOption?.id ?? optionID,
-                             lostHalfLife: streakWasActive)
+            outcome = penaliseGuardedAnswer(correctOptionID:
+                                                round.correctOption?.id ?? optionID)
         }
         lastOutcome = outcome
         return outcome
     }
 
-    /// Restores life when the passing heart fish is caught. The return value is
-    /// the number of half-hearts restored, or zero when the catch was stale.
+    /// The player smashed the crab carrying the right answer. It costs a whole
+    /// life, the attempt is over at once, and the same sum comes back around
+    /// with a fresh wave — exactly what a wrong answer has always cost here.
     @discardableResult
-    public func catchHeartFish() -> Int {
-        guard isHeartFishAvailable,
+    public func smashGuardedAnswer() -> AnswerOutcome {
+        guard state == .answering,
+              let round,
+              selectedOptionID == nil,
+              let correct = round.correctOption
+        else { return .ignored }
+
+        selectedOptionID = correct.id
+        state = .resolving
+        let outcome = penaliseGuardedAnswer(correctOptionID: correct.id)
+        lastOutcome = outcome
+        return outcome
+    }
+
+    /// Shared by both ways of losing the right answer: the whole life, the
+    /// broken streak and the repeat of this very sum.
+    private func penaliseGuardedAnswer(correctOptionID: UUID) -> AnswerOutcome {
+        result.wrongAnswers += 1
+        correctStreak = 0
+        if appliesWrongAnswerPenalty {
+            // Deliberately the full cost even mid-streak: destroying the answer
+            // the King was waiting for is the one mistake that always hurts.
+            spendLifeHalves(GameConfig.wrongAnswerCostHalves)
+        }
+        // The sum stays up; `advance` puts this very round back into play
+        // instead of installing the next one.
+        repeatsRound = true
+        return .wrong(correctOptionID: correctOptionID, lostHalfLife: false)
+    }
+
+    /// A crab carrying a wrong answer walked past the player and reached the
+    /// King. It costs half a life and breaks the streak, but the round carries
+    /// on: the right answer is still on its way.
+    @discardableResult
+    public func absorbBreach() -> BreachOutcome {
+        guard state == .answering || state == .resolving,
+              lifeHalves > 0 else { return .ignored }
+        result.wrongAnswers += 1
+        correctStreak = 0
+        if appliesWrongAnswerPenalty {
+            spendLifeHalves(GameConfig.breachCostHalves)
+        }
+        guard lifeHalves > 0 else {
+            finish(reason: .outOfLives)
+            return .absorbed(endsSession: true)
+        }
+        return .absorbed(endsSession: false)
+    }
+
+    /// Restores a whole life when the comeback crab reaches the King. The
+    /// return value is the number of half-hearts restored, or zero when the
+    /// arrival was stale.
+    @discardableResult
+    public func catchLifeCrab() -> Int {
+        guard isLifeCrabAvailable,
               lifeHalves > 0,
               lifeHalves < GameConfig.startingLifeHalves else { return 0 }
-        let recovery = (lifeHalves == 1 || heartFishRestoresWholeLife)
-            ? GameConfig.criticalHeartFishRecoveryHalves
-            : GameConfig.heartFishRecoveryHalves
         let previous = lifeHalves
-        lifeHalves = min(GameConfig.startingLifeHalves, lifeHalves + recovery)
-        resetHeartFishProgress()
+        lifeHalves = min(GameConfig.startingLifeHalves,
+                         lifeHalves + GameConfig.lifeCrabRecoveryHalves)
+        spendLifeCrab()
         return lifeHalves - previous
     }
 
-    /// Hands the heart fish its cue directly, which is what the tutorial's
-    /// helper-fish step needs: there the fish is the lesson, not a reward the
-    /// player has to earn eight answers over.
-    public func makeHeartFishAvailable() {
+    /// Hands the life crab its cue directly, which is what the walkthrough's
+    /// step needs: there the crab is the lesson, not a reward that has to be
+    /// earned back from the brink first.
+    public func makeLifeCrabAvailable() {
         guard state != .gameOver, lifeHalves > 0 else { return }
-        heartFishProgress = heartFishTarget
-        isHeartFishAvailable = true
+        isCounting = true
+        lifeCrabProgress = lifeCrabTarget
+        isLifeCrabAvailable = true
     }
 
-    /// A missed heart fish returns after four more correct answers, rather than
-    /// making the player repeat the full eight-answer charge.
-    public func missHeartFish() {
-        guard isHeartFishAvailable else { return }
-        isHeartFishAvailable = false
-        heartFishTarget = heartFishProgress + GameConfig.heartFishRetryCorrectAnswers
+    /// Called once the comeback has happened — it cannot happen twice in a game.
+    public func spendLifeCrab() {
+        hasSpentLifeCrab = true
+        isLifeCrabAvailable = false
+        lifeCrabProgress = 0
     }
 
     // MARK: - Round transitions
@@ -390,25 +453,30 @@ nonisolated public final class MemoryGame {
     // MARK: - Private
 
     private func spendLifeHalves(_ halves: Int) {
-        let wasFull = lifeHalves == GameConfig.startingLifeHalves
         lifeHalves = max(0, lifeHalves - halves)
-        if wasFull && lifeHalves > 0 { resetHeartFishProgress() }
-    }
-
-    private func advanceHeartFishProgressIfNeeded() {
-        guard lifeHalves > 0,
-              lifeHalves < GameConfig.startingLifeHalves,
-              !isHeartFishAvailable else { return }
-        heartFishProgress += 1
-        if heartFishProgress >= heartFishTarget {
-            isHeartFishAvailable = true
+        // The first drop to the last life — whether it lands on one life or on
+        // a half — is what opens the comeback window.
+        if !isCounting, lifeHalves > 0, lifeHalves <= GameConfig.lifeCrabCriticalHalves {
+            isCounting = true
+            lifeCrabProgress = 0
+            lifeCrabTarget = GameConfig.lifeCrabCorrectAnswers
         }
     }
 
-    private func resetHeartFishProgress() {
-        heartFishProgress = 0
-        heartFishTarget = GameConfig.heartFishCorrectAnswers
-        isHeartFishAvailable = false
+    /// Counts the correct answers that follow the drop to the last life. The
+    /// crab only sets off once the player has genuinely steadied — and never on
+    /// a board that is all but finished, where a spare life buys nothing.
+    private func advanceLifeCrabProgressIfNeeded() {
+        guard isCounting,
+              !hasSpentLifeCrab,
+              !isLifeCrabAvailable,
+              lifeHalves > 0,
+              lifeHalves < GameConfig.startingLifeHalves else { return }
+        lifeCrabProgress += 1
+        guard lifeCrabProgress >= lifeCrabTarget else { return }
+        let progressShare = Double(cards) / Double(max(1, board.maximum))
+        guard progressShare < GameConfig.lifeCrabMaximumProgress else { return }
+        isLifeCrabAvailable = true
     }
 
     private func finish(reason: GameOverReason) {

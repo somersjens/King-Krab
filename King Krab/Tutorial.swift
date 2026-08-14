@@ -1,17 +1,17 @@
 //
 //  Tutorial.swift
-//  Number Reef
+//  King Krab
 //
-//  The guided first game. A new player is walked through the reef one step at a
-//  time: swimming, collecting the right answer, what a wrong one costs, the two
-//  helper fish, and the streak bonus — after which the level simply carries on
-//  as an ordinary session.
+//  The guided first game. A new player is walked through the arena one step at
+//  a time: smashing the wrong crabs, letting the right one reach the King, what
+//  a mistake costs, the two helper crabs and the golden streak — after which the
+//  level simply carries on as an ordinary session.
 //
 //  The tutorial never re-implements a rule. Each step only *shapes* what the
-//  reef releases (`ReefTutorialPlan`) and listens for the one thing that step is
-//  waiting for; scoring, lives and rounds keep running through `MemoryGame`
+//  arena sends in (`CrabTutorialPlan`) and listens for the one thing that step
+//  is waiting for; scoring, lives and rounds keep running through `MemoryGame`
 //  exactly as they do in a normal game. That is what makes the tutorial a real
-//  session rather than a scripted demo: the bubbles the player collects here
+//  session rather than a scripted demo: the shells the player collects here
 //  count, and the level continues from where the last step leaves it.
 //
 
@@ -20,25 +20,23 @@ import Combine
 
 // MARK: - Steps
 
-/// The nine in-game steps, in the order they are played. The tenth step of the
-/// script is the score pointer on the home screen, which lives there rather than
-/// in a session — see `HomeView`.
+/// The eight in-game steps, in the order they are played. The closing step of
+/// the script is the score pointer on the home screen, which lives there rather
+/// than in a session — see `HomeView`, which shows `tutorial.step.10` itself.
 enum TutorialStep: Int, CaseIterable, Identifiable {
-    /// Tap a point and the fish swims there. The marker sits below the fish.
-    case tapToSwim = 1
-    /// The same, held and dragged, with the marker at the top of the water.
-    case dragToSwim
-    /// Two bubbles, one of them right. A wrong touch costs nothing here.
-    case collectCorrect
-    /// Only wrong answers. Touching one costs a whole life and clears the water.
-    case wrongCostsLife
-    /// A heart fish, which hands a whole life back.
-    case heartFish
-    /// A 2x fish, which doubles the next answer.
-    case bonusFish
-    /// Five right answers in a row, one bubble at a time, to reach the streak.
+    /// Only wrong answers walk in. Tapping them costs nothing here.
+    case smashWrong = 1
+    /// One right answer among the wrong ones: let that one through.
+    case guardCorrect
+    /// A full wave, with what smashing the right crab would cost spelled out.
+    case protectKing
+    /// The comeback crab, which walks a life to the King.
+    case lifeCrab
+    /// The 2x crab, which doubles the next answer.
+    case bonusCrab
+    /// Three right answers in a row, one crab at a time, to reach the streak.
     case buildStreak
-    /// The streak is running: two bubbles at the boosted tempo.
+    /// The streak is running: gold crabs, double shells.
     case superBonusRunning
     /// Normal play resumes; the last message clears itself after a few seconds.
     case freePlay
@@ -55,57 +53,48 @@ enum TutorialStep: Int, CaseIterable, Identifiable {
     static let freePlayMessageDuration = 5.0
 }
 
-// MARK: - What the reef should release
+// MARK: - What the arena should send in
 
-/// The shape the tutorial asks the reef to take for the current step. The reef
-/// owns *how* it releases bubbles and fish; this only says what may be in the
-/// water while a step is being taught.
-struct ReefTutorialPlan: Equatable {
-    /// One fixed wave: how many right and wrong answers the coral offers before
-    /// starting the same set over again.
+/// The shape the tutorial asks the arena to take for the current step. The
+/// arena owns *how* crabs walk, are smashed and arrive; this only says what may
+/// be on the sea floor while a step is being taught.
+struct CrabTutorialPlan: Equatable {
+    /// One fixed wave: how many right and wrong answers walk in together.
     struct Wave: Equatable {
         var correct: Int
         var wrong: Int
     }
 
-    /// False for every ordinary session, which leaves the reef untouched.
+    /// False for every ordinary session, which leaves the arena untouched.
     var isActive = false
-    /// Where the player has to swim, in the open water's own unit coordinates
-    /// (0 = just under the HUD, 1 = just above the coral). A marker is drawn
-    /// there and reaching it reports `reachedSwimTarget`.
-    var swimTarget: UnitPoint?
-    /// Draws a finger tracing the way from the fish to the target. The second
-    /// step asks for a different *gesture* rather than a different place, and
-    /// its wording alone reads much like the first one's.
-    var showsSwipeHint = false
-    /// Fixes the composition of every wave. Nil leaves the normal set of five.
+    /// Fixes the composition of every wave. Nil leaves the normal four.
     var answers: Wave?
-    /// No answer bubble may be in the water at all.
+    /// No answer crab may be on the sea floor at all.
     var suppressesAnswers = false
-    /// A wrong touch bursts the whole wave instead of only the bubble hit.
-    var burstsWaveOnWrong = false
-    /// Puts a 2x fish in the water, and puts it back whenever it is missed.
-    var wantsBonusFish = false
-    /// The same for the heart fish.
-    var wantsHeartFish = false
+    /// Sends the 2x crab across, and sends it back whenever it is missed.
+    var wantsBonusCrab = false
+    /// The same for the comeback crab.
+    var wantsLifeCrab = false
 }
 
-/// The three things the reef itself notices, which the tutorial waits on.
-enum ReefTutorialEvent {
-    case reachedSwimTarget
-    case caughtBonusFish
-    case caughtHeartFish
+/// The things the arena itself notices, which the tutorial waits on.
+enum CrabTutorialEvent {
+    case smashedWrongCrab
+    /// The last crab of a wave was smashed, leaving the sea floor empty.
+    case clearedWave
+    case caughtBonusCrab
+    case lifeCrabArrived
 }
 
 // MARK: - Controller
 
-/// Runs the script: holds the current step, hands the reef its plan, and moves
+/// Runs the script: holds the current step, hands the arena its plan, and moves
 /// on the moment the step's own condition is met. Everything it needs to know
 /// arrives as an event — nothing here polls the game.
 @MainActor
 final class TutorialController: ObservableObject {
     @Published private(set) var step: TutorialStep?
-    @Published private(set) var plan = ReefTutorialPlan()
+    @Published private(set) var plan = CrabTutorialPlan()
 
     /// The session being taught. Weak, so the controller can never keep a
     /// finished game alive.
@@ -131,21 +120,21 @@ final class TutorialController: ObservableObject {
             self?.answerResolved(isCorrect: isCorrect, startedStreak: startedStreak)
         }
         // Whatever happens to this session from here — finished, lost or left —
-        // the player has seen the reef, so the home screen owes them the last
+        // the player has seen the arena, so the home screen owes them the last
         // step of the script.
         GameSettings.tutorialHomeHintPending = true
-        enter(.tapToSwim)
+        enter(.smashWrong)
     }
 
     /// Ends the walkthrough and hands the level back unchanged: normal waves,
-    /// normal penalties, normal helper fish.
+    /// normal penalties, normal helper crabs.
     func finish() {
         guard step != nil else { return }
         generation &+= 1
         release()
         withAnimation(.easeOut(duration: 0.32)) {
             step = nil
-            plan = ReefTutorialPlan()
+            plan = CrabTutorialPlan()
         }
     }
 
@@ -156,27 +145,30 @@ final class TutorialController: ObservableObject {
         generation &+= 1
         release()
         step = nil
-        plan = ReefTutorialPlan()
+        plan = CrabTutorialPlan()
     }
 
     private func release() {
         model?.setWrongAnswerPenalty(true)
-        model?.setHeartFishRestoresWholeLife(false)
         model?.onAnswerResolved = nil
     }
 
     // MARK: Events
 
-    /// Reported by the reef itself.
-    func handle(_ event: ReefTutorialEvent) {
+    /// Reported by the arena itself.
+    func handle(_ event: CrabTutorialEvent) {
         guard let step else { return }
         switch event {
-        case .reachedSwimTarget:
-            if step == .tapToSwim || step == .dragToSwim { advance() }
-        case .caughtHeartFish:
-            if step == .heartFish { advance() }
-        case .caughtBonusFish:
-            if step == .bonusFish { advance() }
+        case .smashedWrongCrab:
+            break
+        case .clearedWave:
+            // The first step is over once every wrong crab has been dealt with,
+            // which is exactly the skill it teaches.
+            if step == .smashWrong { advance() }
+        case .caughtBonusCrab:
+            if step == .bonusCrab { advance() }
+        case .lifeCrabArrived:
+            if step == .lifeCrab { advance() }
         }
     }
 
@@ -184,16 +176,12 @@ final class TutorialController: ObservableObject {
     private func answerResolved(isCorrect: Bool, startedStreak: Bool) {
         guard let step else { return }
         switch step {
-        case .collectCorrect:
+        case .guardCorrect, .protectKing, .superBonusRunning:
             if isCorrect { advance() }
-        case .wrongCostsLife:
-            if !isCorrect { advance() }
         case .buildStreak:
-            // True on the answer that starts the boost, which is the fifth in
-            // a row — the whole point of this step.
+            // True on the answer that starts the boost, which is the third in a
+            // row — the whole point of this step.
             if startedStreak { advance() }
-        case .superBonusRunning:
-            if isCorrect { advance() }
         default:
             break
         }
@@ -213,12 +201,11 @@ final class TutorialController: ObservableObject {
         generation &+= 1
         let token = generation
 
-        // Only the "try it once" step is free: everywhere else a wrong answer
-        // costs exactly what it costs in a real game.
-        model?.setWrongAnswerPenalty(step != .collectCorrect)
-        if step == .heartFish {
-            model?.setHeartFishRestoresWholeLife(true)
-            model?.makeHeartFishAvailable()
+        // Only the opening step is free: everywhere else a mistake costs
+        // exactly what it costs in a real game.
+        model?.setWrongAnswerPenalty(step != .smashWrong)
+        if step == .lifeCrab {
+            model?.makeLifeCrabAvailable()
         }
 
         withAnimation(.spring(response: 0.44, dampingFraction: 0.86)) {
@@ -236,41 +223,31 @@ final class TutorialController: ObservableObject {
         }
     }
 
-    /// The reef's marching orders for each step.
-    ///
-    /// The two swim targets sit clear of the message card at the top and of the
-    /// coral at the bottom, so the fish always has open water to cross.
-    private static func plan(for step: TutorialStep) -> ReefTutorialPlan {
-        var plan = ReefTutorialPlan()
+    /// The arena's marching orders for each step.
+    private static func plan(for step: TutorialStep) -> CrabTutorialPlan {
+        var plan = CrabTutorialPlan()
         plan.isActive = true
         switch step {
-        case .tapToSwim:
-            plan.swimTarget = UnitPoint(x: 0.5, y: 0.88)
-            plan.suppressesAnswers = true
-        case .dragToSwim:
-            plan.swimTarget = UnitPoint(x: 0.5, y: 0.26)
-            plan.showsSwipeHint = true
-            plan.suppressesAnswers = true
-        case .collectCorrect:
-            plan.answers = .init(correct: 1, wrong: 1)
-        case .wrongCostsLife:
-            // Every wrong answer this question has. A round carries one right
-            // answer and `GameConfig.distractorCount` wrong ones, and the same
-            // number may never be in the water twice.
+        case .smashWrong:
+            // Every wrong answer this question has, and no right one: there is
+            // nothing here to protect yet, so tapping is all there is to learn.
             plan.answers = .init(correct: 0, wrong: GameConfig.distractorCount)
-            plan.burstsWaveOnWrong = true
-        case .heartFish:
-            plan.suppressesAnswers = true
-            plan.wantsHeartFish = true
-        case .bonusFish:
-            plan.suppressesAnswers = true
-            plan.wantsBonusFish = true
-        case .buildStreak:
-            plan.answers = .init(correct: 1, wrong: 0)
-        case .superBonusRunning:
+        case .guardCorrect:
             plan.answers = .init(correct: 1, wrong: 1)
+        case .protectKing:
+            plan.answers = .init(correct: 1, wrong: 2)
+        case .lifeCrab:
+            plan.suppressesAnswers = true
+            plan.wantsLifeCrab = true
+        case .bonusCrab:
+            plan.suppressesAnswers = true
+            plan.wantsBonusCrab = true
+        case .buildStreak:
+            plan.answers = .init(correct: 1, wrong: 1)
+        case .superBonusRunning:
+            plan.answers = .init(correct: 1, wrong: 2)
         case .freePlay:
-            // Nothing shaped any more: full waves, both helper fish back on
+            // Nothing shaped any more: full waves, both helper crabs back on
             // their own schedule. Only the message is still the tutorial's.
             break
         }
@@ -322,95 +299,6 @@ struct TutorialMessageCard: View {
         }
         .frame(maxWidth: isPad ? 620 : 420)
         .accessibilityElement(children: .combine)
-    }
-}
-
-// MARK: - Swim marker
-
-/// The pulsing ring the first two steps ask the player to swim to.
-struct TutorialTargetView: View {
-    let theme: AnimalCharacter
-    /// The reef's own clock, so the pulse freezes with everything else when the
-    /// game is paused.
-    let clock: Double
-    let isPad: Bool
-
-    private var diameter: CGFloat { isPad ? 96 : 72 }
-
-    var body: some View {
-        let beat = (sin(clock * 3.4) + 1) / 2
-        ZStack {
-            Circle()
-                .fill(.white.opacity(0.18))
-            Circle()
-                .stroke(.white.opacity(0.9), lineWidth: isPad ? 4 : 3)
-                .scaleEffect(0.62 + 0.38 * beat)
-                .opacity(1 - beat * 0.75)
-            Circle()
-                .stroke(theme.deepColor.opacity(0.9), style: StrokeStyle(
-                    lineWidth: isPad ? 4 : 3, dash: [isPad ? 12 : 9, isPad ? 9 : 7]
-                ))
-                .rotationEffect(.radians(clock * 0.9))
-            Image(systemName: "target")
-                .font(.system(size: diameter * 0.34, weight: .bold))
-                .foregroundStyle(.white)
-                .shadow(color: theme.deepColor.opacity(0.6), radius: 3)
-        }
-        .frame(width: diameter, height: diameter)
-        .scaleEffect(1 + 0.05 * beat)
-        .shadow(color: .white.opacity(0.7), radius: 10)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
-// MARK: - Swipe hint
-
-/// A finger sliding from the fish to the marker, over and over. It is what
-/// makes the second swimming step visibly a *different* instruction from the
-/// first: same water, same marker, but held and dragged rather than tapped.
-struct TutorialSwipeHint: View {
-    let start: CGPoint
-    let end: CGPoint
-    let theme: AnimalCharacter
-    /// The reef's clock, so the hand stops with the rest of the scene.
-    let clock: Double
-    let isPad: Bool
-
-    /// One full pass, plus a short beat before it starts over.
-    private static let cycle = 2.0
-    private static let travel = 1.45
-
-    var body: some View {
-        let phase = clock.truncatingRemainder(dividingBy: Self.cycle)
-        let progress = min(1, phase / Self.travel)
-        let eased = progress * progress * (3 - 2 * progress)
-        let point = CGPoint(x: start.x + (end.x - start.x) * eased,
-                            y: start.y + (end.y - start.y) * eased)
-        // Fades in as it leaves the fish and out as it arrives, so the loop
-        // never snaps back across the screen.
-        let fade = min(1, progress / 0.18) * min(1, (1 - progress) / 0.22)
-
-        ZStack(alignment: .topLeading) {
-            Path { path in
-                path.move(to: start)
-                path.addLine(to: end)
-            }
-            .stroke(.white.opacity(0.5), style: StrokeStyle(
-                lineWidth: isPad ? 5 : 4, lineCap: .round, dash: [1, isPad ? 16 : 13]
-            ))
-
-            Image(systemName: "hand.point.up.left.fill")
-                .font(.system(size: isPad ? 40 : 30, weight: .semibold))
-                .foregroundStyle(.white)
-                .shadow(color: theme.deepColor.opacity(0.75), radius: 4)
-                // The glyph points up and to the left from its own fingertip.
-                .offset(x: isPad ? 13 : 10, y: isPad ? 19 : 14)
-                .position(point)
-                .opacity(fade)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 }
 

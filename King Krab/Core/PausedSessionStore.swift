@@ -31,10 +31,14 @@ nonisolated public struct PausedSession: Codable, Equatable, Sendable {
     /// decodable and simply resume without an active streak/aura.
     public let correctStreak: Int?
     public let hasBonusFishPower: Bool?
-    /// Optional for compatibility with sessions saved before heart fish.
+    /// Optional for compatibility with sessions saved before the comeback
+    /// crab. The names are the ones these fields were first written under; they
+    /// now carry the life crab's meter.
     public let heartFishProgress: Int?
     public let heartFishTarget: Int?
     public let isHeartFishAvailable: Bool?
+    /// Whether this run has already had its one comeback.
+    public let hasSpentLifeCrab: Bool?
 
     public init(boardID: String,
                 roundNumber: Int,
@@ -49,7 +53,8 @@ nonisolated public struct PausedSession: Codable, Equatable, Sendable {
                 hasBonusFishPower: Bool? = nil,
                 heartFishProgress: Int? = nil,
                 heartFishTarget: Int? = nil,
-                isHeartFishAvailable: Bool? = nil) {
+                isHeartFishAvailable: Bool? = nil,
+                hasSpentLifeCrab: Bool? = nil) {
         self.boardID = boardID
         self.roundNumber = roundNumber
         self.cards = cards
@@ -64,6 +69,7 @@ nonisolated public struct PausedSession: Codable, Equatable, Sendable {
         self.heartFishProgress = heartFishProgress
         self.heartFishTarget = heartFishTarget
         self.isHeartFishAvailable = isHeartFishAvailable
+        self.hasSpentLifeCrab = hasSpentLifeCrab
     }
 
     /// A record is only usable if it describes a session that can still be
@@ -78,7 +84,7 @@ nonisolated public struct PausedSession: Codable, Equatable, Sendable {
             && wrongAnswers >= 0
             && (correctStreak ?? 0) >= 0
             && (heartFishProgress ?? 0) >= 0
-            && (heartFishTarget ?? GameConfig.heartFishCorrectAnswers) >= 1
+            && (heartFishTarget ?? GameConfig.lifeCrabCorrectAnswers) >= 1
     }
 }
 

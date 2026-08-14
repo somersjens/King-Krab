@@ -9,24 +9,88 @@
 
 import SwiftUI
 
-/// The game's currency. A player collects bubbles: in the reef, on the menu
+/// The game's currency. A player collects shells: on the sea floor, on the menu
 /// totals, on the level cards and in the shop. One glyph, used everywhere, so
 /// the same thing is never drawn two ways.
 enum Currency {
-    static let icon = "bubble"
+    /// Identifies the currency glyph where a view has to tell it apart from an
+    /// SF Symbol. It is drawn by `CurrencyIcon`, not loaded from the catalog.
+    static let icon = "shell"
 }
 
-/// The artwork used anywhere a bubble count is shown. The source PNG is
-/// rendered as a template so it keeps following each character's theme color.
+/// The glyph used anywhere a shell count is shown. It is drawn rather than
+/// loaded, so it stays crisp from the 9-point level card up to the flying
+/// reward, and it takes the surrounding foreground style exactly as the old
+/// template image did.
 struct CurrencyIcon: View {
     let size: CGFloat
 
     var body: some View {
-        Image(Currency.icon)
-            .renderingMode(.template)
-            .resizable()
-            .scaledToFit()
+        ShellShape()
+            .fill(.foreground, style: FillStyle(eoFill: true))
             .frame(width: size, height: size)
+    }
+}
+
+/// A scallop shell: a ribbed fan hinged at the bottom. The ribs are cut out of
+/// the same path, so the whole glyph is one silhouette in one colour.
+struct ShellShape: Shape {
+    /// Bumps along the top edge.
+    private static let scallops = 5
+
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        func point(_ x: Double, _ y: Double) -> CGPoint {
+            CGPoint(x: rect.minX + w * x, y: rect.minY + h * y)
+        }
+
+        let hinge = point(0.5, 0.97)
+        // The fan's top edge: a dome from the left corner to the right one.
+        let rim: [CGPoint] = (0...Self.scallops).map { index in
+            let t = Double(index) / Double(Self.scallops)
+            return point(0.05 + 0.90 * t, 0.44 - 0.36 * sin(.pi * t))
+        }
+
+        var path = Path()
+        path.move(to: hinge)
+        path.addQuadCurve(to: rim[0], control: point(0.10, 0.82))
+        for index in 1...Self.scallops {
+            let previous = rim[index - 1]
+            let next = rim[index]
+            let mid = CGPoint(x: (previous.x + next.x) / 2, y: (previous.y + next.y) / 2)
+            // Push each scallop's control point away from the hinge, which is
+            // what turns a plain dome into a fluted edge.
+            let dx = mid.x - hinge.x
+            let dy = mid.y - hinge.y
+            let length = max(0.001, (dx * dx + dy * dy).squareRoot())
+            path.addQuadCurve(to: next,
+                              control: CGPoint(x: mid.x + dx / length * w * 0.09,
+                                               y: mid.y + dy / length * h * 0.09))
+        }
+        path.addQuadCurve(to: hinge, control: point(0.90, 0.82))
+        path.closeSubpath()
+
+        // The ribs, cut out by the even-odd rule.
+        for index in 1..<Self.scallops {
+            let tip = rim[index]
+            let dx = tip.x - hinge.x
+            let dy = tip.y - hinge.y
+            let length = max(0.001, (dx * dx + dy * dy).squareRoot())
+            let normalX = -dy / length
+            let normalY = dx / length
+            let width = w * 0.028
+            func along(_ amount: CGFloat, _ spread: CGFloat) -> CGPoint {
+                CGPoint(x: hinge.x + dx * amount + normalX * width * spread,
+                        y: hinge.y + dy * amount + normalY * width * spread)
+            }
+            path.move(to: along(0.14, 1))
+            path.addLine(to: along(0.90, 0.45))
+            path.addLine(to: along(0.90, -0.45))
+            path.addLine(to: along(0.14, -1))
+            path.closeSubpath()
+        }
+        return path
     }
 }
 
@@ -92,10 +156,6 @@ enum CharacterCatalog {
     /// the menu and the motion trail behind a portrait all carry the colours
     /// the player is actually looking at.
     static let all: [AnimalCharacter] = [
-        AnimalCharacter(id: "octopus", name: "Octopus", emoji: "🐙", slot: 1,
-                        primaryRGB: (0.62, 0.40, 0.87), deepRGB: (0.35, 0.18, 0.60),
-                        skyRGB: (0.93, 0.88, 0.99), tintRGB: (0.88, 0.79, 0.98),
-                        sideAspectRatio: 1.599),
         AnimalCharacter(id: "crab", name: "Crab", emoji: "🦀", slot: 2,
                         primaryRGB: (0.90, 0.27, 0.10), deepRGB: (0.62, 0.13, 0.03),
                         skyRGB: (1.00, 0.90, 0.87), tintRGB: (1.00, 0.82, 0.77),
@@ -131,7 +191,11 @@ enum CharacterCatalog {
         AnimalCharacter(id: "lion", name: "Lion", emoji: "🦁", slot: 10,
                         primaryRGB: (0.95, 0.74, 0.20), deepRGB: (0.68, 0.45, 0.08),
                         skyRGB: (1.00, 0.96, 0.87), tintRGB: (1.00, 0.94, 0.77),
-                        sideAspectRatio: 1.384)
+                        sideAspectRatio: 1.384),
+        AnimalCharacter(id: "octopus", name: "Octopus", emoji: "🐙", slot: 1,
+                        primaryRGB: (0.62, 0.40, 0.87), deepRGB: (0.35, 0.18, 0.60),
+                        skyRGB: (0.93, 0.88, 0.99), tintRGB: (0.88, 0.79, 0.98),
+                        sideAspectRatio: 1.599)
     ]
 
     static func character(id: String) -> AnimalCharacter {
