@@ -125,8 +125,20 @@ struct AnimalCharacter: Identifiable, Equatable {
     /// Facing the player: menus, cards, the shop and every portrait slot.
     /// All ten assets are square and optically equalised, so one square frame
     /// renders any character at the same apparent size.
-    var imageName: String { "front_\(slot)" }
+    ///
+    /// A character with a hero portrait of its own uses that instead of its
+    /// catalog slot: the crowned King Krab is the app's own mascot, and the
+    /// menu, the shop and the start screen all show him rather than the plain
+    /// crab from the catalog sheet.
+    var imageName: String { Self.heroPortraits[id] ?? "front_\(slot)" }
     var artwork: Image { Image(imageName) }
+
+    private static let heroPortraits = ["crab": "1_main"]
+
+    /// The separate limbs the arena animates this character from, when the
+    /// character has been cut into parts. Everyone else is drawn from the one
+    /// square portrait above, so a character without a rig still works.
+    var rig: CharacterRig? { CharacterRig.rig(for: id) }
 
     /// Facing the way it swims, used while playing.
     var sideImageName: String { "side_\(slot)" }

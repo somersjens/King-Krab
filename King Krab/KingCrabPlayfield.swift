@@ -205,6 +205,7 @@ struct KingCrabPlayfield: View {
                 arena.setSpeedMultiplier(isStreakBoostActive
                                          ? GameConfig.streakSpeedMultiplier : 1)
                 arena.setScoreTarget(scoreTarget)
+                arena.setClawTip(character.rig?.clawReach ?? ArenaConfig.clawTip)
                 arena.setRunning(isRunning)
                 if playsKingEntrance {
                     arena.beginKingEntrance(completion: onKingEntranceComplete)
@@ -345,19 +346,17 @@ private struct KingCrabView: View {
         king.sweepAge.map { min(1, $0 / ArenaConfig.sweepDuration) }
     }
 
-    /// The rise out of the sand before the first round.
-    private var entrance: Double {
-        guard let age = king.entranceAge else { return 1 }
-        return min(1, age / ArenaConfig.entranceDuration)
-    }
-
-    /// A slow breath at rest, a hard round-house while sweeping, and an outright
-    /// jig once the level is won.
+    /// A slow breath at rest, a lurching stride while he is crossing the floor,
+    /// a hard round-house while sweeping, and an outright jig once the level is
+    /// won. Used for the characters that are drawn from one flat picture: the
+    /// rigged King gets all of this out of his own limbs instead.
     private var lean: Double {
         if king.isCheering { return sin(clock * 7.5) * 13 }
-        guard let sweep, sweep < 1 else { return sin(clock * 1.4) * 1.6 }
-        // One full swing out and back, so the blow lands and recovers.
-        return sin(sweep * .pi * 2) * 18 * king.sweepDirection
+        if let sweep, sweep < 1 {
+            // One full swing out and back, so the blow lands and recovers.
+            return sin(sweep * .pi * 2) * 18 * king.sweepDirection
+        }
+        return sin(clock * 1.4) * 1.6 + sin(king.stride) * 7 * king.effort
     }
 
     private var pulse: CGFloat {
@@ -366,14 +365,98 @@ private struct KingCrabView: View {
         return 1 + CGFloat(sin(sweep * .pi)) * 0.15
     }
 
+    // MARK: The rigged pose
+
+    /// Everything the King's own limbs are doing this frame, built up from the
+    /// simulation: the gait underneath, then whichever of the sweep, the hop or
+    /// the two claw throws is playing over the top of it.
+    private var pose: KingRigPose {
+        var pose = KingRigPose.idle(clock: clock, stride: king.stride, effort: king.effort)
+
+        // The blow: he drops his weight and drives both claws down and out.
+        if let sweep, sweep < 1 {
+            let swing = sin(sweep * .pi * 2) * king.sweepDirection
+            let drive = sin(sweep * .pi)
+            pose.lean += swing * 10
+            pose.stretch -= CGFloat(drive) * 0.10
+            pose.leftClaw += -drive * 40 - swing * 10
+            pose.rightClaw += drive * 40 - swing * 10
+            pose.leftLegs -= drive * 8
+            pose.rightLegs += drive * 8
+        }
+
+        // Winning the board: claws thrown up, and a hop he tucks his legs under.
+        if let age = king.farewellAge {
+            let hop = min(1, age / ArenaConfig.kingHopDuration)
+            let tuck = sin(hop * .pi)
+            if hop < 1 {
+                // Crouch, spring, tuck, land. The squash is what sells it.
+                pose.stretch += CGFloat(sin(hop * .pi) * 0.18 - (hop < 0.16 ? 0.12 : 0))
+                pose.leftLegs -= tuck * 24
+                pose.rightLegs += tuck * 24
+            }
+            if king.isCheering {
+                pose.leftClaw -= 32 + sin(clock * 9) * 8
+                pose.rightClaw += 32 + sin(clock * 9 + 1.2) * 8
+            }
+            if king.effort > 0 {
+                // Running off: leaning into it, claws swept back.
+                pose.lean += 7
+                pose.leftClaw += 12
+                pose.rightClaw += 12
+            }
+        }
+
+        pose.leftClaw += throwAngle(king.leftClaw, isRight: false)
+        pose.rightClaw += throwAngle(king.rightClaw, isRight: true)
+        return pose
+    }
+
+    /// One throw: the claw cocks up, snaps out to full reach — which is where
+    /// the sand leaves it — and eases home.
+    ///
+    /// Turning a claw *inward* carries it up toward the crown, so the wind-up
+    /// stays the smaller of the two moves: enough to read as a wind-up while
+    /// the pincer stays clear of the head. The strike is the big one, and it
+    /// throws the claw right down and out past the shell.
+    private func throwAngle(_ swing: ClawThrow?, isRight: Bool) -> Double {
+        guard let swing else { return 0 }
+        let t = swing.progress
+        let wind = ArenaConfig.clawWindUpShare
+        let strike = ArenaConfig.clawStrikeShare
+        // Positive degrees lift the left claw and drop the right one, so the
+        // sign of the whole swing flips with the side of the body.
+        let side: Double = isRight ? -1 : 1
+        let raised = 16.0
+        // He throws flatter at a crab above him and further down at one below,
+        // so the claw ends up pointing at what it is throwing at.
+        let rise = Double((king.anchor.y - swing.target.y) / max(1, size))
+        let thrown = -56.0 + max(-1, min(1, rise)) * 12
+
+        let value: Double
+        if t < wind {
+            let u = t / wind
+            value = raised * (1 - pow(1 - u, 2))
+        } else if t < wind + strike {
+            let u = (t - wind) / strike
+            value = raised + (thrown - raised) * (u * u * (3 - 2 * u))
+        } else {
+            let u = (t - wind - strike) / (1 - wind - strike)
+            value = thrown * (1 - u) * (1 - u)
+        }
+        return value * side
+    }
+
     var body: some View {
         ZStack {
             // A soft shadow welds him to the sand rather than leaving him
-            // hovering over it.
+            // hovering over it. It stays on the floor while he hops, and
+            // shrinks with the height, which is the whole of what makes a jump
+            // read as leaving the ground.
             Ellipse()
-                .fill(palette.sandDeep.opacity(0.34))
-                .frame(width: size * 0.82, height: size * 0.19)
-                .offset(y: size * 0.44)
+                .fill(palette.sandDeep.opacity(0.34 * shadowFade))
+                .frame(width: size * 0.82 * shadowFade, height: size * 0.19 * shadowFade)
+                .offset(y: size * groundDrop + king.lift)
                 .blur(radius: 5)
 
             if isStreakBoostActive {
@@ -388,40 +471,63 @@ private struct KingCrabView: View {
                 healGlow(progress: min(1, age / ArenaConfig.healDuration))
             }
 
-            character.artwork
-                .resizable()
-                .scaledToFit()
-                .frame(width: size, height: size)
-                .overlay(alignment: .top) {
-                    CrownShape()
-                        .fill(
-                            LinearGradient(colors: [Color(red: 1.0, green: 0.90, blue: 0.45),
-                                                    Color(red: 0.92, green: 0.66, blue: 0.10)],
-                                           startPoint: .top, endPoint: .bottom)
-                        )
-                        .overlay {
-                            CrownShape().stroke(Color(red: 0.62, green: 0.40, blue: 0.03),
-                                                lineWidth: isPad ? 2.4 : 1.8)
-                        }
-                        .frame(width: size * 0.42, height: size * 0.26)
-                        .offset(y: -size * 0.14)
-                        .shadow(color: .orange.opacity(0.45), radius: 4, y: 2)
-                }
-                .rotationEffect(.degrees(lean))
-                .scaleEffect(pulse)
-                .shadow(color: palette.coralDeep.opacity(0.24), radius: 7, y: 5)
+            figure
 
             if hasBonusPower {
                 bonusBadge
             }
         }
         .frame(width: size * 1.5, height: size * 1.5)
-        // The rise: he comes up out of the sand, so the first thing the player
-        // sees is the character they are about to defend.
-        .scaleEffect(0.6 + 0.4 * entrance)
-        .offset(y: size * 0.4 * (1 - CGFloat(entrance)))
-        .opacity(entrance)
         .accessibilityHidden(true)
+    }
+
+    /// A rigged character is animated limb by limb; everyone else is still one
+    /// picture with a crown drawn on top of it.
+    @ViewBuilder
+    private var figure: some View {
+        if let rig = character.rig {
+            RiggedCharacterView(rig: rig, pose: pose, size: size)
+                .shadow(color: palette.coralDeep.opacity(0.24), radius: 7, y: 5)
+        } else {
+            character.artwork
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+                .overlay(alignment: .top) { crown }
+                .rotationEffect(.degrees(lean))
+                .scaleEffect(pulse)
+                .shadow(color: palette.coralDeep.opacity(0.24), radius: 7, y: 5)
+        }
+    }
+
+    private var crown: some View {
+        CrownShape()
+            .fill(
+                LinearGradient(colors: [Color(red: 1.0, green: 0.90, blue: 0.45),
+                                        Color(red: 0.92, green: 0.66, blue: 0.10)],
+                               startPoint: .top, endPoint: .bottom)
+            )
+            .overlay {
+                CrownShape().stroke(Color(red: 0.62, green: 0.40, blue: 0.03),
+                                    lineWidth: isPad ? 2.4 : 1.8)
+            }
+            .frame(width: size * 0.42, height: size * 0.26)
+            .offset(y: -size * 0.14)
+            .shadow(color: .orange.opacity(0.45), radius: 4, y: 2)
+    }
+
+    /// How far below his middle the sand is. A rigged character stands on his
+    /// own feet, which hang past the bottom of the artwork square; a flat one
+    /// is drawn inside it and keeps the old line.
+    private var groundDrop: CGFloat {
+        guard let rig = character.rig else { return 0.44 }
+        return rig.groundLine - 0.5
+    }
+
+    /// Tightens and pales as he leaves the ground.
+    private var shadowFade: CGFloat {
+        guard king.lift > 0 else { return 1 }
+        return max(0.45, 1 - king.lift / (size * 0.5))
     }
 
     /// The blow itself: a wall of displaced water thrown out all around him,

@@ -150,11 +150,44 @@ enum ArenaConfig {
     /// The heal flash when the life crab gets through.
     static let healDuration = 1.0
 
-    /// The King rises out of the sand before the first round.
-    static let entranceDuration = 1.15
-    /// The first wave sets off just before the King has settled, so the round
-    /// opens into motion rather than into a held pose.
-    static let entranceAnswerLead = 0.32
+    /// The King scuttles on from the left before the first round and plants
+    /// himself in the middle of the floor.
+    static let entranceDuration = 1.05
+    /// The first wave sets off well before the King has settled, so the round
+    /// opens into motion rather than into a held pose — the crabs are already
+    /// coming while he is still crossing the last of the sand.
+    static let entranceAnswerLead = 0.46
+    /// Sand kicked up under him on the way in.
+    static let entrancePuffInterval = 0.085
+
+    /// Answering a tap: the claw on that side winds up and throws a handful of
+    /// sand at the crab the player picked. Short enough that a child who taps
+    /// twice in a second sees both throws.
+    static let clawThrowDuration = 0.32
+    /// The share of the throw spent cocking the claw back.
+    static let clawWindUpShare = 0.36
+    /// How much of the throw the strike itself takes, measured from the end of
+    /// the wind-up. What is left is the arm easing back to rest.
+    static let clawStrikeShare = 0.22
+    /// Where in the throw the sand actually leaves: near the end of the strike,
+    /// with the arm at full reach and moving fastest.
+    static let clawReleaseShare = 0.54
+    /// A second crab taken on the same side waits its turn rather than cutting
+    /// the throw short, so the arm always completes the swing it started.
+    static let clawThrowQueue = 3
+    /// How long the thrown sand takes to reach what it was thrown at.
+    static let sandFlightDuration = 0.18
+    /// The pincer at rest, as a share of the King's size from his centre. The
+    /// sand leaves from here so it comes out of a claw, not out of his middle.
+    static let clawTip = CGSize(width: 0.353, height: -0.255)
+
+    /// The finale: a hop on the spot, a beat to gather himself, then off to the
+    /// right at a run. A jump this high needs the airtime to match — halve the
+    /// duration and the same arc reads as a twitch rather than a leap.
+    static let kingHopDuration = 0.58
+    static let kingHopHeight: CGFloat = 0.68
+    static let kingHopSettle = 0.16
+    static let kingExitDuration = 0.72
 
     // MARK: Carrier crabs
 
@@ -179,9 +212,11 @@ enum ArenaConfig {
 
     // MARK: Level completion
 
-    /// Gather, cheer, and let the shells fill the water. The result card follows
-    /// motion rather than a frozen final frame.
-    static let completionDuration = 2.6
+    /// Hop, run, and hand over while he is still going. This lands a little
+    /// before the run ends, so the card comes up over a King on his way out of
+    /// frame rather than over an empty floor he left seconds ago.
+    static let completionDuration = kingHopDuration + kingHopSettle
+        + kingExitDuration * 0.86
 
     // MARK: Scenery
 
@@ -443,7 +478,8 @@ struct ShellReward: Identifiable {
     var age: Double = 0
 }
 
-/// One grain of the sand kicked up by an emerging, smashed or burrowing crab.
+/// One grain of the sand kicked up by an emerging, smashed or burrowing crab —
+/// or thrown by the King.
 struct SandGrain: Identifiable {
     let id = UUID()
     var position: CGPoint
@@ -452,6 +488,12 @@ struct SandGrain: Identifiable {
     /// 0 → pale sand, 1 → the darker tone underneath.
     let tone: Double
     let lifetime: Double
+    /// Sand knocked loose is thrown up and falls straight back; sand thrown at
+    /// something has to carry, so it drops far more slowly and keeps its aim.
+    /// The defaults are the disturbed-floor behaviour every puff has always had.
+    var gravity: CGFloat = 420
+    /// The share of its sideways speed a grain keeps per second.
+    var drag: CGFloat = 0.22
     var age: Double = 0
 }
 
@@ -493,9 +535,27 @@ struct CelebrationSpeck: Identifiable {
     var age: Double = 0
 }
 
-/// Where the King is and what he is doing. He never moves off his spot: the
-/// whole game is played around him.
+/// One swing of one claw: the wind-up, the throw, and the sand it lets go of.
+struct ClawThrow {
+    /// What is being thrown at, in arena coordinates.
+    let target: CGPoint
+    var age: Double = 0
+    /// Whether the sand has already left the claw this swing.
+    var hasThrown = false
+
+    /// 0 at the wind-up, 1 once the arm is back at rest.
+    var progress: Double { min(1, age / ArenaConfig.clawThrowDuration) }
+}
+
+/// Where the King is and what he is doing. The whole game is played around one
+/// spot — his `anchor` — which he leaves only to walk on at the start of a
+/// board and to run off at the end of one.
 struct KingState {
+    /// The spot the arena is built around. Crabs walk at it, shells leave from
+    /// it, and it moves only when the screen itself is re-laid out.
+    var anchor: CGPoint = .zero
+    /// Where he is actually drawn. Equal to `anchor` except while he is
+    /// arriving or leaving.
     var position: CGPoint = .zero
     /// Time since the current sweep started, or nil while he is simply waiting.
     var sweepAge: Double?
@@ -503,10 +563,27 @@ struct KingState {
     var sweepDirection: Double = 1
     /// Time since a life was handed back, which drives the heal glow.
     var healAge: Double?
-    /// Time since he rose out of the sand, or nil once he has settled.
+    /// Time since he came on from the left, or nil once he has settled.
     var entranceAge: Double?
+    /// Time since the board was won: the hop, and then the run off to the right.
+    var farewellAge: Double?
+    /// He has run off and stays off. The result card comes up while he is still
+    /// leaving, so without this he would be put back on his anchor underneath it
+    /// and read as walking off and then reappearing.
+    var hasLeft = false
     /// Set while the finale is playing.
     var isCheering = false
+    /// The swing each claw is in the middle of, if any. They are independent,
+    /// so a crab taken on the left never interrupts a throw on the right.
+    var leftClaw: ClawThrow?
+    var rightClaw: ClawThrow?
+    /// How hard the legs are working: 0 standing still, 1 at a full run.
+    var effort: Double = 0
+    /// Stride phase. It only ever advances, so a walk that speeds up or slows
+    /// down never jumps mid-step.
+    var stride: Double = 0
+    /// How far off the sand he is, in points. Only the finale's hop uses it.
+    var lift: CGFloat = 0
 }
 
 // MARK: - Engine
@@ -573,6 +650,7 @@ final class KingCrabArena: ObservableObject {
     private var crabSize: CGFloat = 56
     private var kingSize: CGFloat = 124
     private var scoreTarget: CGPoint?
+    private var clawTip = ArenaConfig.clawTip
 
     // MARK: Round state
 
@@ -592,6 +670,14 @@ final class KingCrabArena: ObservableObject {
     /// Counts down from a hand-over to the moment the King has the shell and
     /// sends it up to the score.
     private var shellHandOver: Double?
+
+    /// Crabs waiting to be thrown at, one queue per claw. A player who takes
+    /// two crabs on the same side in the same second gets two full throws, one
+    /// after the other; the arm is never yanked back mid-swing.
+    private var pendingLeftThrows: [CGPoint] = []
+    private var pendingRightThrows: [CGPoint] = []
+    /// Counts down to the next puff of sand under him while he is walking.
+    private var footPuff: Double = 0
 
     // At the start, one to three hidden question numbers are picked across the
     // whole board. This makes a 2x crab possible near the beginning or near the
@@ -668,14 +754,15 @@ final class KingCrabArena: ObservableObject {
         self.crabSize = ArenaConfig.crabSize(isPad: isPad)
         self.kingSize = ArenaConfig.kingSize(isPad: isPad)
 
-        let previousKing = king.position
-        king.position = CGPoint(x: arena.midX, y: arena.minY + arena.height * 0.54)
+        let previousKing = king.anchor
+        king.anchor = CGPoint(x: arena.midX, y: arena.minY + arena.height * 0.54)
+        placeKing(0)
         if !isFirst {
             // A rotation, or the walkthrough's message card claiming the top of
             // the arena, moves the King. Everything already walking toward him
             // moves with him, so no crab is left aiming at where he used to be.
-            let delta = CGPoint(x: king.position.x - previousKing.x,
-                                y: king.position.y - previousKing.y)
+            let delta = CGPoint(x: king.anchor.x - previousKing.x,
+                                y: king.anchor.y - previousKing.y)
             if delta.x != 0 || delta.y != 0 {
                 for index in crabs.indices { crabs[index].shift(by: delta) }
                 for index in carriers.indices { carriers[index].shift(by: delta) }
@@ -800,6 +887,13 @@ final class KingCrabArena: ObservableObject {
         scoreTarget = target
     }
 
+    /// Where this character's pincers actually are. A rigged character reaches
+    /// much further out of his own square than a flat portrait does, and the
+    /// thrown sand has to leave from the claw the player saw swing.
+    func setClawTip(_ offset: CGSize) {
+        clawTip = offset
+    }
+
     /// Starts and stops the simulation itself. Everything freezes when the game
     /// is paused, covered or left.
     func setRunning(_ running: Bool) {
@@ -850,6 +944,12 @@ final class KingCrabArena: ObservableObject {
         round = nil
         sweepGather = nil
         shellHandOver = nil
+        pendingLeftThrows.removeAll()
+        pendingRightThrows.removeAll()
+        king.leftClaw = nil
+        king.rightClaw = nil
+        king.farewellAge = nil
+        king.hasLeft = false
         entranceCompletion = nil
         completionElapsed = nil
         completionCallback = nil
@@ -866,8 +966,11 @@ final class KingCrabArena: ObservableObject {
         onTutorialEvent = nil
     }
 
-    /// The King climbs out of the sand before the first round. Gameplay is
-    /// deliberately started by the completion, not alongside it.
+    /// The King scuttles on from the left before the first round and takes up
+    /// his spot in the middle. Gameplay is deliberately started by the
+    /// completion, not alongside it — and that completion fires part-way
+    /// through the walk, so the first crabs are already on their way while he
+    /// is still crossing the floor.
     func beginKingEntrance(completion: @escaping () -> Void) {
         guard size.width > 0, arena.height > 0 else {
             completion()
@@ -875,13 +978,15 @@ final class KingCrabArena: ObservableObject {
         }
         entranceCompletion = completion
         entranceDidOpenRound = false
+        king.farewellAge = nil
+        king.hasLeft = false
         king.entranceAge = 0
-        burst(at: CGPoint(x: king.position.x, y: king.position.y + kingSize * 0.34),
-              strength: 1.4)
+        footPuff = 0
+        placeKing(0)
     }
 
-    /// Takes over after the final answer: the King cheers on his own floor while
-    /// shells stream up out of the sand.
+    /// Takes over after the final answer: the King hops for the board he has
+    /// just won, and runs off to the right while the shells stream up.
     func beginLevelCompletion(reduceMotion: Bool, completion: @escaping () -> Void) {
         guard completionElapsed == nil else { return }
         isLive = false
@@ -893,15 +998,28 @@ final class KingCrabArena: ObservableObject {
         completionCallback = completion
         completionSpeckCountdown = 0
         reducesCompletionMotion = reduceMotion
+        // Nothing is left to answer, so no throw is left to finish either.
+        king.leftClaw = nil
+        king.rightClaw = nil
+        pendingLeftThrows.removeAll()
+        pendingRightThrows.removeAll()
         king.isCheering = !reduceMotion
-        king.sweepAge = reduceMotion ? nil : 0
+        king.entranceAge = nil
+        king.farewellAge = reduceMotion ? nil : 0
+        king.hasLeft = false
+        king.sweepAge = nil
+        if reduceMotion { placeKing(0) }
     }
 
+    /// The finale is over as far as the session is concerned. He is deliberately
+    /// left where he ran to: only a fresh entrance puts him back on the floor.
     func endLevelCompletion() {
         completionElapsed = nil
         completionCallback = nil
         celebration.removeAll()
         king.isCheering = false
+        king.farewellAge = nil
+        placeKing(0)
     }
 
     // MARK: The walkthrough
@@ -949,7 +1067,11 @@ final class KingCrabArena: ObservableObject {
     /// The player touched the glass. Exactly one crab can be taken by one touch,
     /// and only ever the nearest one inside its own reach.
     func tap(at point: CGPoint) {
-        guard completionElapsed == nil, king.entranceAge == nil else { return }
+        // The first crabs set off while the King is still walking on, so a tap
+        // is live from the moment the round opens rather than from the moment
+        // he plants himself.
+        guard completionElapsed == nil,
+              king.entranceAge == nil || entranceDidOpenRound else { return }
 
         // The 2x crab stays catchable during answer feedback, exactly as the
         // passing power-up always has been.
@@ -979,12 +1101,12 @@ final class KingCrabArena: ObservableObject {
             guard onSmashedGuard?() == true else { return }
             isResolvingWave = true
             pendingWaveRestart = true
-            smash(index: index, from: point)
+            smash(index: index)
             // Every other crab gives up and digs itself back in, so the arena
             // is clear for the next attempt without a long wait.
             burrowLiveCrabs()
         } else {
-            smash(index: index, from: point)
+            smash(index: index)
             onSmash?(false)
             onTutorialEvent?(.smashedWrongCrab)
             if !crabs.contains(where: { $0.isLive }) {
@@ -1012,14 +1134,17 @@ final class KingCrabArena: ObservableObject {
         hypot(a.x - b.x, a.y - b.y)
     }
 
-    private func smash(index: Int, from point: CGPoint) {
+    private func smash(index: Int) {
         var crab = crabs[index]
         crab.phase = .smashed
         crab.phaseAge = 0
-        // Thrown away from the finger and up out of the sand, so the hit reads
-        // as a blow rather than as a disappearance.
-        let dx = crab.position.x - point.x
-        let dy = crab.position.y - point.y
+        // The King throws sand at whatever the player picks, so the crab is
+        // thrown away from *him* and up out of the sand: the blast and the crab
+        // it clears travel the same way, and the hit reads as one blow rather
+        // than as a disappearance.
+        requestClawThrow(at: hitCentre(of: crab))
+        let dx = crab.position.x - king.anchor.x
+        let dy = crab.position.y - king.anchor.y
         let length = max(1, hypot(dx, dy))
         crab.flingVelocity = CGPoint(x: dx / length * CGFloat.random(in: 220...320),
                                      y: dy / length * 90 - CGFloat.random(in: 240...330))
@@ -1105,10 +1230,10 @@ final class KingCrabArena: ObservableObject {
 
         for (index, option) in options.enumerated() {
             let entry = entries[index]
-            let angle = atan2(Double(entry.y - king.position.y),
-                              Double(entry.x - king.position.x))
-            let target = CGPoint(x: king.position.x + ring * CGFloat(cos(angle)),
-                                 y: king.position.y + ring * CGFloat(sin(angle)))
+            let angle = atan2(Double(entry.y - king.anchor.y),
+                              Double(entry.x - king.anchor.x))
+            let target = CGPoint(x: king.anchor.x + ring * CGFloat(cos(angle)),
+                                 y: king.anchor.y + ring * CGFloat(sin(angle)))
             let start = offscreenStart(for: entry)
             // Where along the walk the answer can be read: the number sits in
             // the middle of the shell, so that happens well before the crab is
@@ -1429,13 +1554,16 @@ final class KingCrabArena: ObservableObject {
             }
             king.entranceAge = age >= ArenaConfig.entranceDuration ? nil : age
             if king.entranceAge == nil, !entranceDidOpenRound {
-                // Normally delivered during the rise, but keep a fallback so a
+                // Normally delivered during the walk, but keep a fallback so a
                 // future timing change can never stall play.
                 entranceDidOpenRound = true
                 let completion = entranceCompletion
                 entranceCompletion = nil
                 completion?()
             }
+        }
+        if let age = king.farewellAge {
+            king.farewellAge = age + dt
         }
         if var age = king.sweepAge {
             age += dt
@@ -1444,6 +1572,154 @@ final class KingCrabArena: ObservableObject {
         if var age = king.healAge {
             age += dt
             king.healAge = age >= ArenaConfig.healDuration ? nil : age
+        }
+        placeKing(dt)
+        moveClaws(dt)
+    }
+
+    /// Far enough past the right edge that no part of him is still showing.
+    private var exitPoint: CGFloat { size.width + kingSize }
+
+    /// Works out where the King is standing this frame and how hard his legs
+    /// are working, from whichever of the two journeys he is on. At rest — the
+    /// whole of normal play — this settles him on his anchor and leaves the
+    /// idling to the view.
+    private func placeKing(_ dt: Double) {
+        var point = king.anchor
+        var effort = 0.0
+        var lift: CGFloat = 0
+
+        if let age = king.entranceAge {
+            // He comes on at a scurry and eases down onto his spot, so the
+            // arrival reads as an animal stopping rather than as a slide ending.
+            let t = min(1, age / ArenaConfig.entranceDuration)
+            let eased = CGFloat(1 - pow(1 - t, 2.4))
+            let start = arena.minX - kingSize * 0.95
+            point.x = start + (king.anchor.x - start) * eased
+            // Working right up to the last stride, then planting himself.
+            effort = min(1, (1 - t) / 0.18)
+        } else if king.hasLeft {
+            // He is gone. Nothing brings him back on stage while the result is
+            // coming up over the floor he just ran off.
+            point.x = exitPoint
+        } else if let age = king.farewellAge {
+            let hop = ArenaConfig.kingHopDuration
+            let settle = hop + ArenaConfig.kingHopSettle
+            if age < hop {
+                // One jump on the spot, straight up and straight down.
+                let t = age / hop
+                lift = CGFloat(sin(t * .pi)) * kingSize * ArenaConfig.kingHopHeight
+            } else if age >= settle {
+                let t = min(1, (age - settle) / ArenaConfig.kingExitDuration)
+                // Accelerating away rather than starting at full speed.
+                let eased = CGFloat(t * t)
+                point.x = king.anchor.x + (exitPoint - king.anchor.x) * eased
+                effort = 1
+                if t >= 1 { king.hasLeft = true }
+            }
+        }
+
+        // The stride only ever runs forward, so a walk that speeds up or slows
+        // down never jumps a step. Even standing still he shifts his weight.
+        king.stride += dt * (2.3 + 17 * effort)
+        king.effort = effort
+        king.lift = lift
+        king.position = CGPoint(x: point.x, y: point.y - lift)
+
+        guard effort > 0.35, dt > 0, size.width > 0 else { return }
+        footPuff -= dt
+        guard footPuff <= 0 else { return }
+        footPuff = ArenaConfig.entrancePuffInterval
+        // Sand kicked out behind him. He is always travelling right, so it is
+        // always thrown back to the left.
+        burst(at: CGPoint(x: king.position.x - kingSize * 0.22,
+                          y: king.anchor.y + kingSize * 0.30),
+              strength: 0.5, drift: -230)
+    }
+
+    // MARK: The claws
+
+    /// The King answers the crab the player picked with the claw on that side:
+    /// the two answers on the left are thrown at with the left claw, the two on
+    /// the right with the right one.
+    private func requestClawThrow(at target: CGPoint) {
+        if target.x >= king.anchor.x {
+            enqueue(target, in: &king.rightClaw, queue: &pendingRightThrows)
+        } else {
+            enqueue(target, in: &king.leftClaw, queue: &pendingLeftThrows)
+        }
+    }
+
+    private func enqueue(_ target: CGPoint, in claw: inout ClawThrow?,
+                         queue: inout [CGPoint]) {
+        guard claw != nil else {
+            claw = ClawThrow(target: target)
+            return
+        }
+        // A swing already under way is always finished. The next crab waits its
+        // turn behind it rather than cutting it short.
+        guard queue.count < ArenaConfig.clawThrowQueue else { return }
+        queue.append(target)
+    }
+
+    private func moveClaws(_ dt: Double) {
+        // Deliberately by value rather than `inout`: releasing the sand reads
+        // where the King is standing, which is the same `king` an in-place
+        // update would already be holding.
+        king.leftClaw = advanced(king.leftClaw, queue: &pendingLeftThrows,
+                                 isRight: false, dt)
+        king.rightClaw = advanced(king.rightClaw, queue: &pendingRightThrows,
+                                  isRight: true, dt)
+    }
+
+    private func advanced(_ claw: ClawThrow?, queue: inout [CGPoint],
+                          isRight: Bool, _ dt: Double) -> ClawThrow? {
+        guard var swing = claw else { return nil }
+        swing.age += dt
+        if !swing.hasThrown,
+           swing.age >= ArenaConfig.clawThrowDuration * ArenaConfig.clawReleaseShare {
+            swing.hasThrown = true
+            throwSand(at: swing.target, isRight: isRight)
+        }
+        guard swing.age < ArenaConfig.clawThrowDuration else {
+            // The swing is finished, so the next crab taken on this side — if
+            // any has been waiting — gets its own full throw now.
+            return queue.isEmpty ? nil : ClawThrow(target: queue.removeFirst())
+        }
+        return swing
+    }
+
+    /// The handful itself: a cone of sand out of the pincer that opens as it
+    /// travels, timed to reach the crab while it is still being thrown clear.
+    private func throwSand(at target: CGPoint, isRight: Bool) {
+        let origin = CGPoint(
+            x: king.position.x + kingSize * clawTip.width * (isRight ? 1 : -1),
+            y: king.position.y + kingSize * clawTip.height
+        )
+        let dx = target.x - origin.x
+        let dy = target.y - origin.y
+        let span = max(kingSize * 0.5, hypot(dx, dy))
+        let heading = atan2(Double(dy), Double(dx))
+        let count = max(9, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 2.2))
+        for _ in 0..<count {
+            let angle = heading + Double.random(in: -0.26...0.26)
+            let speed = span / CGFloat(ArenaConfig.sandFlightDuration)
+                * CGFloat.random(in: 0.70...1.20)
+            grains.append(SandGrain(
+                position: CGPoint(x: origin.x + CGFloat.random(in: -4...4),
+                                  y: origin.y + CGFloat.random(in: -4...4)),
+                velocity: CGPoint(x: CGFloat(cos(angle)) * speed,
+                                  y: CGFloat(sin(angle)) * speed),
+                radius: CGFloat.random(in: 2.2...5.6),
+                tone: Double.random(in: 0...1),
+                lifetime: Double.random(in: ArenaConfig.sandFlightDuration
+                                            ... ArenaConfig.sandFlightDuration * 2.1),
+                // Thrown sand has to carry to what it was thrown at, so it
+                // holds its line where a kicked-up puff would already be back
+                // on the floor.
+                gravity: 150,
+                drag: 0.80
+            ))
         }
     }
 
@@ -1514,8 +1790,8 @@ final class KingCrabArena: ObservableObject {
         crab.phaseAge = 0
         crab.isRushing = false
         // Where the King's claws are, seen from the crab.
-        crab.handOver = CGPoint(x: king.position.x - crab.position.x,
-                                y: king.position.y - kingSize * 0.30 - crab.position.y)
+        crab.handOver = CGPoint(x: king.anchor.x - crab.position.x,
+                                y: king.anchor.y - kingSize * 0.30 - crab.position.y)
         crabs[index] = crab
         // The King's own shell goes up to the score as he takes it, not before:
         // the hand-over has to happen first for it to be a gift.
@@ -1524,8 +1800,8 @@ final class KingCrabArena: ObservableObject {
 
     private func fling(index: Int) {
         var crab = crabs[index]
-        let dx = crab.position.x - king.position.x
-        let dy = crab.position.y - king.position.y
+        let dx = crab.position.x - king.anchor.x
+        let dy = crab.position.y - king.anchor.y
         let length = max(1, hypot(dx, dy))
         crab.phase = .swept
         crab.phaseAge = 0
@@ -1552,7 +1828,7 @@ final class KingCrabArena: ObservableObject {
     /// King and settles exactly over its stationary twin in the score counter.
     private func emitShell() {
         let diameter: CGFloat = isPad ? 34 : 26
-        let start = CGPoint(x: king.position.x, y: king.position.y - kingSize * 0.46)
+        let start = CGPoint(x: king.anchor.x, y: king.anchor.y - kingSize * 0.46)
         let target = scoreTarget ?? CGPoint(x: size.width / 2,
                                             y: max(diameter / 2, arena.minY - 30))
         let firstControl = CGPoint(x: start.x + (start.x - target.x) * 0.18,
@@ -1637,8 +1913,8 @@ final class KingCrabArena: ObservableObject {
     /// A crossing height clear of the King, so the 2x crab never scuttles
     /// behind him. It takes whichever band above or below has the room.
     private func bonusCrabLane(size: CGFloat) -> CGFloat {
-        let above = (arena.minY + size, king.position.y - kingSize * 0.72)
-        let below = (king.position.y + kingSize * 0.72, arena.maxY - size)
+        let above = (arena.minY + size, king.anchor.y - kingSize * 0.72)
+        let below = (king.anchor.y + kingSize * 0.72, arena.maxY - size)
         let lanes = [above, below].filter { $0.1 - $0.0 > size * 0.5 }
         guard let lane = lanes.randomElement() else { return arena.midY }
         return CGFloat.random(in: lane.0...lane.1)
@@ -1663,10 +1939,10 @@ final class KingCrabArena: ObservableObject {
         let size = ArenaConfig.lifeCrabSize(isPad: isPad)
         let fromLeft = Bool.random()
         let start = CGPoint(x: fromLeft ? -size : arena.maxX + size,
-                            y: king.position.y + CGFloat.random(in: -20...20))
+                            y: king.anchor.y + CGFloat.random(in: -20...20))
         let ring = kingSize * ArenaConfig.arrivalRingFactor
-        let target = CGPoint(x: king.position.x + (fromLeft ? -ring : ring),
-                             y: king.position.y)
+        let target = CGPoint(x: king.anchor.x + (fromLeft ? -ring : ring),
+                             y: king.anchor.y)
         carriers.append(CarrierCrab(
             kind: .life,
             size: size,
@@ -1773,8 +2049,8 @@ final class KingCrabArena: ObservableObject {
             grains[index].position.x += grains[index].velocity.x * CGFloat(dt)
             grains[index].position.y += grains[index].velocity.y * CGFloat(dt)
             // Sand thrown up underwater slows quickly and drifts back down.
-            grains[index].velocity.y += 420 * CGFloat(dt)
-            let damping = CGFloat(pow(0.22, dt))
+            grains[index].velocity.y += grains[index].gravity * CGFloat(dt)
+            let damping = CGFloat(pow(grains[index].drag, dt))
             grains[index].velocity.x *= damping
         }
         grains.removeAll { $0.age >= $0.lifetime }
@@ -1857,6 +2133,11 @@ final class KingCrabArena: ObservableObject {
             completionElapsed = nil
             king.isCheering = false
             king.sweepAge = nil
+            // The card is coming up over the last of his run, so he is marked
+            // gone here rather than waiting for the run to finish under it.
+            king.hasLeft = !reducesCompletionMotion
+            king.farewellAge = nil
+            placeKing(0)
             let callback = completionCallback
             completionCallback = nil
             callback?()
