@@ -67,7 +67,9 @@ struct AnswerCrabRig {
     let rightClaw: Limb
     let leftLegs: Limb
     let rightLegs: Limb
-    /// The mouth of each claw: where the rim of the answer shell is held.
+    /// The mouth of each claw: where the rim of the answer shell is held. It is
+    /// the *back* of the cavity rather than its middle, so the shell is seated
+    /// right down between the jaws instead of resting on their tips.
     let leftPincer: UnitPoint
     let rightPincer: UnitPoint
     /// Where the feet come down, as a share of the square from its top.
@@ -112,8 +114,8 @@ struct AnswerCrabRig {
                         joint: UnitPoint(x: 0.5909, y: 0.5719),
                         flipped: true,
                         nudge: CGSize(width: 0.0056, height: -0.0045)),
-        leftPincer: UnitPoint(x: 0.3914, y: 0.3055),
-        rightPincer: UnitPoint(x: 0.6372, y: 0.3055),
+        leftPincer: UnitPoint(x: 0.3806, y: 0.3268),
+        rightPincer: UnitPoint(x: 0.648, y: 0.3268),
         groundLine: 0.7298,
         bodyWidth: 0.3376,
         jawSplit: -145.2,
@@ -139,8 +141,8 @@ struct AnswerCrabRig {
                         joint: UnitPoint(x: 0.5905, y: 0.5705),
                         flipped: true,
                         nudge: CGSize(width: 0.0078, height: -0.0062)),
-        leftPincer: UnitPoint(x: 0.3859, y: 0.3122),
-        rightPincer: UnitPoint(x: 0.641, y: 0.3122),
+        leftPincer: UnitPoint(x: 0.3802, y: 0.3277),
+        rightPincer: UnitPoint(x: 0.6467, y: 0.3277),
         groundLine: 0.727,
         bodyWidth: 0.3309,
         jawSplit: -144.4,
@@ -257,12 +259,19 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// the layout square alone, so the joint still means the same point on
     /// screen whichever side's drawing it came from.
     @ViewBuilder
-    private func limb(_ limb: AnswerCrabRig.Limb, jawFrom: UnitPoint? = nil) -> some View {
+    private func limb(_ limb: AnswerCrabRig.Limb, bigJawOnly: Bool = false) -> some View {
         let picture = image(limb.imageName)
         Group {
-            if let jawFrom {
+            if bigJawOnly {
+                // The cut is made on the picture as it was drawn, before the
+                // mirroring — both claws are the one drawing, so the mouth is
+                // in the same place in it either way, and the flip afterwards
+                // carries the cut along with the claw. Feeding it the mouth's
+                // *final* position instead put the line clean off the picture
+                // for the mirrored side, which left that whole claw sitting in
+                // front of the shell.
                 picture.mask {
-                    HalfPlane(through: jawFrom, degrees: rig.jawSplit)
+                    HalfPlane(through: rig.leftPincer, degrees: rig.jawSplit)
                 }
             } else {
                 picture
@@ -289,7 +298,7 @@ struct AnswerCrabSprite<Carried: View>: View {
             let drawn = atan2(mouth.y - rest.y, mouth.x - rest.x)
             degrees = (held - drawn) * 180 / .pi
         }
-        return self.limb(limb, jawFrom: bigJawOnly ? pincer : nil)
+        return self.limb(limb, bigJawOnly: bigJawOnly)
             .rotationEffect(.degrees(degrees), anchor: limb.joint)
             .offset(x: moved.x - rest.x, y: moved.y - rest.y)
     }

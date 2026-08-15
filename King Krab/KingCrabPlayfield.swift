@@ -856,7 +856,7 @@ private struct AnswerCrabView: View {
     /// A shell wedged in two claws turns with them. Only once it is being
     /// handed over, or pulled down into the sand, does it get a lean of its own.
     private var cardAngle: Double {
-        isHoldingFast ? bodyRoll
+        isHoldingFast ? shellRoll
                       : crab.cardLean + cardSway * 3.4 * (1 + 0.8 * run)
     }
     /// The artwork this crab is drawn from, and the square that artwork covers
@@ -864,11 +864,23 @@ private struct AnswerCrabView: View {
     private var rig: AnswerCrabRig { isGolden ? .gold : .red }
     private var square: CGFloat { rig.square(bodyWidth: bodyWidth) }
 
+    /// True for a crab on the King's right, whose whole drawing is flipped.
+    private var isMirrored: Bool { crab.facing < 0 }
+
     /// Where the pincers are when the claws are at rest — the two points the
     /// shell has to be held between.
+    ///
+    /// The drawing is not symmetrical about the middle of its own square, so a
+    /// flipped crab's claws are not where an unflipped one's are. The shell is
+    /// placed out here, outside the flip, and it has to be told: reading the
+    /// drawing's own left and right for a crab that is standing the other way
+    /// round put every shell on the King's right a few points off its claws.
     private var mouths: (left: CGPoint, right: CGPoint) {
-        (rig.point(rig.leftPincer, square: square),
-         rig.point(rig.rightPincer, square: square))
+        let left = rig.point(rig.leftPincer, square: square)
+        let right = rig.point(rig.rightPincer, square: square)
+        guard isMirrored else { return (left, right) }
+        return (left: CGPoint(x: -right.x, y: right.y),
+                right: CGPoint(x: -left.x, y: left.y))
     }
 
     /// Where the pincers close on the shell, as shares of its own frame.
@@ -901,9 +913,20 @@ private struct AnswerCrabView: View {
         CrabSprite.bob(bodyWidth: bodyWidth, stepPhase: gait, isWalking: isStepping)
     }
 
-    /// A point carried through the body's own roll and bob.
+    /// The body's roll as the *screen* sees it.
+    ///
+    /// A crab on the King's right is drawn flipped, and a turn one way inside a
+    /// flipped drawing comes out the other way round on screen. The shell is
+    /// laid outside that flip — it carries a number, so it must not be mirrored
+    /// — which means it has to be given the roll already turned back. Left to
+    /// the drawing's own roll it leaned against its claws instead of with them,
+    /// and since the roll is half walk cycle, the two rocked apart and back on
+    /// every step: rock solid on the King's left, never still on his right.
+    private var shellRoll: Double { isMirrored ? -bodyRoll : bodyRoll }
+
+    /// A point carried through the body's own roll and bob, on screen.
     private func onBody(_ point: CGPoint) -> CGPoint {
-        let radians = bodyRoll * .pi / 180
+        let radians = shellRoll * .pi / 180
         return CGPoint(x: point.x * cos(radians) - point.y * sin(radians),
                        y: point.x * sin(radians) + point.y * cos(radians) + bodyBob)
     }
@@ -1056,7 +1079,7 @@ private struct AnswerCrabView: View {
             bob: bodyBob,
             // The drawing is made for a crab on the King's left; one that came
             // in from his right is the whole thing flipped.
-            mirrored: crab.facing < 0,
+            mirrored: isMirrored,
             gaze: gaze,
             // A held shell needs no reaching for: the claws stay in the pose
             // they are drawn in and the shell is locked between them. They only
