@@ -78,6 +78,10 @@ struct CharacterRig {
     /// outline, so the seam is never on screen. Zero leaves the claw behind the
     /// shell, which is where the King's own pincers read best.
     let clawFrontRadius: CGFloat
+    /// Where something carried over the head rides, on the same square: between
+    /// the two pincers and clear of the crown. Only the two helper crabs carry
+    /// anything, and only they are drawn with something here.
+    var hold: UnitPoint = UnitPoint(x: 0.5, y: 0.2)
 
     var bodyImage: Image { Image(body) }
 
@@ -94,6 +98,55 @@ struct CharacterRig {
     static func rig(for characterID: String) -> CharacterRig? {
         all[characterID]
     }
+
+    /// The 2x crab, who carries a doubling coin over his head.
+    ///
+    /// The helper crabs are cut and measured exactly like the ten characters —
+    /// see Tools/build_helper_crabs.py — and are rigs for the same reason: they
+    /// walk the near lane in full view of the player, where a flat picture
+    /// sliding along the sand would be the one thing in the arena not alive.
+    /// Both carry their claws up over their heads, which is where what they are
+    /// bringing rides.
+    static let bonusHelper = CharacterRig(
+        body: "2x_body",
+        leftClaw: CharacterRigLimb(imageName: "2x_left_claw",
+                                   joint: UnitPoint(x: 0.274, y: 0.5575)),
+        rightClaw: CharacterRigLimb(imageName: "2x_left_claw",
+                                    joint: UnitPoint(x: 0.7168, y: 0.5587),
+                                    flipped: true,
+                                    nudge: CGSize(width: -0.0144, height: 0.0016)),
+        leftLegs: CharacterRigLimb(imageName: "2x_left_leg",
+                                   joint: UnitPoint(x: 0.2904, y: 0.6109)),
+        rightLegs: CharacterRigLimb(imageName: "2x_left_leg",
+                                    joint: UnitPoint(x: 0.7125, y: 0.6036),
+                                    flipped: true,
+                                    nudge: CGSize(width: -0.0056, height: -0.0088)),
+        leftClawTip: UnitPoint(x: 0.1907, y: 0.1317),
+        rightClawTip: UnitPoint(x: 0.7976, y: 0.1312),
+        groundLine: 0.8923,
+        clawFrontRadius: 0.0386,
+        hold: UnitPoint(x: 0.5, y: 0.175))
+
+    /// The comeback crab, who carries a life.
+    static let lifeHelper = CharacterRig(
+        body: "life_body",
+        leftClaw: CharacterRigLimb(imageName: "life_left_claw",
+                                   joint: UnitPoint(x: 0.2864, y: 0.5715)),
+        rightClaw: CharacterRigLimb(imageName: "life_left_claw",
+                                    joint: UnitPoint(x: 0.7151, y: 0.5714),
+                                    flipped: true,
+                                    nudge: CGSize(width: -0.0072, height: 0.0)),
+        leftLegs: CharacterRigLimb(imageName: "life_left_leg",
+                                   joint: UnitPoint(x: 0.287, y: 0.6105)),
+        rightLegs: CharacterRigLimb(imageName: "life_left_leg",
+                                    joint: UnitPoint(x: 0.7164, y: 0.6036),
+                                    flipped: true,
+                                    nudge: CGSize(width: -0.0088, height: -0.0088)),
+        leftClawTip: UnitPoint(x: 0.2042, y: 0.1305),
+        rightClawTip: UnitPoint(x: 0.7959, y: 0.1295),
+        groundLine: 0.8923,
+        clawFrontRadius: 0.0517,
+        hold: UnitPoint(x: 0.5, y: 0.175))
 
     private static let all: [String: CharacterRig] = [
         "crab": CharacterRig(
@@ -314,6 +367,25 @@ struct KingRigPose {
             rightLegs: -swing * amount
         )
     }
+
+    /// The walk of a crab carrying something over its head in both claws.
+    ///
+    /// The claws are all but still on purpose. What they are holding is drawn
+    /// where the artwork holds it, so an arm that swings carries the load out
+    /// of its own pincers; everything that says "walking" here is in the legs
+    /// and in the body riding over them.
+    static func carrying(clock: Double, stride: Double) -> KingRigPose {
+        let swing = sin(stride)
+        return KingRigPose(
+            lean: sin(clock * 1.7) * 1.3 + swing * 2.4,
+            rise: CGFloat(abs(sin(stride))) * 0.026,
+            stretch: 1 + CGFloat(sin(clock * 2.2)) * 0.014,
+            leftClaw: sin(clock * 1.3) * 1.2,
+            rightClaw: -sin(clock * 1.3) * 1.2,
+            leftLegs: swing * 15,
+            rightLegs: -swing * 15
+        )
+    }
 }
 
 // MARK: - The view
@@ -322,10 +394,15 @@ struct KingRigPose {
 /// joint is covered by the shell however far its limb has turned. A character
 /// who carries his arms in front of himself gets those two claws a second time
 /// on top, with the joint itself cut back out of that copy.
-struct RiggedCharacterView: View {
+///
+/// Anything the character is carrying is laid in between those two passes: over
+/// the body, under the front copy of the claws — so the pincers close on it
+/// rather than the load being pasted across them.
+struct RiggedCharacterView<Carried: View>: View {
     let rig: CharacterRig
     let pose: KingRigPose
     let size: CGFloat
+    @ViewBuilder let carried: () -> Carried
 
     var body: some View {
         ZStack {
@@ -337,6 +414,8 @@ struct RiggedCharacterView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: size, height: size)
+            carried()
+                .offset(x: (rig.hold.x - 0.5) * size, y: (rig.hold.y - 0.5) * size)
             if rig.clawFrontRadius > 0 {
                 limb(rig.leftClaw, degrees: pose.leftClaw, cutAtJoint: true)
                 limb(rig.rightClaw, degrees: pose.rightClaw, cutAtJoint: true)
@@ -378,6 +457,14 @@ struct RiggedCharacterView: View {
             }
         }
         .rotationEffect(.degrees(degrees), anchor: limb.joint)
+    }
+}
+
+/// A character carrying nothing, which is every one of the ten the player can
+/// unlock. Only the helper crabs bring something with them.
+extension RiggedCharacterView where Carried == EmptyView {
+    init(rig: CharacterRig, pose: KingRigPose, size: CGFloat) {
+        self.init(rig: rig, pose: pose, size: size) { EmptyView() }
     }
 }
 

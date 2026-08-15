@@ -83,7 +83,14 @@ enum ArenaConfig {
     // MARK: Crabs
 
     /// Body width of a walking crab; everything about it is measured from this.
-    static func crabSize(isPad: Bool) -> CGFloat { isPad ? 66 : 48 }
+    static func crabSize(isPad: Bool) -> CGFloat { isPad ? 53 : 38 }
+    /// One full walk cycle, as a share of the body width. The gait is measured
+    /// off ground actually covered rather than off time, so this is the length
+    /// a planted foot is worth — and every footfall is counted against it.
+    static let strideLength: CGFloat = 0.44
+    /// How far below its middle a walking crab's feet come down, as a share of
+    /// its body width. Measured off the artwork: see `AnswerCrabRig`.
+    static let footLine: CGFloat = 0.68
     /// The answer shell a crab carries over its head. It is deliberately wider
     /// than the crab itself: the number is the thing being read, and a small
     /// crab under a big shell is what makes it read as *carried*.
@@ -140,7 +147,7 @@ enum ArenaConfig {
 
     // MARK: The King
 
-    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 222 : 163.2 }
+    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 266 : 196 }
     /// Where a walking crab stops: on a ring around the King, wide enough that
     /// four arrivals stand around him rather than on top of him.
     static let arrivalRingFactor: CGFloat = 0.72
@@ -216,16 +223,31 @@ enum ArenaConfig {
 
     // MARK: Carrier crabs
 
-    /// The 2x crab scuttles across the arena rather than at the King.
-    static func bonusCrabSize(isPad: Bool) -> CGFloat { isPad ? 70 : 52 }
-    static let bonusCrabSpeed: ClosedRange<CGFloat> = 150...185
+    /// The artwork square a helper crab is drawn on. Its body is a little over
+    /// half of this — see `CharacterRig.bonusHelper` — so it stands a shade
+    /// larger than an answer crab, which is what a crab walking the very front
+    /// of the floor should do.
+    static func helperCrabSize(isPad: Bool) -> CGFloat { isPad ? 112 : 82 }
+    /// How wide the coin or heart it holds is, on that same square.
+    static let helperTokenShare: CGFloat = 0.35
+    /// How far above the bottom of the walking area the helper crabs cross. It
+    /// is the lane the lower answer crabs used to come in at, which is now the
+    /// near edge of the floor: they walk in front of the reef and of everything
+    /// else, because they are the nearest thing in the scene.
+    static func helperLane(isPad: Bool) -> CGFloat { isPad ? 40 : 29 }
+    static let helperCrabSpeed: ClosedRange<CGFloat> = 130...160
+    /// How fast one walks once the player has sent it to the King. Brisk: it
+    /// has been asked for, and a child who taps wants to see it go.
+    static let helperFetchSpeed: CGFloat = 210
     /// After one of the preselected questions appears, this little extra delay
     /// keeps the exact arrival surprising and independent of the wave.
     static let bonusCrabQuestionDelay: ClosedRange<Double> = 2.0...5.0
 
-    static func lifeCrabSize(isPad: Bool) -> CGFloat { isPad ? 78 : 58 }
     /// How long after being earned the comeback crab appears.
     static let lifeCrabDelay: ClosedRange<Double> = 1.2...2.6
+    /// A helper crab that crossed without being tapped comes round again after
+    /// this. Neither reward is ever lost by being missed once.
+    static let helperCrabRetry: ClosedRange<Double> = 2.4...4.5
 
     // MARK: Walkthrough
 
@@ -253,9 +275,17 @@ enum ArenaConfig {
     /// which is the whole point of standing on a floor that has water above it.
     static func floorCrest(isPad: Bool) -> CGFloat { isPad ? 84 : 64 }
 
+    /// How far the near reef in the two front corners stands up out of the
+    /// sand. The lower lane is walked above it — see `entryPoints` — so a crab
+    /// coming in down there passes *behind* the coral, the way something
+    /// further away should, while the answer it holds up stays in clear water.
+    static func nearReefRise(isPad: Bool) -> CGFloat { isPad ? 60 : 44 }
+
     /// Where the King stands in the walking area, top to bottom. The scenery
     /// reads it too: the sun lands where he is, not on the middle of the sand.
-    static let kingAnchorShare: CGFloat = 0.54
+    /// He stands high enough on the floor for the sun to land squarely on him
+    /// and for the near reef to pass in front of the sand below his feet.
+    static let kingAnchorShare: CGFloat = 0.47
     /// How far the arena keeps clear of the bottom edge, on top of whatever the
     /// home indicator already reserves.
     static func floorInset(isPad: Bool) -> CGFloat { isPad ? 26 : 18 }
@@ -500,6 +530,10 @@ struct AnswerCrab: Identifiable {
     /// rather than off time, so a foot that is planted never slides: when the
     /// crab hesitates mid-scuttle its legs hesitate with it.
     var walked: CGFloat = 0
+    /// The stride the next footfall lands on, measured in that same ground. It
+    /// is what the little kick of sand under a walking crab is counted off, so
+    /// the floor is disturbed by steps rather than by seconds.
+    var nextFootfall: CGFloat = 0
     let cardLean: Double
     /// A crab does not glide: it scuttles a few steps, hesitates, and goes
     /// again. This is the rhythm of that, per crab.
@@ -552,32 +586,77 @@ struct AnswerCrab: Identifiable {
     }
 }
 
-/// The two crabs that carry something other than an answer: the 2x crab that
-/// scuttles past, and the comeback crab that walks a life to the King.
+/// One of the two crabs that carry something other than an answer: the 2x crab
+/// with a doubling coin, and the comeback crab with a life.
+///
+/// Both work the same way, and neither hands anything over by itself. They
+/// cross the very front of the floor holding what they have brought up over
+/// their heads, and only a tap sends one of them in to the King. That is what
+/// makes taking a reward a thing the player *does*: a life that arrived on its
+/// own was something that merely happened to them.
 struct CarrierCrab: Identifiable {
     enum Kind { case bonus, life }
 
+    enum Phase {
+        /// Walking the near lane, offering itself.
+        case crossing
+        /// Tapped: on its way to the King with what it is carrying.
+        case fetching
+        /// Delivered, and digging itself back into the sand.
+        case burrowing
+    }
+
     let id = UUID()
     let kind: Kind
+    /// The artwork square it is drawn on; its body is a little over half of it.
     let size: CGFloat
     private(set) var start: CGPoint
     private(set) var target: CGPoint
     var position: CGPoint
     var progress: Double = 0
-    let duration: Double
-    /// True until its reward has been taken; a spent crab simply walks off.
-    var isCarryingReward = true
+    private(set) var duration: Double
+    var phase: Phase = .crossing
+    /// Time in the current phase, which drives the dig at the end of it.
+    var phaseAge: Double = 0
     let waddleRate: Double
     let strideFactor: CGFloat
+    let gaitOffset: Double
     /// Ground covered, for the same distance-driven gait the answer crabs use.
     var walked: CGFloat = 0
+    /// The stride the next footfall lands on, in the same ground.
+    var nextFootfall: CGFloat = 0
     /// Which way it is facing, for the sprite's mirror.
     var facing: CGFloat = 1
+    /// Time to its next spray of sand while it is digging itself in.
+    var puffCountdown: Double = 0
+
+    /// How wide the animal itself is inside that square. Both helper crabs are
+    /// drawn to the same template, so one number covers the pair.
+    var bodyWidth: CGFloat { size * 0.57 }
+
+    /// True until it has put what it brought into the King's claws.
+    var isCarryingReward: Bool { phase != .burrowing }
+    /// A tap only counts while it is still crossing: one already on its way to
+    /// the King has been asked for, and asking twice must not send it twice.
+    var isTappable: Bool { phase == .crossing }
 
     mutating func shift(by delta: CGPoint) {
         start.x += delta.x; start.y += delta.y
         target.x += delta.x; target.y += delta.y
         position.x += delta.x; position.y += delta.y
+    }
+
+    /// Turns it out of the lane and in towards the King, from wherever the tap
+    /// caught it. The walk starts over from here, so the pace of the trip in is
+    /// the King's distance rather than whatever was left of the crossing.
+    mutating func fetch(to point: CGPoint, speed: CGFloat) {
+        start = position
+        target = point
+        progress = 0
+        duration = Double(max(1, hypot(point.x - position.x, point.y - position.y)) / speed)
+        phase = .fetching
+        phaseAge = 0
+        facing = point.x >= position.x ? 1 : -1
     }
 }
 
@@ -1230,17 +1309,21 @@ final class KingCrabArena: ObservableObject {
         guard completionElapsed == nil,
               king.entranceAge == nil || entranceDidOpenRound else { return }
 
-        // The 2x crab stays catchable during answer feedback, exactly as the
-        // passing power-up always has been.
+        // A helper crab stays catchable during answer feedback, exactly as the
+        // passing power-up always has been. Tapping one does not take what it
+        // is carrying: it sends the crab in to the King with it, and the reward
+        // lands when the crab does.
         if let index = carriers.firstIndex(where: { carrier in
-            carrier.kind == .bonus && carrier.isCarryingReward
-                && within(point, of: carrier.position, radius: ArenaConfig.tapRadius(isPad: isPad))
-        }), !hasBonusAura {
-            carriers[index].isCarryingReward = false
-            hasBonusAura = true
-            burst(at: carriers[index].position, strength: 0.6)
-            onBonusCrabCaught?()
-            onTutorialEvent?(.caughtBonusCrab)
+            carrier.isTappable
+                && within(point, of: helperCentre(of: carrier),
+                          radius: ArenaConfig.tapRadius(isPad: isPad))
+        }) {
+            // A second 2x is worth nothing while one is already in hand, so
+            // that crab keeps walking rather than making a trip for nothing.
+            guard carriers[index].kind != .bonus || !hasBonusAura else { return }
+            carriers[index].fetch(to: helperTarget(for: carriers[index]),
+                                  speed: ArenaConfig.helperFetchSpeed)
+            burst(at: carriers[index].position, strength: 0.45)
             return
         }
 
@@ -1279,6 +1362,12 @@ final class KingCrabArena: ObservableObject {
     /// would miss the answer they were pointing at.
     private func hitCentre(of crab: AnswerCrab) -> CGPoint {
         CGPoint(x: crab.position.x, y: crab.position.y - crabSize * 0.55)
+    }
+
+    /// The same idea for a helper crab: what a child aims at is the coin or the
+    /// heart held over its head, not the feet the position is measured at.
+    private func helperCentre(of carrier: CarrierCrab) -> CGPoint {
+        CGPoint(x: carrier.position.x, y: carrier.position.y - carrier.size * 0.22)
     }
 
     private func within(_ point: CGPoint, of centre: CGPoint, radius: CGFloat) -> Bool {
@@ -1444,7 +1533,10 @@ final class KingCrabArena: ObservableObject {
         // The shell is carried above the head, so the two upper lanes run low
         // enough that a fresh answer never overlaps the sum.
         let top = crabSize * 0.75 + ArenaConfig.cardHeight(isPad: isPad) * 1.1
-        let bottom = crabSize * 0.75
+        // …and the two lower ones run above the near reef, which is drawn in
+        // front of the crabs. A crab down there walks out from behind the coral
+        // with its answer already clear of it.
+        let bottom = crabSize * 0.75 + ArenaConfig.nearReefRise(isPad: isPad)
         return [
             CGPoint(x: arena.minX + side, y: arena.minY + top),
             CGPoint(x: arena.maxX - side, y: arena.minY + top),
@@ -1641,6 +1733,14 @@ final class KingCrabArena: ObservableObject {
                 crab.walked += hypot(stepped.x - crab.position.x,
                                      stepped.y - crab.position.y)
                 crab.position = stepped
+                // Each footfall takes a little of the floor with it, which is
+                // where a walk on sand shows.
+                shedSandIfStepped(&crab.walked, next: &crab.nextFootfall,
+                                  at: crab.position, of: crabSize,
+                                  strideFactor: crab.strideFactor,
+                                  facing: crab.facing,
+                                  onScreen: crab.progress > crab.entryProgress
+                                      && arena.contains(crab.position))
                 // A run kicks up the sea floor behind it. Only once the crab
                 // is actually on screen: sand thrown from off the edge would
                 // announce a crab the player cannot see yet.
@@ -2108,33 +2208,7 @@ final class KingCrabArena: ObservableObject {
     }
 
     private func spawnBonusCrab() {
-        let size = ArenaConfig.bonusCrabSize(isPad: isPad)
-        let direction: CGFloat = Bool.random() ? 1 : -1
-        let start = CGPoint(x: direction > 0 ? -size : arena.maxX + size,
-                            y: bonusCrabLane(size: size))
-        let target = CGPoint(x: direction > 0 ? arena.maxX + size : -size, y: start.y)
-        let travel = Double(abs(target.x - start.x))
-        carriers.append(CarrierCrab(
-            kind: .bonus,
-            size: size,
-            start: start,
-            target: target,
-            position: start,
-            duration: travel / Double(CGFloat.random(in: ArenaConfig.bonusCrabSpeed)),
-            waddleRate: Double.random(in: 4.4...6.0),
-            strideFactor: CGFloat.random(in: 0.92...1.08),
-            facing: direction
-        ))
-    }
-
-    /// A crossing height clear of the King, so the 2x crab never scuttles
-    /// behind him. It takes whichever band above or below has the room.
-    private func bonusCrabLane(size: CGFloat) -> CGFloat {
-        let above = (arena.minY + size, king.anchor.y - kingSize * 0.72)
-        let below = (king.anchor.y + kingSize * 0.72, arena.maxY - size)
-        let lanes = [above, below].filter { $0.1 - $0.0 > size * 0.5 }
-        guard let lane = lanes.randomElement() else { return arena.midY }
-        return CGFloat.random(in: lane.0...lane.1)
+        spawnHelperCrab(kind: .bonus)
     }
 
     private func spawnLifeCrabIfDue(_ dt: Double) {
@@ -2150,27 +2224,44 @@ final class KingCrabArena: ObservableObject {
         spawnLifeCrab()
     }
 
-    /// The comeback crab walks in from a side rather than from a corner, so it
-    /// is never mistaken for one of the four answers.
     private func spawnLifeCrab() {
-        let size = ArenaConfig.lifeCrabSize(isPad: isPad)
-        let fromLeft = Bool.random()
-        let start = CGPoint(x: fromLeft ? -size : arena.maxX + size,
-                            y: king.anchor.y + CGFloat.random(in: -20...20))
-        let ring = kingSize * ArenaConfig.arrivalRingFactor
-        let target = CGPoint(x: king.anchor.x + (fromLeft ? -ring : ring),
-                             y: king.anchor.y)
+        spawnHelperCrab(kind: .life)
+    }
+
+    /// Both helper crabs walk the very front of the sea floor, right along the
+    /// near edge, holding what they have brought up over their heads. Nothing
+    /// is ever in front of them there — which is the point: they are an offer
+    /// the player has to see and take, not a thing walking past behind the
+    /// scenery.
+    private func spawnHelperCrab(kind: CarrierCrab.Kind) {
+        let size = ArenaConfig.helperCrabSize(isPad: isPad)
+        let direction: CGFloat = Bool.random() ? 1 : -1
+        let lane = arena.maxY - ArenaConfig.helperLane(isPad: isPad)
+        let start = CGPoint(x: direction > 0 ? -size : arena.maxX + size, y: lane)
+        let target = CGPoint(x: direction > 0 ? arena.maxX + size : -size, y: lane)
+        let travel = Double(abs(target.x - start.x))
         carriers.append(CarrierCrab(
-            kind: .life,
+            kind: kind,
             size: size,
             start: start,
             target: target,
             position: start,
-            duration: GameConfig.lifeCrabWalkDuration,
-            waddleRate: Double.random(in: 3.2...4.2),
+            duration: travel / Double(CGFloat.random(in: ArenaConfig.helperCrabSpeed)),
+            waddleRate: Double.random(in: 3.6...4.8),
             strideFactor: CGFloat.random(in: 0.92...1.08),
-            facing: fromLeft ? 1 : -1
+            gaitOffset: Double.random(in: 0..<(2 * .pi)),
+            facing: direction
         ))
+    }
+
+    /// Where a tapped helper crab is sent: the same ring around the King the
+    /// answers walk to, on the side it was tapped on.
+    private func helperTarget(for carrier: CarrierCrab) -> CGPoint {
+        let ring = kingSize * ArenaConfig.arrivalRingFactor
+        let angle = atan2(Double(carrier.position.y - king.anchor.y),
+                          Double(carrier.position.x - king.anchor.x))
+        return CGPoint(x: king.anchor.x + ring * CGFloat(cos(angle)),
+                       y: king.anchor.y + ring * CGFloat(sin(angle)))
     }
 
     /// Puts the taught helper crab in the arena, and puts it back whenever it
@@ -2200,40 +2291,108 @@ final class KingCrabArena: ObservableObject {
     private func moveCarriers(_ dt: Double) {
         for index in carriers.indices {
             var carrier = carriers[index]
-            carrier.progress = min(1, carrier.progress + dt / carrier.duration)
-            let base = CGPoint(
-                x: carrier.start.x + (carrier.target.x - carrier.start.x) * CGFloat(carrier.progress),
-                y: carrier.start.y + (carrier.target.y - carrier.start.y) * CGFloat(carrier.progress)
-            )
-            let stepped = CGPoint(
-                x: base.x,
-                y: base.y + CGFloat(sin(clock * carrier.waddleRate)) * carrier.size * 0.045
-            )
-            carrier.walked += hypot(stepped.x - carrier.position.x,
-                                    stepped.y - carrier.position.y)
-            carrier.position = stepped
+            carrier.phaseAge += dt
+
+            switch carrier.phase {
+            case .crossing, .fetching:
+                carrier.progress = min(1, carrier.progress + dt / carrier.duration)
+                let base = CGPoint(
+                    x: carrier.start.x + (carrier.target.x - carrier.start.x) * CGFloat(carrier.progress),
+                    y: carrier.start.y + (carrier.target.y - carrier.start.y) * CGFloat(carrier.progress)
+                )
+                let stepped = CGPoint(
+                    x: base.x,
+                    y: base.y + CGFloat(sin(clock * carrier.waddleRate)) * carrier.size * 0.022
+                )
+                carrier.walked += hypot(stepped.x - carrier.position.x,
+                                        stepped.y - carrier.position.y)
+                carrier.position = stepped
+                shedSandIfStepped(&carrier.walked, next: &carrier.nextFootfall,
+                                  at: carrier.position, of: carrier.bodyWidth,
+                                  strideFactor: carrier.strideFactor,
+                                  facing: carrier.facing,
+                                  onScreen: arena.contains(carrier.position))
+
+            case .burrowing:
+                carrier.puffCountdown -= dt
+                if carrier.puffCountdown <= 0,
+                   carrier.phaseAge < ArenaConfig.burrowDuration * 0.86,
+                   arena.contains(carrier.position) {
+                    carrier.puffCountdown = ArenaConfig.burrowPuffInterval
+                    let bite = 0.30 + 0.5 * (carrier.phaseAge / ArenaConfig.burrowDuration)
+                    burst(at: carrier.position, strength: CGFloat(bite))
+                }
+            }
             carriers[index] = carrier
         }
 
-        // A life crab that reaches the King hands its life over; a 2x crab that
-        // reaches the far side simply leaves.
-        for index in carriers.indices where carriers[index].progress >= 1 {
-            let carrier = carriers[index]
-            guard carrier.kind == .life, carrier.isCarryingReward else { continue }
-            carriers[index].isCarryingReward = false
+        // One that reaches the King puts what it brought into his claws, and
+        // then digs itself in exactly as an answer crab does once its own work
+        // is finished. Taken by id: handing a life over runs back through the
+        // session, which is free to clear the arena out from under this loop.
+        let arrived = carriers
+            .filter { $0.phase == .fetching && $0.progress >= 1 }
+            .map(\.id)
+        for id in arrived {
+            guard let index = carriers.firstIndex(where: { $0.id == id }) else { continue }
+            deliverHelp(at: index)
+        }
+
+        carriers.removeAll { carrier in
+            switch carrier.phase {
+            case .crossing:
+                // Missed. It comes round again rather than taking the reward
+                // with it: nothing the player has earned is lost to bad luck.
+                guard carrier.progress >= 1 else { return false }
+                retryHelperCrab(carrier.kind)
+                return true
+            case .fetching:
+                return false
+            case .burrowing:
+                return carrier.phaseAge >= ArenaConfig.burrowDuration
+            }
+        }
+    }
+
+    /// The hand-over. The session has the last word on both rewards, exactly as
+    /// it does on an answer; the crab digs itself in either way, because from
+    /// its own point of view it has arrived and given what it was carrying.
+    private func deliverHelp(at index: Int) {
+        let carrier = carriers[index]
+        // It is finished with before the session hears about it: taking a life
+        // can end a round, and a round ending is entitled to clear the arena.
+        carriers[index].phase = .burrowing
+        carriers[index].phaseAge = 0
+        carriers[index].puffCountdown = 0
+        burst(at: carrier.position, strength: 0.6)
+
+        switch carrier.kind {
+        case .bonus:
+            hasBonusAura = true
+            onBonusCrabCaught?()
+            onTutorialEvent?(.caughtBonusCrab)
+        case .life:
             if onLifeCrabArrived?() == true {
                 king.healAge = 0
             }
             onTutorialEvent?(.lifeCrabArrived)
         }
-        carriers.removeAll { carrier in
-            guard carrier.progress >= 1 else { return false }
-            // In the walkthrough a missed 2x crab simply comes back: its step is
-            // not over until the player has actually taken one.
-            if carrier.isCarryingReward, tutorialPlan.wantsBonusCrab {
-                tutorialCrabDelay = ArenaConfig.tutorialCrabArrival
-            }
-            return true
+    }
+
+    /// Sends the missed crab round again. In the walkthrough that is the step's
+    /// own retry, which comes round quicker; in a game it is a fresh wait.
+    private func retryHelperCrab(_ kind: CarrierCrab.Kind) {
+        if tutorialPlan.wantsBonusCrab || tutorialPlan.wantsLifeCrab {
+            tutorialCrabDelay = ArenaConfig.tutorialCrabArrival
+            return
+        }
+        switch kind {
+        case .bonus:
+            guard !hasBonusAura else { return }
+            pendingBonusDelays.append(Double.random(in: ArenaConfig.helperCrabRetry))
+        case .life:
+            guard isLifeCrabAvailable else { return }
+            lifeCrabDelay = Double.random(in: ArenaConfig.helperCrabRetry)
         }
     }
 
@@ -2258,6 +2417,53 @@ final class KingCrabArena: ObservableObject {
                 lifetime: Double.random(in: 0.34...0.62)
             ))
         }
+    }
+
+    /// The small kick of sand a walking crab leaves under itself, one footfall
+    /// at a time.
+    ///
+    /// Deliberately nothing like a `burst`: two grains, barely off the floor,
+    /// thrown back the way the crab came. What it says is that there is sand
+    /// under the animal and that its feet are in it — the difference between a
+    /// crab walking on the sea floor and one sliding over a picture of one.
+    private func scuff(at point: CGPoint, bodyWidth: CGFloat, drift: CGFloat) {
+        let count = ArenaPerformanceBudget.isConstrained ? 1 : 2
+        for _ in 0..<count {
+            grains.append(SandGrain(
+                position: CGPoint(x: point.x + CGFloat.random(in: -3...3),
+                                  y: point.y + bodyWidth * ArenaConfig.footLine
+                                      + CGFloat.random(in: -2...2)),
+                velocity: CGPoint(x: drift * CGFloat.random(in: 0.5...1.2),
+                                  y: -CGFloat.random(in: 18...44)),
+                radius: CGFloat.random(in: 1.1...2.5),
+                tone: Double.random(in: 0.35...1),
+                lifetime: Double.random(in: 0.28...0.46),
+                // It is pushed off the floor rather than thrown up off it, so
+                // it settles back almost at once and hardly travels.
+                gravity: 170,
+                drag: 0.04
+            ))
+        }
+    }
+
+    /// Counts a walk into footfalls and sheds sand on each one.
+    ///
+    /// The stride is measured in ground covered rather than in time — exactly
+    /// as the legs themselves are — so a crab that hesitates mid-scuttle stops
+    /// kicking sand up with it, and one that breaks into a run leaves a trail.
+    private func shedSandIfStepped(_ walked: inout CGFloat,
+                                   next: inout CGFloat,
+                                   at point: CGPoint,
+                                   of bodyWidth: CGFloat,
+                                   strideFactor: CGFloat,
+                                   facing: CGFloat,
+                                   onScreen: Bool) {
+        let stride = max(1, bodyWidth * ArenaConfig.strideLength * strideFactor)
+        guard walked >= next else { return }
+        // Two footfalls to the cycle: the two sides carry the weight in turn.
+        next = walked + stride / 2
+        guard onScreen else { return }
+        scuff(at: point, bodyWidth: bodyWidth, drift: -facing * 34)
     }
 
     private func moveGrains(_ dt: Double) {

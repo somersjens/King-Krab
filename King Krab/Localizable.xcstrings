@@ -115868,13 +115868,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This green crab brings your King an extra life. Never smash that one: let it walk right in!"
+            "value" : "This pink crab is bringing your King an extra life. Tap it and it carries the heart right over to him!"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deze groene krab brengt je King een extra leven. Sla die nooit weg: laat hem gewoon binnenlopen!"
+            "value" : "Deze roze krab brengt je King een extra leven. Tik hem aan, dan brengt hij het hartje naar hem toe!"
           }
         }
       }
@@ -115885,13 +115885,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The golden 2× crab doubles your next correct answer. Tap it quickly to grab it!"
+            "value" : "The rainbow 2× crab doubles your next correct answer. Tap it and it carries the coin to your King!"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "De gouden 2×-krab verdubbelt je volgende goede antwoord. Tik hem snel aan om hem te pakken!"
+            "value" : "De regenboog-2×-krab verdubbelt je volgende goede antwoord. Tik hem aan, dan brengt hij de munt naar je King!"
           }
         }
       }

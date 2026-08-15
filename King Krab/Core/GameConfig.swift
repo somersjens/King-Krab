@@ -64,8 +64,6 @@ nonisolated public enum GameConfig {
     public static let lifeCrabMaximumProgress = 0.9
     /// Reaching the King hands back one whole life.
     public static let lifeCrabRecoveryHalves = 2
-    /// It walks more slowly than an answer crab: this is a gift, not a test.
-    public static let lifeCrabWalkDuration = 7.5
 
     // MARK: Session
 

@@ -169,6 +169,22 @@ struct KingCrabPlayfield: View {
                         .allowsHitTesting(false)
                 }
 
+                // The two near corners, in front of the animals: they are the
+                // closest thing in the scene, so a crab walking the lower lane
+                // comes out from behind the coral rather than over the top of
+                // it. The lane itself runs above the reef's own crest — see
+                // `ArenaConfig.nearReefRise` — so the answer being carried is
+                // in clear water the whole way in.
+                NearReef(palette: palette,
+                         isPad: isPad,
+                         crest: crest,
+                         clock: arena.swayClock)
+                    .equatable()
+                    .frame(width: size.width, height: size.height)
+                    .allowsHitTesting(false)
+
+                // Nearer still: the helper crabs walk the very front edge of
+                // the floor, in front of the reef and everything behind it.
                 ForEach(arena.carriers) { carrier in
                     CarrierCrabView(carrier: carrier,
                                     palette: palette,
@@ -1005,6 +1021,33 @@ private struct AnswerCrabView: View {
         return ramp * ramp
     }
 
+    /// The patch of shade the crab is standing in.
+    ///
+    /// It is what welds a walking crab to the sea floor: without one the animal
+    /// reads as sliding over a picture of sand rather than across it. The
+    /// artwork's own footline puts it under the feet, and it tightens on every
+    /// step as the body rises off them — a shadow that never moves is what
+    /// gives a walk cycle away. A crab that has been thrown clear of the sand
+    /// has none: there is nothing under it to cast one on.
+    @ViewBuilder
+    private var shadow: some View {
+        switch crab.phase {
+        case .hit, .smashed, .swept:
+            EmptyView()
+        default:
+            ContactShadow(bodyWidth: bodyWidth,
+                          footLine: groundLine * bodyWidth,
+                          lift: -bodyBob,
+                          roll: bodyRoll,
+                          fade: 1 - dug,
+                          palette: palette)
+        }
+    }
+
+    /// How far the sand has closed over the crab, 0 → 1. Its shadow goes with
+    /// it: there is nothing left above the floor to cast one.
+    private var dug: CGFloat { crab.phase == .burrowing ? dig : 0 }
+
     var body: some View {
         let crabAndShell = AnswerCrabSprite(
             rig: rig,
@@ -1037,23 +1080,29 @@ private struct AnswerCrabView: View {
             if crab.phase == .burrowing {
                 digging(crabAndShell)
             } else {
-                crabAndShell
-                    // Running, it throws itself forward over its own legs.
-                    .rotationEffect(.degrees(Double(crab.facing) * 7 * run),
-                                    anchor: .bottom)
-                    // Handing the shell over: up onto its toes and leaning in
-                    // on the reach, back down onto its legs as it lets go.
-                    .rotationEffect(.degrees(handOverArc * -5 * Double(crab.facing)),
-                                    anchor: .bottom)
-                    .offset(y: -bodyWidth * 0.09 * CGFloat(handOverArc))
-                    // …and straight on into the crouch the dig starts from.
-                    .scaleEffect(x: 1 + 0.14 * handOverCrouch,
-                                 y: 1 - 0.22 * handOverCrouch,
-                                 anchor: .bottom)
-                    // A smashed or swept crab tumbles away with the blow.
-                    .rotationEffect(.radians(crab.spin * exit))
-                    .scaleEffect(scale)
-                    .opacity(opacity)
+                ZStack {
+                    // The shadow is laid on the sand, outside everything the
+                    // crab itself is doing: it stays flat on the floor while
+                    // the animal over it leans, rises and tumbles away.
+                    shadow
+                    crabAndShell
+                        // Running, it throws itself forward over its own legs.
+                        .rotationEffect(.degrees(Double(crab.facing) * 7 * run),
+                                        anchor: .bottom)
+                        // Handing the shell over: up onto its toes and leaning
+                        // in on the reach, back down onto its legs as it lets go.
+                        .rotationEffect(.degrees(handOverArc * -5 * Double(crab.facing)),
+                                        anchor: .bottom)
+                        .offset(y: -bodyWidth * 0.09 * CGFloat(handOverArc))
+                        // …and straight on into the crouch the dig starts from.
+                        .scaleEffect(x: 1 + 0.14 * handOverCrouch,
+                                     y: 1 - 0.22 * handOverCrouch,
+                                     anchor: .bottom)
+                        // A smashed or swept crab tumbles away with the blow.
+                        .rotationEffect(.radians(crab.spin * exit))
+                        .scaleEffect(scale)
+                        .opacity(opacity)
+                }
             }
         }
         .accessibilityHidden(true)
@@ -1067,6 +1116,7 @@ private struct AnswerCrabView: View {
     private func digging<Content: View>(_ crabAndShell: Content) -> some View {
         ZStack {
             burrowPit
+            shadow
             crabAndShell
                 // The rock, taken about the feet: the crab screws itself down.
                 .rotationEffect(.degrees(Double(shimmy) * 11), anchor: .bottom)
@@ -1137,6 +1187,41 @@ private struct AnswerCrabView: View {
                 .blur(radius: 0.8)
         }
         .opacity(pitFade)
+    }
+}
+
+/// The shade a crab standing on the sand casts, for whichever crab is standing
+/// on it. One soft ellipse on the artwork's own footline, which tightens and
+/// darkens as the body comes down onto its legs and spreads and pales as it
+/// rises off them — so the shadow is part of the walk rather than a disc being
+/// dragged along under it. It also leans a hair with the body's roll, which is
+/// what keeps it under the animal's weight rather than under its middle.
+private struct ContactShadow: View {
+    let bodyWidth: CGFloat
+    /// How far below the crab's middle the sand is, in points.
+    let footLine: CGFloat
+    /// How far the body is off its feet this frame, in points.
+    let lift: CGFloat
+    /// The body's roll, in degrees.
+    let roll: Double
+    /// Taken to zero by anything that puts the crab under the sand.
+    var fade: CGFloat = 1
+    let palette: ReefPalette
+
+    var body: some View {
+        // A body one full bob off the sand throws a shadow about a third
+        // weaker. Anything more separates the two.
+        let tight = max(0.62, 1 - lift / max(1, bodyWidth * 0.14))
+        let strength = fade * tight
+        return Ellipse()
+            .fill(palette.sandDeep.opacity(0.38 * Double(strength)))
+            // Wider than the shell: what is standing on the sand is the spread
+            // of legs, not the body they are carrying.
+            .frame(width: bodyWidth * 1.26 * strength,
+                   height: bodyWidth * 0.30 * strength)
+            .blur(radius: 3.5)
+            .offset(x: CGFloat(sin(roll * .pi / 180)) * bodyWidth * 0.16,
+                    y: footLine)
     }
 }
 
@@ -1297,62 +1382,109 @@ private struct AnswerShellRibs: Shape {
 
 // MARK: - Carrier crabs
 
-/// The 2x crab and the comeback crab. They are deliberately not shaped like an
-/// answer crab: no card, a different colour, and something held up instead.
+/// The 2x crab and the comeback crab, drawn from their own limbs exactly as the
+/// King is — see `CharacterRig.bonusHelper`. Both are painted crabs rather than
+/// the flat-shaded answer crabs, and both hold what they have brought up over
+/// their heads in two raised claws, which is the whole of what says *this one
+/// is bringing you something*.
+///
+/// What it carries is drawn outside the sprite's own mirror. The crab turns
+/// round to walk the other way; a 2× that turned with it would read as ×2.
 private struct CarrierCrabView: View {
     let carrier: CarrierCrab
     let palette: ReefPalette
     let isPad: Bool
     let clock: Double
 
-    /// Where the token rides, and the two points on its lower flanks the
-    /// pincers close on — the same rig the answer crabs use, so a carrier
-    /// holds its reward rather than balancing it.
-    private static let tokenCentre: CGFloat = -0.86
-
-    private var hold: CrabHold {
-        let size = carrier.size
-        guard carrier.isCarryingReward else { return .raised(bodyWidth: size) }
-        return CrabHold(left: CGPoint(x: -size * 0.28, y: size * (Self.tokenCentre + 0.06)),
-                        right: CGPoint(x: size * 0.28, y: size * (Self.tokenCentre + 0.06)),
-                        centre: CGPoint(x: 0, y: size * Self.tokenCentre))
+    private var rig: CharacterRig {
+        carrier.kind == .bonus ? .bonusHelper : .lifeHelper
     }
 
+    /// The walk cycle, measured off ground covered — so a planted foot stays
+    /// planted — except while digging, where nothing is covered at all and the
+    /// legs are scrabbling against the sand instead of carrying the animal.
     private var gait: Double {
-        Double(carrier.walked
-               / max(1, carrier.size * CrabSprite.strideLength * carrier.strideFactor)) * 2 * .pi
+        guard carrier.phase != .burrowing else {
+            return carrier.phaseAge * 34 + carrier.gaitOffset
+        }
+        return Double(carrier.walked
+                      / max(1, carrier.bodyWidth * ArenaConfig.strideLength
+                            * carrier.strideFactor)) * 2 * .pi + carrier.gaitOffset
     }
+
+    /// How far through the dig it is, 0 → 1.
+    private var exit: Double {
+        guard carrier.phase == .burrowing else { return 0 }
+        return min(1, carrier.phaseAge / ArenaConfig.burrowDuration)
+    }
+
+    /// The same two-part dig the answer crabs make: hunker down and work, then
+    /// drop through the floor the sand has been taken out from under.
+    private var squat: CGFloat {
+        let t = min(1, exit / ArenaConfig.burrowSquatShare)
+        return CGFloat(t * t * (3 - 2 * t))
+    }
+
+    private var dig: CGFloat {
+        let t = (exit - ArenaConfig.burrowSquatShare)
+            / max(0.01, 1 - ArenaConfig.burrowSquatShare)
+        return CGFloat(pow(min(1, max(0, t)), 2.1))
+    }
+
+    /// The rock that screws it down, easing off as the sand closes over it.
+    private var shimmy: CGFloat {
+        CGFloat(sin(carrier.phaseAge * 30 + carrier.gaitOffset)) * (1 - 0.5 * dig)
+    }
+
+    /// Where the sand's surface is, below the crab's middle: the artwork's own
+    /// footline, which is the line it goes through.
+    private var footLine: CGFloat { (rig.groundLine - 0.5) * carrier.size }
 
     var body: some View {
-        let rig = CrabArmRig(bodyWidth: carrier.size,
-                             stepPhase: gait,
-                             isWalking: true,
-                             facing: carrier.facing,
-                             hold: hold)
-        let tint: CrabTint = carrier.kind == .bonus ? .bonus : .life
+        let figure = RiggedCharacterView(
+            rig: rig,
+            pose: .carrying(clock: clock, stride: gait),
+            size: carrier.size
+        ) {
+            token
+                // Undoes the mirror the whole crab is about to be given, so
+                // the coin faces the player whichever way the crab is walking.
+                .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
+                .opacity(carrier.isCarryingReward ? 1 : 0)
+        }
+        .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
+        .shadow(color: palette.coralDeep.opacity(0.22), radius: 5, y: 4)
 
-        return CrabSprite(bodyWidth: carrier.size,
-                          tint: tint,
-                          stepPhase: gait,
-                          isWalking: true,
-                          facing: carrier.facing,
-                          gaze: CGSize(width: carrier.facing, height: 0),
-                          strideFactor: carrier.strideFactor,
+        return ZStack {
+            ContactShadow(bodyWidth: carrier.bodyWidth,
+                          footLine: footLine,
+                          lift: 0,
+                          roll: 0,
+                          fade: 1 - dig,
                           palette: palette)
-            .overlay {
-                token
-                    .offset(y: carrier.size * Self.tokenCentre)
-                    .opacity(carrier.isCarryingReward ? 1 : 0)
+            if carrier.phase == .burrowing {
+                figure
+                    .rotationEffect(.degrees(Double(shimmy) * 11), anchor: .bottom)
+                    .offset(x: shimmy * carrier.bodyWidth * 0.075,
+                            y: carrier.bodyWidth * 2.6 * dig)
+                    .scaleEffect(x: 1 + 0.14 * squat, y: 1 - 0.22 * squat, anchor: .bottom)
+                    // Sand is opaque: whatever has gone under it is not there.
+                    .mask {
+                        Rectangle()
+                            .frame(width: carrier.size * 4, height: carrier.size * 4)
+                            .offset(y: footLine - carrier.size * 2)
+                    }
+            } else {
+                figure
             }
-            // The claws close in front of the token it is carrying.
-            .overlay { CrabArmsView(rig: rig, colors: tint.shell, line: tint.line) }
-            .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
-            .accessibilityHidden(true)
+        }
+        .accessibilityHidden(true)
     }
 
+    /// The coin or the heart, sized to the hold the artwork's two pincers make.
     @ViewBuilder
     private var token: some View {
-        let side = carrier.size * 0.52
+        let side = carrier.size * ArenaConfig.helperTokenShare
         switch carrier.kind {
         case .bonus:
             Text(verbatim: "2×")
@@ -1678,8 +1810,9 @@ private struct CrabSprite: View {
 
     /// How far the body travels per full cycle, as a share of its own width.
     /// The legs take their phase from ground covered, so this number is the one
-    /// thing keeping the feet from sliding.
-    static let strideLength: CGFloat = 0.44
+    /// thing keeping the feet from sliding — and the simulation counts the
+    /// footfalls it sheds sand on off the very same stride.
+    static let strideLength: CGFloat = ArenaConfig.strideLength
 
     private var legLift: CGFloat { bodyWidth * 0.14 }
 
@@ -2808,12 +2941,9 @@ private struct ArenaFloor: View, Equatable {
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
-                // The near corners: the only part of the reef the water has not
-                // washed out, and the closest thing in the scene.
-                ForegroundReef(palette: palette, isPad: isPad, clock: clock)
-                    .frame(height: sandHeight)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-                    .offset(x: drift * 4.5)
+                // The near corners are *not* here: they are the closest thing
+                // in the scene, so they are drawn over the animals instead —
+                // see `NearReef`, which the playfield lays in above the crabs.
             }
             .frame(width: size.width, height: size.height)
         }
@@ -3689,6 +3819,41 @@ private struct ReefBorder: View {
 ///
 /// They keep to the outer eighth of each side and lean outward, away from the
 /// middle. The centre of the floor stays the open sand the crabs walk in on.
+/// The near reef, laid over the animals rather than under them.
+///
+/// Everything else on the sea floor is behind the crabs, because everything
+/// else is further away than they are. These two corners are not: they are the
+/// front of the scene, and a crab walking the lower lane has to pass behind
+/// them or the floor reads as flat. It is bottom-aligned to the screen and
+/// leans with the water exactly as it did inside `ArenaFloor`, so nothing about
+/// the corner itself has moved — only what it is drawn in front of.
+private struct NearReef: View, Equatable {
+    let palette: ReefPalette
+    let isPad: Bool
+    /// Screen y of the sand's crest, which is where the floor's own frame ends.
+    let crest: CGFloat
+    let clock: Double
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.palette.character == rhs.palette.character
+            && lhs.isPad == rhs.isPad
+            && lhs.crest == rhs.crest
+            && lhs.clock == rhs.clock
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            ForegroundReef(palette: palette, isPad: isPad, clock: clock)
+                .frame(height: max(140, size.height - crest))
+                .frame(width: size.width, height: size.height, alignment: .bottom)
+                .offset(x: CGFloat(sin(clock * 0.11)) * 4.5)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
 private struct ForegroundReef: View {
     let palette: ReefPalette
     let isPad: Bool
