@@ -97,7 +97,19 @@ struct KingCrabPlayfield: View {
             let size = proxy.size
             let rect = arenaRect(in: size)
 
-            let crest = rect.minY - ArenaConfig.floorCrest(isPad: isPad)
+            // A third water, two thirds floor. The cap holds that even when
+            // something claims the top of the arena — the walkthrough's
+            // message card takes over a hundred points of it — so the sea
+            // floor never ends up starting halfway down the screen.
+            let crest = min(rect.minY + ArenaConfig.floorCrest(isPad: isPad),
+                            size.height * 0.38)
+            // Where the sun lands, as a share of the sand bed. The King is the
+            // thing the eye is meant to be carried down to, so the warm patch
+            // on the floor is put under him rather than in the middle of the
+            // sand — which is a good deal higher, and reads as a spotlight
+            // aimed at nothing.
+            let sunShare = (rect.minY + rect.height * ArenaConfig.kingAnchorShare - crest)
+                / max(1, size.height - crest)
 
             // Seven layers, back to front: open water and its surface; the weed
             // silhouetted against it; the sea floor with its own reef; the
@@ -114,6 +126,7 @@ struct KingCrabPlayfield: View {
                 ArenaFloor(palette: palette,
                            isPad: isPad,
                            crest: crest,
+                           sunShare: sunShare,
                            clock: arena.swayClock)
                     .equatable()
                     .frame(width: size.width, height: size.height)
@@ -150,7 +163,8 @@ struct KingCrabPlayfield: View {
                                    palette: palette,
                                    isPad: isPad,
                                    isGolden: crab.isGolden,
-                                   clock: arena.clock)
+                                   clock: arena.clock,
+                                   king: arena.king.anchor)
                         .position(crab.position)
                         .allowsHitTesting(false)
                 }
@@ -711,6 +725,8 @@ private struct AnswerCrabView: View {
     /// During the streak every crab is gold and every answer pays double.
     let isGolden: Bool
     let clock: Double
+    /// Where the King is standing. A crab keeps its eyes on him.
+    let king: CGPoint
 
     private var bodyWidth: CGFloat { ArenaConfig.crabSize(isPad: isPad) }
 
@@ -807,19 +823,26 @@ private struct AnswerCrabView: View {
             * bodyWidth * 0.07 * squat * (1 - dig)
     }
 
-    /// Where the crab is headed, as a unit vector: it is what its eyes follow.
+    /// What the crab has its eyes on: the King. Following the way it walked in
+    /// instead left the two above him staring at each other across his crown,
+    /// when what they are doing is closing in on him.
     private var gaze: CGSize {
-        let dx = crab.target.x - crab.start.x
-        let dy = crab.target.y - crab.start.y
-        let length = max(1, hypot(dx, dy))
+        let dx = king.x - crab.position.x
+        let dy = king.y - crab.position.y
+        let length = hypot(dx, dy)
+        guard length > 1 else { return CGSize(width: crab.facing, height: 0) }
         return CGSize(width: dx / length, height: dy / length)
     }
 
     /// The shell's own lean and sway this frame. The hands are placed off the
     /// same two numbers, which is what keeps them on its rim while it swings.
     private var cardSway: Double { sin(crab.age * crab.waddleRate - 0.6) }
-    /// A running crab cannot hold its shell as steady as a walking one.
-    private var cardAngle: Double { crab.cardLean + cardSway * 3.4 * (1 + 0.8 * run) }
+    /// A shell wedged in two claws turns with them. Only once it is being
+    /// handed over, or pulled down into the sand, does it get a lean of its own.
+    private var cardAngle: Double {
+        isHoldingFast ? bodyRoll
+                      : crab.cardLean + cardSway * 3.4 * (1 + 0.8 * run)
+    }
     /// The artwork this crab is drawn from, and the square that artwork covers
     /// at the size the arena is asking for.
     private var rig: AnswerCrabRig { isGolden ? .gold : .red }
@@ -838,15 +861,35 @@ private struct AnswerCrabView: View {
                               width: ArenaConfig.cardWidth(isPad: isPad))
     }
 
-    /// Where the shell rides while it is simply being carried: exactly where
-    /// the two claws are already open, so a crab at rest is holding its answer
-    /// rather than reaching for it.
+    /// Where the shell rides while it is simply being carried: with its lower
+    /// edge exactly in the two open claws. A carried shell is *held*, not
+    /// balanced — it rides the animal's own roll and bob rather than swinging
+    /// against them, which is what stops the claws having to chase it.
     private var carriedShell: CGPoint {
         let mouth = mouths
         let height = ArenaConfig.cardHeight(isPad: isPad)
-        return CGPoint(x: (mouth.left.x + mouth.right.x) / 2
-                          + CGFloat(cardSway) * bodyWidth * 0.025,
+        return CGPoint(x: (mouth.left.x + mouth.right.x) / 2,
                        y: mouth.left.y - (grip.y - 0.5) * height)
+    }
+
+    /// True while the shell is locked in the claws: everything but the reach
+    /// that hands it over and the dig that takes it under.
+    private var isHoldingFast: Bool {
+        crab.phase != .delivering && crab.phase != .burrowing
+    }
+
+    private var bodyRoll: Double {
+        CrabSprite.roll(stepPhase: gait, isWalking: isStepping, facing: crab.facing)
+    }
+    private var bodyBob: CGFloat {
+        CrabSprite.bob(bodyWidth: bodyWidth, stepPhase: gait, isWalking: isStepping)
+    }
+
+    /// A point carried through the body's own roll and bob.
+    private func onBody(_ point: CGPoint) -> CGPoint {
+        let radians = bodyRoll * .pi / 180
+        return CGPoint(x: point.x * cos(radians) - point.y * sin(radians),
+                       y: point.x * sin(radians) + point.y * cos(radians) + bodyBob)
     }
 
     /// Where the hands are `t` of the way through handing the shell over: out
@@ -882,7 +925,7 @@ private struct AnswerCrabView: View {
             return CGPoint(x: from.x + (to.x - from.x) * closed,
                            y: from.y + (to.y - from.y) * closed)
         default:
-            return carriedShell
+            return onBody(carriedShell)
         }
     }
 
@@ -963,24 +1006,20 @@ private struct AnswerCrabView: View {
     }
 
     var body: some View {
-        let tint: CrabTint = isGolden ? .gold : .enemy
-
         let crabAndShell = AnswerCrabSprite(
             rig: rig,
             bodyWidth: bodyWidth,
-            roll: CrabSprite.roll(stepPhase: gait,
-                                  isWalking: isStepping,
-                                  facing: crab.facing),
-            bob: CrabSprite.bob(bodyWidth: bodyWidth,
-                                stepPhase: gait,
-                                isWalking: isStepping),
+            roll: bodyRoll,
+            bob: bodyBob,
             // The drawing is made for a crab on the King's left; one that came
             // in from his right is the whole thing flipped.
             mirrored: crab.facing < 0,
-            gaze: gaze.width,
-            // Once the shell has gone, the claws stop reaching for it and drop
-            // back to the pose they are drawn in.
-            grip: shellOpacity > 0 ? (left: hold.left, right: hold.right) : nil
+            gaze: gaze,
+            // A held shell needs no reaching for: the claws stay in the pose
+            // they are drawn in and the shell is locked between them. They only
+            // solve for a grip once it starts moving away from them.
+            grip: (isHoldingFast || shellOpacity <= 0)
+                ? nil : (left: hold.left, right: hold.right)
         ) {
             AnswerShell(text: crab.text,
                         palette: palette,
@@ -2494,9 +2533,9 @@ private struct DistanceHaze: View, Equatable {
     var body: some View {
         LinearGradient(stops: [
             .init(color: palette.waterFloor.opacity(0.34), location: 0),
-            .init(color: palette.waterFloor.opacity(0.24), location: 0.14),
-            .init(color: palette.waterFloor.opacity(0.08), location: 0.28),
-            .init(color: palette.waterFloor.opacity(0), location: 0.42)
+            .init(color: palette.waterFloor.opacity(0.22), location: 0.09),
+            .init(color: palette.waterFloor.opacity(0.07), location: 0.18),
+            .init(color: palette.waterFloor.opacity(0), location: 0.28)
         ], startPoint: .top, endPoint: .bottom)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
@@ -2524,10 +2563,14 @@ private struct DistantWeeds: View, Equatable {
     /// x (share of width), height (share of the water above the crest), lean,
     /// sway rate, phase, thickness.
     private static let blades: [(CGFloat, CGFloat, CGFloat, Double, Double, CGFloat)] = [
-        (0.018, 0.62, 0.10, 0.28, 0.0, 1.00), (0.052, 0.44, -0.08, 0.34, 1.9, 0.72),
-        (0.086, 0.30, 0.13, 0.31, 3.4, 0.58), (0.030, 0.24, -0.14, 0.39, 5.1, 0.46),
-        (0.982, 0.58, -0.11, 0.26, 0.8, 0.94), (0.948, 0.40, 0.09, 0.36, 2.7, 0.68),
-        (0.914, 0.27, -0.12, 0.30, 4.3, 0.54), (0.968, 0.20, 0.15, 0.41, 5.8, 0.42)
+        (0.012, 0.62, 0.10, 0.28, 0.0, 1.00), (0.040, 0.44, -0.08, 0.34, 1.9, 0.72),
+        (0.068, 0.52, 0.06, 0.25, 2.6, 0.84), (0.096, 0.30, 0.13, 0.31, 3.4, 0.58),
+        (0.026, 0.24, -0.14, 0.39, 5.1, 0.46), (0.054, 0.35, 0.11, 0.33, 0.6, 0.62),
+        (0.124, 0.21, -0.10, 0.37, 4.7, 0.44),
+        (0.988, 0.58, -0.11, 0.26, 0.8, 0.94), (0.960, 0.40, 0.09, 0.36, 2.7, 0.68),
+        (0.932, 0.50, -0.07, 0.24, 3.9, 0.80), (0.904, 0.27, -0.12, 0.30, 4.3, 0.54),
+        (0.974, 0.20, 0.15, 0.41, 5.8, 0.42), (0.946, 0.33, -0.13, 0.35, 1.4, 0.60),
+        (0.876, 0.19, 0.12, 0.38, 5.3, 0.40)
     ]
 
     private var blades: [(CGFloat, CGFloat, CGFloat, Double, Double, CGFloat)] {
@@ -2552,7 +2595,7 @@ private struct DistantWeeds: View, Equatable {
                 // away from its middle — root them all at the crest and they
                 // hang in open water.
                 let fromMiddle = pow(abs(blade.0 - 0.5) * 2, 1.4)
-                let root = crest + bed * 0.16 * fromMiddle + bed * 0.01
+                let root = crest + bed * sandCrestDrop * fromMiddle + bed * 0.008
                 let top = root - reach * blade.1
                 let x = size.width * blade.0
                 let width = max(2, size.width * 0.010 * blade.5)
@@ -2658,10 +2701,10 @@ private struct LightShafts: View, Equatable {
                         .mask {
                             LinearGradient(stops: [
                                 .init(color: .white.opacity(0.30), location: 0),
-                                .init(color: .white, location: 0.16),
-                                .init(color: .white.opacity(0.46), location: 0.40),
-                                .init(color: .white.opacity(0.12), location: 0.64),
-                                .init(color: .clear, location: 0.86)
+                                .init(color: .white, location: 0.14),
+                                .init(color: .white.opacity(0.40), location: 0.32),
+                                .init(color: .white.opacity(0.10), location: 0.52),
+                                .init(color: .clear, location: 0.74)
                             ], startPoint: .top, endPoint: .bottom)
                         }
                         .rotationEffect(.degrees(shaft.2), anchor: .top)
@@ -2673,10 +2716,11 @@ private struct LightShafts: View, Equatable {
         }
         .blendMode(.plusLighter)
         // Seven beams rather than five, so each one carries less. Over water
-        // they can be as strong as they like; the sand they land on is already
-        // the brightest thing in the picture, and a beam that stays bright all
-        // the way down stops being light and becomes a stripe.
-        .opacity(0.15)
+        // they can be as strong as they like — and they are what the empty
+        // blue between the sum and the sand is made of. It is on the sand that
+        // a beam stops being light and becomes a stripe, and the mask above
+        // has them all but gone by the time they get there.
+        .opacity(0.19)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
@@ -2692,12 +2736,15 @@ private struct ArenaFloor: View, Equatable {
     let isPad: Bool
     /// Screen y of the sand's crest.
     let crest: CGFloat
+    /// Where the sun lands on the bed, as a share of its height.
+    let sunShare: CGFloat
     let clock: Double
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.palette.character == rhs.palette.character
             && lhs.isPad == rhs.isPad
             && lhs.crest == rhs.crest
+            && lhs.sunShare == rhs.sunShare
             && lhs.clock == rhs.clock
     }
 
@@ -2756,7 +2803,8 @@ private struct ArenaFloor: View, Equatable {
                 // the stones and the coral as well as the sand. Light that
                 // stopped at the sand would put the reef in front of a picture
                 // of the sea floor rather than in it.
-                SandLight(palette: palette, isPad: isPad, clock: clock)
+                SandLight(palette: palette, isPad: isPad,
+                          sunShare: sunShare, clock: clock)
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
@@ -2865,7 +2913,33 @@ private struct CrestGlow: View, Equatable {
 /// of light that began at the top of the bed would be over the crest and out
 /// in open water at both edges, which is the one mistake that gives away that
 /// the sea floor is a rectangle with a curve drawn on it.
-private let sandBedTop: CGFloat = 0.17
+private let sandBedTop: CGFloat = sandCrestDrop + 0.012
+
+/// How far the crest falls away from the middle of the screen to the two
+/// corners, as a share of the sand bed's height.
+///
+/// Small on purpose. A shallow bed seen from just above it rises a little in
+/// the middle and no more; anything deeper stops being a rise in the floor and
+/// becomes a hill standing in the water, with two visible slopes and a summit.
+/// Everything that has to sit on the floor reads this back, so the whole scene
+/// agrees about where the sand is.
+private let sandCrestDrop: CGFloat = 0.055
+
+/// Traces the crest from the left corner to the right one.
+private func addSandCrest(to path: inout Path, in rect: CGRect) {
+    let w = rect.width
+    let h = rect.height
+    let drop = h * sandCrestDrop
+    path.move(to: CGPoint(x: rect.minX, y: drop))
+    // A long, flat-topped bulge rather than a peak: the control points hold
+    // the curve down almost until the middle, so there is no summit anywhere.
+    path.addCurve(to: CGPoint(x: w * 0.50, y: 0),
+                  control1: CGPoint(x: w * 0.20, y: drop * 0.94),
+                  control2: CGPoint(x: w * 0.34, y: drop * 0.06))
+    path.addCurve(to: CGPoint(x: rect.maxX, y: drop * 0.88),
+                  control1: CGPoint(x: w * 0.68, y: drop * 0.04),
+                  control2: CGPoint(x: w * 0.83, y: drop * 0.82))
+}
 
 /// The crest of `SandShape` on its own, as an open curve.
 ///
@@ -2876,15 +2950,7 @@ private let sandBedTop: CGFloat = 0.17
 private struct SandCrestShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let w = rect.width
-        let h = rect.height
-        path.move(to: CGPoint(x: rect.minX, y: h * 0.16))
-        path.addCurve(to: CGPoint(x: w * 0.50, y: 0),
-                      control1: CGPoint(x: w * 0.16, y: h * 0.14),
-                      control2: CGPoint(x: w * 0.30, y: -h * 0.02))
-        path.addCurve(to: CGPoint(x: rect.maxX, y: h * 0.14),
-                      control1: CGPoint(x: w * 0.72, y: h * 0.01),
-                      control2: CGPoint(x: w * 0.86, y: h * 0.15))
+        addSandCrest(to: &path, in: rect)
         return path
     }
 }
@@ -2892,17 +2958,7 @@ private struct SandCrestShape: Shape {
 private struct SandShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let w = rect.width
-        let h = rect.height
-        // The crown of the hill sits above the sides, which is what makes the
-        // floor read as a mound the King stands on rather than as a band.
-        path.move(to: CGPoint(x: rect.minX, y: h * 0.16))
-        path.addCurve(to: CGPoint(x: w * 0.50, y: 0),
-                      control1: CGPoint(x: w * 0.16, y: h * 0.14),
-                      control2: CGPoint(x: w * 0.30, y: -h * 0.02))
-        path.addCurve(to: CGPoint(x: rect.maxX, y: h * 0.14),
-                      control1: CGPoint(x: w * 0.72, y: h * 0.01),
-                      control2: CGPoint(x: w * 0.86, y: h * 0.15))
+        addSandCrest(to: &path, in: rect)
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
         path.closeSubpath()
@@ -3159,6 +3215,8 @@ private struct SandRelief: View, Equatable {
 private struct SandLight: View {
     let palette: ReefPalette
     let isPad: Bool
+    /// Where on the bed the sun lands, as a share of its height.
+    let sunShare: CGFloat
     let clock: Double
 
     /// x, y, radius factor, drift phase. Many small patches read as sunlight
@@ -3190,21 +3248,25 @@ private struct SandLight: View {
         .accessibilityHidden(true)
     }
 
-    /// Where the shafts land. The middle of the arena is the brightest and the
-    /// warmest sand in the picture, which is what carries the eye down from the
-    /// surface to the floor the game is played on.
+    /// Where the shafts land: a broad, warm patch of sand under the King.
+    ///
+    /// Wide and shallow rather than bright and tight. This is the end of the
+    /// path the eye takes down from the surface, and it has to read as *the
+    /// sun reaching the floor here* — a small hot spot reads instead as a lamp
+    /// pointed at the sand, which is the one thing an open reef never has.
     private func drawSunPool(in context: inout GraphicsContext, size: CGSize) {
-        let breath = 1 + 0.06 * sin(clock * 0.14)
+        let breath = 1 + 0.05 * sin(clock * 0.14)
         let centre = CGPoint(x: size.width * 0.5 + CGFloat(sin(clock * 0.08)) * size.width * 0.02,
-                             y: size.height * 0.46)
-        let radius = size.width * 0.62 * CGFloat(breath)
+                             y: size.height * min(max(sunShare, 0.2), 0.9))
+        let radius = size.width * 0.86 * CGFloat(breath)
         context.fill(
-            Path(ellipseIn: CGRect(x: centre.x - radius, y: centre.y - radius * 0.66,
-                                   width: radius * 2, height: radius * 1.32)),
+            Path(ellipseIn: CGRect(x: centre.x - radius, y: centre.y - radius * 0.72,
+                                   width: radius * 2, height: radius * 1.44)),
             with: .radialGradient(
                 Gradient(stops: [
-                    .init(color: palette.sandSunlit.opacity(0.34), location: 0),
-                    .init(color: palette.sandSunlit.opacity(0.16), location: 0.52),
+                    .init(color: palette.sandSunlit.opacity(0.30), location: 0),
+                    .init(color: palette.sandSunlit.opacity(0.20), location: 0.44),
+                    .init(color: palette.sandSunlit.opacity(0.07), location: 0.74),
                     .init(color: palette.sandSunlit.opacity(0), location: 1)
                 ]),
                 center: centre, startRadius: 0, endRadius: radius
@@ -3529,26 +3591,41 @@ private struct ReefBorder: View {
     /// They grow as they come forward. A coral high up the band is far away and
     /// stays small and sparse; the ones near the bottom are close, larger and
     /// packed together, which is what turns two edges into a frame.
+    /// The first two of each side sit right on the crest and grow up out of it
+    /// into the blue. That is what closes the picture at the top: without them
+    /// the sand's far edge runs off both sides of the screen into nothing, and
+    /// the eye reads the whole floor as a band laid across the water rather
+    /// than as ground with a reef standing on it.
     private static let leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.23, 0.40, 2, 2, 3.6), (0.31, 0.52, 0, 0, 0.5),
-        (0.47, 0.66, 2, 2, 2.4), (0.61, 0.74, 3, 4, 5.3),
-        (0.78, 0.98, 1, 1, 4.1), (0.94, 0.88, 3, 3, 1.2)
+        (0.02, 0.46, 2, 2, 1.1), (0.07, 0.38, 3, 4, 4.4),
+        (0.16, 0.44, 0, 0, 0.5), (0.31, 0.56, 2, 2, 3.6),
+        (0.48, 0.66, 1, 3, 2.4), (0.64, 0.76, 3, 4, 5.3),
+        (0.80, 0.98, 1, 1, 4.1), (0.95, 0.88, 3, 3, 1.2)
     ]
     private static let rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.26, 0.38, 1, 3, 1.5), (0.35, 0.50, 2, 4, 3.3),
-        (0.53, 0.72, 1, 0, 0.8), (0.67, 0.62, 0, 2, 4.7),
+        (0.03, 0.42, 0, 3, 2.6), (0.09, 0.36, 1, 1, 5.5),
+        (0.19, 0.48, 2, 4, 3.3), (0.34, 0.52, 3, 0, 1.5),
+        (0.51, 0.68, 1, 0, 0.8), (0.67, 0.74, 0, 2, 4.7),
         (0.83, 0.86, 3, 2, 5.0), (0.97, 0.98, 0, 1, 2.0)
     ]
 
-    /// Two fewer per side where the frame budget is tightest, taken from the
-    /// far end of the band: the corals that were smallest and least visible.
+    /// Five per side where the frame budget is tightest. The two on the crest
+    /// are kept whatever happens — they are doing composition work, not
+    /// decoration — and the thinning is taken out of the middle of the band.
     private var leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
-        ArenaPerformanceBudget.isConstrained
-            ? Array(Self.leftClusters.dropFirst(2)) : Self.leftClusters
+        Self.thinned(Self.leftClusters)
     }
     private var rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
-        ArenaPerformanceBudget.isConstrained
-            ? Array(Self.rightClusters.dropFirst(2)) : Self.rightClusters
+        Self.thinned(Self.rightClusters)
+    }
+
+    private static func thinned(
+        _ clusters: [(CGFloat, CGFloat, Int, Int, Double)]
+    ) -> [(CGFloat, CGFloat, Int, Int, Double)] {
+        guard ArenaPerformanceBudget.isConstrained else { return clusters }
+        return clusters.enumerated()
+            .filter { $0.offset < 2 || $0.offset.isMultiple(of: 2) }
+            .map(\.element)
     }
 
     var body: some View {

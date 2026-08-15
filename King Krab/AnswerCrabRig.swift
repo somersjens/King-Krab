@@ -47,15 +47,18 @@ struct AnswerCrabRig {
         let pupil: CGRect
 
         /// How far the pupil has to move to sit in the corner of its own white
-        /// on `side` (-1 looking left, +1 looking right). Only the horizontal
-        /// moves: the artwork already has the pupils at the right height, and a
-        /// crab walking sideways looks along the way it is going.
-        func offset(looking side: CGFloat) -> CGSize {
-            let slack = white.width - pupil.width
-            let inset = slack * 0.12
-            let x = side < 0 ? white.minX + inset
-                             : white.maxX - inset - pupil.width
-            return CGSize(width: x - pupil.minX, height: 0)
+        /// on the side the crab is heading. Both axes move: a crab coming down
+        /// from the top of the reef is walking *at* the King, and two of them
+        /// that only looked sideways ended up staring at each other instead of
+        /// down at him.
+        func offset(looking gaze: CGSize) -> CGSize {
+            let reach: CGFloat = 0.88          // how far into the corner it goes
+            let slackX = (white.width - pupil.width) / 2
+            let slackY = (white.height - pupil.height) / 2
+            return CGSize(
+                width: white.midX + gaze.width * slackX * reach - pupil.midX,
+                height: white.midY + gaze.height * slackY * reach - pupil.midY
+            )
         }
     }
 
@@ -72,6 +75,11 @@ struct AnswerCrabRig {
     /// The shell's own width as a share of the square. It is what ties the
     /// artwork to the size the arena asks for, which is a body width.
     let bodyWidth: CGFloat
+    /// Which way the claw's big jaw lies, in degrees, measured off the mouth's
+    /// own axis. The shell's rim goes between the two jaws, so the long outer
+    /// one is drawn over the front of it and the short hook stays behind — and
+    /// this is the line that separates them.
+    let jawSplit: Double
     let leftEye: Eye
     let rightEye: Eye
 
@@ -108,6 +116,7 @@ struct AnswerCrabRig {
         rightPincer: UnitPoint(x: 0.6372, y: 0.3055),
         groundLine: 0.7298,
         bodyWidth: 0.3376,
+        jawSplit: -145.2,
         leftEye: Eye(imageName: "answer_eye_left",
                      white: CGRect(x: 0.423, y: 0.3742, width: 0.0898, height: 0.0898),
                      pupil: CGRect(x: 0.4535, y: 0.3939, width: 0.0549, height: 0.0621)),
@@ -134,6 +143,7 @@ struct AnswerCrabRig {
         rightPincer: UnitPoint(x: 0.641, y: 0.3122),
         groundLine: 0.727,
         bodyWidth: 0.3309,
+        jawSplit: -144.4,
         leftEye: Eye(imageName: "answer_eye_left",
                      white: CGRect(x: 0.4258, y: 0.3825, width: 0.082, height: 0.086),
                      pupil: CGRect(x: 0.4524, y: 0.3945, width: 0.0549, height: 0.0621)),
@@ -147,10 +157,14 @@ struct AnswerCrabRig {
 
 /// One answer crab, with whatever it is carrying laid in between its claws.
 ///
-/// The crab is drawn in two halves with the load between them, so the shell
-/// falls behind the near claw and in front of the far one. Both halves are
-/// flipped together for a crab on the King's right; the load is not, because it
-/// carries a number and moves in the arena's own left and right.
+/// A claw closes on the shell rather than sitting in front of or behind it: the
+/// whole claw goes down under the load, and its long outer jaw is drawn a second
+/// time over the top, so the rim of the shell runs between the two jaws. The cut
+/// between them is the mouth's own axis, measured off the drawing.
+///
+/// Both halves of the crab are flipped together for one on the King's right; the
+/// load is not, because it carries a number and moves in the arena's own left
+/// and right.
 struct AnswerCrabSprite<Carried: View>: View {
     let rig: AnswerCrabRig
     /// The shell's width, which is the size the arena thinks in.
@@ -161,11 +175,11 @@ struct AnswerCrabSprite<Carried: View>: View {
     let bob: CGFloat
     /// True for a crab on the King's right, whose whole drawing is flipped.
     let mirrored: Bool
-    /// Which way it is looking, in the arena's terms.
-    let gaze: CGFloat
-    /// The two points on the load the pincers are closed on, in the sprite's
-    /// own coordinates. Nil for a crab holding nothing, whose claws simply ride
-    /// its body.
+    /// Where it is headed, as a unit vector: it is what its eyes follow.
+    let gaze: CGSize
+    /// The two points the pincers have been pulled out to, in the sprite's own
+    /// coordinates. Nil while the load is simply locked in the claws, which is
+    /// the pose they are drawn in.
     var grip: (left: CGPoint, right: CGPoint)?
     @ViewBuilder let carried: () -> Carried
 
@@ -173,8 +187,7 @@ struct AnswerCrabSprite<Carried: View>: View {
 
     var body: some View {
         ZStack {
-            // Under the load: the far claw and both runs of legs.
-            sideOfTheCrab {
+            oneSide {
                 claw(rig.rightClaw, pincer: rig.rightPincer, grip: designGrip?.right)
                 limb(rig.leftLegs)
                 limb(rig.rightLegs)
@@ -185,13 +198,18 @@ struct AnswerCrabSprite<Carried: View>: View {
                 }
                 .rotationEffect(.degrees(roll))
                 .offset(y: bob)
+                claw(rig.leftClaw, pincer: rig.leftPincer, grip: designGrip?.left)
             }
 
             carried()
 
-            // …and the near claw closes over it.
-            sideOfTheCrab {
-                claw(rig.leftClaw, pincer: rig.leftPincer, grip: designGrip?.left)
+            // The long jaw of each claw closes over the front of the load; the
+            // short hook is the half that stayed underneath it.
+            oneSide {
+                claw(rig.rightClaw, pincer: rig.rightPincer,
+                     grip: designGrip?.right, bigJawOnly: true)
+                claw(rig.leftClaw, pincer: rig.leftPincer,
+                     grip: designGrip?.left, bigJawOnly: true)
             }
         }
         .frame(width: bodyWidth * 1.7, height: bodyWidth * 1.5)
@@ -199,7 +217,7 @@ struct AnswerCrabSprite<Carried: View>: View {
 
     /// Both halves are flipped the same way and framed the same way, so the two
     /// of them stay one animal with the load threaded through it.
-    private func sideOfTheCrab<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+    private func oneSide<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         ZStack { content() }
             .frame(width: bodyWidth * 1.7, height: bodyWidth * 1.5)
             .scaleEffect(x: mirrored ? -1 : 1, y: 1)
@@ -214,11 +232,10 @@ struct AnswerCrabSprite<Carried: View>: View {
                 right: CGPoint(x: -grip.left.x, y: grip.left.y))
     }
 
-    /// Looking left in the drawing's own terms, which is the other way round
-    /// once the whole sprite has been flipped.
-    private var lookSide: CGFloat {
-        let side: CGFloat = gaze < 0 ? -1 : 1
-        return mirrored ? -side : side
+    /// The way it is looking, in the drawing's own terms — which is the other
+    /// way round once the whole sprite has been flipped.
+    private var designGaze: CGSize {
+        CGSize(width: mirrored ? -gaze.width : gaze.width, height: gaze.height)
     }
 
     /// A point carried through the body's own roll and bob, which is how a limb
@@ -239,19 +256,30 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// A limb, laid down where its own export sat — mirroring and nudging leave
     /// the layout square alone, so the joint still means the same point on
     /// screen whichever side's drawing it came from.
-    private func limb(_ limb: AnswerCrabRig.Limb) -> some View {
-        image(limb.imageName)
-            .scaleEffect(x: limb.flipped ? -1 : 1, y: 1)
-            .offset(x: square * limb.nudge.width, y: square * limb.nudge.height)
+    @ViewBuilder
+    private func limb(_ limb: AnswerCrabRig.Limb, jawFrom: UnitPoint? = nil) -> some View {
+        let picture = image(limb.imageName)
+        Group {
+            if let jawFrom {
+                picture.mask {
+                    HalfPlane(through: jawFrom, degrees: rig.jawSplit)
+                }
+            } else {
+                picture
+            }
+        }
+        .scaleEffect(x: limb.flipped ? -1 : 1, y: 1)
+        .offset(x: square * limb.nudge.width, y: square * limb.nudge.height)
     }
 
     /// A claw turns around its own buried end until its mouth is on the edge it
     /// is holding, and the shoulder itself rides the body — so the arm stays
-    /// attached to the animal while the pincer stays on a shell that is swinging
-    /// independently of it.
+    /// attached to the animal while the pincer stays on a load that is moving
+    /// independently of it. With nothing pulling on it, it simply rides.
     private func claw(_ limb: AnswerCrabRig.Limb,
                       pincer: UnitPoint,
-                      grip: CGPoint?) -> some View {
+                      grip: CGPoint?,
+                      bigJawOnly: Bool = false) -> some View {
         let rest = rig.point(limb.joint, square: square)
         let moved = onBody(rest)
         var degrees = roll
@@ -261,7 +289,7 @@ struct AnswerCrabSprite<Carried: View>: View {
             let drawn = atan2(mouth.y - rest.y, mouth.x - rest.x)
             degrees = (held - drawn) * 180 / .pi
         }
-        return self.limb(limb)
+        return self.limb(limb, jawFrom: bigJawOnly ? pincer : nil)
             .rotationEffect(.degrees(degrees), anchor: limb.joint)
             .offset(x: moved.x - rest.x, y: moved.y - rest.y)
     }
@@ -270,8 +298,36 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// heading. The four placements are all different because the two whites
     /// are — the artwork is a face, not a diagram.
     private func pupil(_ eye: AnswerCrabRig.Eye) -> some View {
-        let shift = eye.offset(looking: lookSide)
+        let shift = eye.offset(looking: designGaze)
         return image(eye.imageName)
             .offset(x: square * shift.width, y: square * shift.height)
+    }
+}
+
+/// Everything on one side of a line through a point. Used to keep the long jaw
+/// of a claw and drop the short one, so the two can be drawn either side of the
+/// shell they are closed on.
+private struct HalfPlane: Shape {
+    /// The point the line runs through, on the artwork square.
+    let through: UnitPoint
+    /// The direction of the kept side, in degrees.
+    let degrees: Double
+
+    func path(in rect: CGRect) -> Path {
+        let centre = CGPoint(x: rect.minX + through.x * rect.width,
+                             y: rect.minY + through.y * rect.height)
+        let reach = max(rect.width, rect.height) * 2
+        let radians = degrees * .pi / 180
+        let normal = CGPoint(x: cos(radians), y: sin(radians))
+        let along = CGPoint(x: -normal.y, y: normal.x)
+        var path = Path()
+        let a = CGPoint(x: centre.x + along.x * reach, y: centre.y + along.y * reach)
+        let b = CGPoint(x: centre.x - along.x * reach, y: centre.y - along.y * reach)
+        path.move(to: a)
+        path.addLine(to: b)
+        path.addLine(to: CGPoint(x: b.x + normal.x * reach, y: b.y + normal.y * reach))
+        path.addLine(to: CGPoint(x: a.x + normal.x * reach, y: a.y + normal.y * reach))
+        path.closeSubpath()
+        return path
     }
 }

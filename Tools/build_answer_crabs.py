@@ -116,6 +116,37 @@ def pincer(claw_image, side):
     return float(xs[keep].mean()), float(ys[keep].mean())
 
 
+def jaw_split(claw_image, mouth, joint):
+    """Which way the claw's big jaw lies, as the direction of a half-plane.
+
+    A claw is two jaws around a mouth, and the shell's rim goes between them:
+    the long outer jaw has to close over the front of it and the short hook
+    behind. The mouth's own long axis is the line that separates the two, and
+    the big jaw is whichever side of it points away from the arm.
+    """
+    m = mask(claw_image)
+    side = m.shape[0]
+    notch = close(m, int(side * 0.035)) & ~m
+    best, distance = None, float("inf")
+    for pixels in blobs(notch):
+        if len(pixels) < 20:
+            continue
+        ys = np.array([p[0] for p in pixels])
+        xs = np.array([p[1] for p in pixels])
+        d = (xs.mean() - mouth[0]) ** 2 + (ys.mean() - mouth[1]) ** 2
+        if d < distance:
+            best, distance = (xs, ys), d
+    xs, ys = best
+    centred = np.stack([xs - xs.mean(), ys - ys.mean()])
+    values, vectors = np.linalg.eigh(centred @ centred.T / len(xs))
+    axis = vectors[:, np.argmax(values)]
+    normal = np.array([-axis[1], axis[0]])
+    toArm = np.array([joint[0] - xs.mean(), joint[1] - ys.mean()])
+    if float(normal @ toArm) > 0:
+        normal = -normal
+    return float(np.degrees(np.arctan2(normal[1], normal[0])))
+
+
 def hip(legs, body):
     ys, xs = np.nonzero(legs & body)
     return float(xs.mean()), float(ys.min() + 0.18 * (ys.max() - ys.min()))
@@ -174,6 +205,9 @@ def build(write=True):
         rec["claw_joint"] = u(shoulder(M["claw"]))
         rec["claw_pincer"] = u(pincer(ims["claw"], "left"))
         rec["leg_hip"] = u(hip(M["legs"], M["body"]))
+        rec["jaw_split"] = round(jaw_split(ims["claw"],
+                                           pincer(ims["claw"], "left"),
+                                           shoulder(M["claw"])), 1)
         rec["claw_mirror"] = [round(-mirrors["claw"][0] / side, 4),
                               round(mirrors["claw"][1] / side, 4)]
         rec["leg_mirror"] = [round(-mirrors["legs"][0] / side, 4),

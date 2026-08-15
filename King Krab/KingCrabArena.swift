@@ -245,8 +245,17 @@ enum ArenaConfig {
 
     // MARK: Scenery
 
-    /// How far the sea floor's crest sits below the sum.
-    static func floorCrest(isPad: Bool) -> CGFloat { isPad ? 34 : 24 }
+    /// How far below the top of the walking area the sea floor's crest lies.
+    ///
+    /// Deliberately well down: the top third of the screen is open water, and
+    /// the floor has to start low enough to leave it. The crabs walking the
+    /// upper lane come in below this — their shells are held up into the blue,
+    /// which is the whole point of standing on a floor that has water above it.
+    static func floorCrest(isPad: Bool) -> CGFloat { isPad ? 84 : 64 }
+
+    /// Where the King stands in the walking area, top to bottom. The scenery
+    /// reads it too: the sun lands where he is, not on the middle of the sand.
+    static let kingAnchorShare: CGFloat = 0.54
     /// How far the arena keeps clear of the bottom edge, on top of whatever the
     /// home indicator already reserves.
     static func floorInset(isPad: Bool) -> CGFloat { isPad ? 26 : 18 }
@@ -303,8 +312,8 @@ struct ReefPalette: Equatable {
 
     private static let surface = (0.60, 0.87, 0.95)
     private static let depth = (0.10, 0.45, 0.66)
-    private static let sandTone = (0.96, 0.90, 0.74)
-    private static let sandShadow = (0.80, 0.68, 0.46)
+    private static let sandTone = (0.95, 0.86, 0.66)
+    private static let sandShadow = (0.78, 0.65, 0.43)
     /// The four rungs of the water column, from the surface just off the top of
     /// the screen down to the sand. Shallow tropical water is not one blue: it
     /// is almost white-cyan where the sun goes in, saturated blue through the
@@ -314,7 +323,7 @@ struct ReefPalette: Equatable {
     private static let midTone = (0.13, 0.55, 0.82)
     private static let floorTone = (0.26, 0.63, 0.71)
     /// The warm patch the sun lays down in the middle of the arena.
-    private static let sandSunTone = (1.00, 0.95, 0.79)
+    private static let sandSunTone = (1.00, 0.93, 0.72)
 
     // Every one of these used to be recomputed on each access — a tuple blend
     // and a fresh `Color` — and the drawing code reads them constantly: the
@@ -866,7 +875,8 @@ final class KingCrabArena: ObservableObject {
         self.kingSize = ArenaConfig.kingSize(isPad: isPad)
 
         let previousKing = king.anchor
-        king.anchor = CGPoint(x: arena.midX, y: arena.minY + arena.height * 0.54)
+        king.anchor = CGPoint(x: arena.midX,
+                              y: arena.minY + arena.height * ArenaConfig.kingAnchorShare)
         placeKing(0)
         if !isFirst {
             // A rotation, or the walkthrough's message card claiming the top of
