@@ -108,11 +108,6 @@ struct AnimalCharacter: Identifiable, Equatable {
     let skyRGB: (Double, Double, Double)
     let tintRGB: (Double, Double, Double)
 
-    /// Width ÷ height of the swimming artwork, measured from the asset itself.
-    /// The reef draws every character at its own proportions rather than
-    /// squeezing them all into one silhouette.
-    let sideAspectRatio: CGFloat
-
     static func == (lhs: AnimalCharacter, rhs: AnimalCharacter) -> Bool {
         lhs.id == rhs.id
     }
@@ -135,14 +130,34 @@ struct AnimalCharacter: Identifiable, Equatable {
 
     private static let heroPortraits = ["crab": "1_main"]
 
+    /// Position in the catalog, 1-based. The whole-animal artwork and the rig's
+    /// separate limbs are both exported under this number, so the two can never
+    /// come from different characters.
+    var catalogOrder: Int {
+        (CharacterUnlocks.orderedCharacterIDs.firstIndex(of: id) ?? 0) + 1
+    }
+
+    /// The whole animal — shell, claws and legs — rather than the portrait,
+    /// which is a head. The screens that show a character big enough to read
+    /// all of him use this: the shop, the menu card, the level card and the
+    /// result. The King's picture is already full length, so he keeps it.
+    var fullImageName: String {
+        catalogOrder == 1 ? imageName : "\(catalogOrder)_full"
+    }
+    var fullArtwork: Image { Image(fullImageName) }
+
+    /// The same animal at chip size, for the slots that draw him no bigger than
+    /// a stamp: the shop's grid, the row of animals just earned, and the line
+    /// counting down to the next one. Handing those the full-length picture
+    /// makes the renderer unpack a 640-pixel square to paint forty points of
+    /// it, and ten of those is most of what opening the shop costs.
+    var thumbImageName: String { "\(catalogOrder)_thumb" }
+    var thumbArtwork: Image { Image(thumbImageName) }
+
     /// The separate limbs the arena animates this character from, when the
     /// character has been cut into parts. Everyone else is drawn from the one
     /// square portrait above, so a character without a rig still works.
     var rig: CharacterRig? { CharacterRig.rig(for: id) }
-
-    /// Facing the way it swims, used while playing.
-    var sideImageName: String { "side_\(slot)" }
-    var sideArtwork: Image { Image(sideImageName) }
 
     /// Localized display name, resolved per language from the string catalog
     /// ("character.fox", "character.frog", …).
@@ -170,44 +185,34 @@ enum CharacterCatalog {
     static let all: [AnimalCharacter] = [
         AnimalCharacter(id: "crab", name: "Crab", emoji: "🦀", slot: 2,
                         primaryRGB: (0.90, 0.27, 0.10), deepRGB: (0.62, 0.13, 0.03),
-                        skyRGB: (1.00, 0.90, 0.87), tintRGB: (1.00, 0.82, 0.77),
-                        sideAspectRatio: 1.071),
+                        skyRGB: (1.00, 0.90, 0.87), tintRGB: (1.00, 0.82, 0.77)),
         AnimalCharacter(id: "elephant", name: "Elephant", emoji: "🐘", slot: 3,
                         primaryRGB: (0.36, 0.58, 0.78), deepRGB: (0.19, 0.38, 0.58),
-                        skyRGB: (0.90, 0.94, 0.97), tintRGB: (0.81, 0.89, 0.96),
-                        sideAspectRatio: 1.606),
+                        skyRGB: (0.90, 0.94, 0.97), tintRGB: (0.81, 0.89, 0.96)),
         AnimalCharacter(id: "bear", name: "Bear", emoji: "🐻", slot: 4,
                         primaryRGB: (0.72, 0.44, 0.16), deepRGB: (0.42, 0.20, 0.06),
-                        skyRGB: (0.99, 0.94, 0.88), tintRGB: (0.98, 0.89, 0.79),
-                        sideAspectRatio: 1.411),
+                        skyRGB: (0.99, 0.94, 0.88), tintRGB: (0.98, 0.89, 0.79)),
         AnimalCharacter(id: "fox", name: "Fox", emoji: "🦊", slot: 5,
                         primaryRGB: (0.94, 0.60, 0.26), deepRGB: (0.68, 0.30, 0.07),
-                        skyRGB: (1.00, 0.94, 0.87), tintRGB: (1.00, 0.89, 0.77),
-                        sideAspectRatio: 1.266),
+                        skyRGB: (1.00, 0.94, 0.87), tintRGB: (1.00, 0.89, 0.77)),
         AnimalCharacter(id: "frog", name: "Frog", emoji: "🐸", slot: 6,
                         primaryRGB: (0.45, 0.76, 0.18), deepRGB: (0.12, 0.47, 0.15),
-                        skyRGB: (0.93, 0.99, 0.88), tintRGB: (0.88, 0.97, 0.80),
-                        sideAspectRatio: 1.810),
+                        skyRGB: (0.93, 0.99, 0.88), tintRGB: (0.88, 0.97, 0.80)),
         AnimalCharacter(id: "penguin", name: "Penguin", emoji: "🐧", slot: 7,
                         primaryRGB: (0.22, 0.36, 0.68), deepRGB: (0.08, 0.16, 0.38),
-                        skyRGB: (0.89, 0.92, 0.98), tintRGB: (0.81, 0.86, 0.96),
-                        sideAspectRatio: 1.356),
+                        skyRGB: (0.89, 0.92, 0.98), tintRGB: (0.81, 0.86, 0.96)),
         AnimalCharacter(id: "bunny", name: "Bunny", emoji: "🐰", slot: 8,
                         primaryRGB: (0.94, 0.56, 0.60), deepRGB: (0.72, 0.29, 0.37),
-                        skyRGB: (1.00, 0.87, 0.89), tintRGB: (0.99, 0.78, 0.80),
-                        sideAspectRatio: 1.352),
+                        skyRGB: (1.00, 0.87, 0.89), tintRGB: (0.99, 0.78, 0.80)),
         AnimalCharacter(id: "dog", name: "Dog", emoji: "🐶", slot: 9,
                         primaryRGB: (0.20, 0.66, 0.69), deepRGB: (0.06, 0.42, 0.46),
-                        skyRGB: (0.89, 0.97, 0.98), tintRGB: (0.81, 0.95, 0.96),
-                        sideAspectRatio: 1.544),
+                        skyRGB: (0.89, 0.97, 0.98), tintRGB: (0.81, 0.95, 0.96)),
         AnimalCharacter(id: "lion", name: "Lion", emoji: "🦁", slot: 10,
                         primaryRGB: (0.95, 0.74, 0.20), deepRGB: (0.68, 0.45, 0.08),
-                        skyRGB: (1.00, 0.96, 0.87), tintRGB: (1.00, 0.94, 0.77),
-                        sideAspectRatio: 1.384),
+                        skyRGB: (1.00, 0.96, 0.87), tintRGB: (1.00, 0.94, 0.77)),
         AnimalCharacter(id: "octopus", name: "Octopus", emoji: "🐙", slot: 1,
                         primaryRGB: (0.62, 0.40, 0.87), deepRGB: (0.35, 0.18, 0.60),
-                        skyRGB: (0.93, 0.88, 0.99), tintRGB: (0.88, 0.79, 0.98),
-                        sideAspectRatio: 1.599)
+                        skyRGB: (0.93, 0.88, 0.99), tintRGB: (0.88, 0.79, 0.98))
     ]
 
     static func character(id: String) -> AnimalCharacter {

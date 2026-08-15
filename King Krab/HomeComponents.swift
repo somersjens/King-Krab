@@ -1328,7 +1328,7 @@ struct AlternatingCardSummary: View {
                     // at this size.
                     .offset(y: 0.8 * scale * contentScale)
                     .opacity(0.58)
-                animal.artwork
+                animal.thumbArtwork
                     .resizable()
                     .scaledToFit()
                     .frame(width: artworkSide * contentScale,

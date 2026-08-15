@@ -333,7 +333,7 @@ struct HomeView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(.white.opacity(0.9), lineWidth: 2)
                 }
-            character.artwork
+            character.fullArtwork
                 .resizable()
                 .scaledToFit()
                 .padding(box * 0.08)

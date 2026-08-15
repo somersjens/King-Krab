@@ -145,7 +145,7 @@ struct PremiumView: View {
                     Circle()
                         .stroke(character.color.opacity(0.30), lineWidth: 2)
                         .frame(width: heroSize * 0.92, height: heroSize * 0.92)
-                    character.artwork
+                    character.fullArtwork
                         .resizable()
                         .scaledToFit()
                         .frame(width: heroSize * 0.88, height: heroSize * 0.88)
@@ -298,7 +298,7 @@ struct PremiumView: View {
         } label: {
             VStack(spacing: 5 * scale) {
                 ZStack(alignment: .topTrailing) {
-                    animal.artwork
+                    animal.thumbArtwork
                         .resizable()
                         .scaledToFit()
                         .frame(width: artworkSlotSize, height: artworkSlotSize)
@@ -509,7 +509,7 @@ struct PremiumView: View {
                         }
                         .rotationEffect(.degrees(unlockBurstRotation))
 
-                        animal.artwork
+                        animal.fullArtwork
                             .resizable()
                             .scaledToFit()
                             .frame(width: stageSize * 0.72, height: stageSize * 0.72)
