@@ -241,7 +241,7 @@ struct LevelIntroCard: View {
     // MARK: - Pieces
 
     private var characterPortrait: some View {
-        theme.fullArtwork
+        theme.artwork
             .resizable()
             .scaledToFit()
             .padding(5)

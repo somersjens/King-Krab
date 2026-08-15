@@ -166,7 +166,7 @@ struct ResultView: View {
                     .font(.system(size: 20 * scale, weight: .bold))
                     .foregroundStyle(character.color.opacity(0.68))
                     .offset(x: 53 * scale, y: -8 * scale)
-                character.fullArtwork
+                character.artwork
                     .resizable()
                     .scaledToFit()
                     .frame(width: 156 * scale, height: 110.4 * scale)
@@ -177,7 +177,7 @@ struct ResultView: View {
             }
             .frame(height: 110.4 * scale)
         } else {
-            character.fullArtwork
+            character.artwork
                 .resizable()
                 .scaledToFit()
                 .frame(width: 156 * scale, height: 110.4 * scale)

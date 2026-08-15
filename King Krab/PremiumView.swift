@@ -145,7 +145,7 @@ struct PremiumView: View {
                     Circle()
                         .stroke(character.color.opacity(0.30), lineWidth: 2)
                         .frame(width: heroSize * 0.92, height: heroSize * 0.92)
-                    character.fullArtwork
+                    character.artwork
                         .resizable()
                         .scaledToFit()
                         .frame(width: heroSize * 0.88, height: heroSize * 0.88)
@@ -509,7 +509,7 @@ struct PremiumView: View {
                         }
                         .rotationEffect(.degrees(unlockBurstRotation))
 
-                        animal.fullArtwork
+                        animal.artwork
                             .resizable()
                             .scaledToFit()
                             .frame(width: stageSize * 0.72, height: stageSize * 0.72)

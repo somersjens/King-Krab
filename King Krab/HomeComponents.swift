@@ -198,7 +198,7 @@ struct NameEditorSheet: View {
             Spacer(minLength: 0)
 
             VStack(spacing: 6 * scale) {
-                theme.artwork
+                theme.thumbArtwork
                     .resizable()
                     .scaledToFit()
                     .frame(width: 54 * scale, height: 54 * scale)

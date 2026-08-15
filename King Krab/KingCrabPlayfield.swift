@@ -97,14 +97,30 @@ struct KingCrabPlayfield: View {
             let size = proxy.size
             let rect = arenaRect(in: size)
 
+            let crest = rect.minY - ArenaConfig.floorCrest(isPad: isPad)
+
+            // Seven layers, back to front: open water and its surface; the weed
+            // silhouetted against it; the sea floor with its own reef; the
+            // depth down both edges; the light coming through all of it; the
+            // animals; and the water itself in front of them.
             ZStack(alignment: .topLeading) {
                 WaterColumn(palette: palette, clock: arena.driftClock)
                     .equatable()
 
+                DistantWeeds(palette: palette, crest: crest, clock: arena.swayClock)
+                    .equatable()
+                    .frame(width: size.width, height: size.height)
+
                 ArenaFloor(palette: palette,
                            isPad: isPad,
-                           crest: rect.minY - ArenaConfig.floorCrest(isPad: isPad),
+                           crest: crest,
                            clock: arena.swayClock)
+                    .equatable()
+                    .frame(width: size.width, height: size.height)
+
+                // Over the scenery, under the animals: the edges of the arena
+                // fall away into the water without ever dimming a crab.
+                DepthVignette(palette: palette)
                     .equatable()
                     .frame(width: size.width, height: size.height)
 
@@ -160,6 +176,15 @@ struct KingCrabPlayfield: View {
                 // its own `.position` and its own gradient; one immediate-mode
                 // pass draws the lot for the cost of the paths themselves.
                 CelebrationCanvas(specks: arena.celebration, palette: palette)
+                    .allowsHitTesting(false)
+
+                // Water in front of the arena rather than behind it. A few
+                // specks too close to the eye to be in focus is the whole of
+                // it, and it is the difference between looking at the reef and
+                // being in the water with it.
+                NearDrift(clock: arena.swayClock)
+                    .equatable()
+                    .frame(width: size.width, height: size.height)
                     .allowsHitTesting(false)
 
                 // The sum sits above everything: no crab and no sand may ever
@@ -721,7 +746,9 @@ private struct AnswerCrabView: View {
     /// Where the sand's surface is, in shares of the body width below the
     /// crab's middle: the line its own feet stand on. Everything about the dig
     /// is measured from it, because it is the line the crab goes *through*.
-    private static let groundLine: CGFloat = 0.82
+    /// It is the artwork's own footline, so the shadow, the pit and the cut at
+    /// the sand's surface all follow the drawing rather than a guess about it.
+    private var groundLine: CGFloat { (rig.groundLine - 0.5) / rig.bodyWidth }
 
     /// How far a crab has already settled onto its legs by the time it has
     /// finished handing its shell over. The dig picks the pose up at exactly
@@ -793,11 +820,33 @@ private struct AnswerCrabView: View {
     private var cardSway: Double { sin(crab.age * crab.waddleRate - 0.6) }
     /// A running crab cannot hold its shell as steady as a walking one.
     private var cardAngle: Double { crab.cardLean + cardSway * 3.4 * (1 + 0.8 * run) }
-    /// Where the shell rides while it is simply being carried.
+    /// The artwork this crab is drawn from, and the square that artwork covers
+    /// at the size the arena is asking for.
+    private var rig: AnswerCrabRig { isGolden ? .gold : .red }
+    private var square: CGFloat { rig.square(bodyWidth: bodyWidth) }
+
+    /// Where the pincers are when the claws are at rest — the two points the
+    /// shell has to be held between.
+    private var mouths: (left: CGPoint, right: CGPoint) {
+        (rig.point(rig.leftPincer, square: square),
+         rig.point(rig.rightPincer, square: square))
+    }
+
+    /// Where the pincers close on the shell, as shares of its own frame.
+    private var grip: CGPoint {
+        AnswerShellShape.grip(span: rig.pincerSpan(square: square),
+                              width: ArenaConfig.cardWidth(isPad: isPad))
+    }
+
+    /// Where the shell rides while it is simply being carried: exactly where
+    /// the two claws are already open, so a crab at rest is holding its answer
+    /// rather than reaching for it.
     private var carriedShell: CGPoint {
-        let cardHeight = ArenaConfig.cardHeight(isPad: isPad)
-        return CGPoint(x: CGFloat(cardSway) * bodyWidth * 0.025,
-                       y: -bodyWidth * 0.75 - cardHeight * (ArenaConfig.cardLift - 0.5))
+        let mouth = mouths
+        let height = ArenaConfig.cardHeight(isPad: isPad)
+        return CGPoint(x: (mouth.left.x + mouth.right.x) / 2
+                          + CGFloat(cardSway) * bodyWidth * 0.025,
+                       y: mouth.left.y - (grip.y - 0.5) * height)
     }
 
     /// Where the hands are `t` of the way through handing the shell over: out
@@ -874,18 +923,10 @@ private struct AnswerCrabView: View {
             return CGPoint(x: centre.x + local.x * cosine - local.y * sine,
                            y: centre.y + local.x * sine + local.y * cosine)
         }
-        let left = AnswerShellShape.grip
+        let left = grip
         return CrabHold(left: onRim(left),
                         right: onRim(CGPoint(x: 1 - left.x, y: left.y)),
                         centre: centre)
-    }
-
-    private var rig: CrabArmRig {
-        CrabArmRig(bodyWidth: bodyWidth,
-                   stepPhase: gait,
-                   isWalking: isStepping,
-                   facing: crab.facing,
-                   hold: hold)
     }
 
     /// The legs work both when the crab is covering ground and when it is
@@ -924,31 +965,34 @@ private struct AnswerCrabView: View {
     var body: some View {
         let tint: CrabTint = isGolden ? .gold : .enemy
 
-        let crabAndShell = CrabSprite(bodyWidth: bodyWidth,
-                                      tint: tint,
-                                      stepPhase: gait,
-                                      isWalking: isStepping,
-                                      facing: crab.facing,
-                                      gaze: gaze,
-                                      strideFactor: crab.strideFactor,
-                                      palette: palette)
-            .overlay {
-                AnswerShell(text: crab.text,
-                            palette: palette,
-                            isPad: isPad,
-                            isGolden: isGolden)
-                    // The shell swings a beat behind the body, the way anything
-                    // held over your head does.
-                    .rotationEffect(.degrees(cardAngle))
-                    .scaleEffect(1 - 0.18 * handOver)
-                    .offset(x: cardCentre.x, y: cardCentre.y)
-                    .opacity(shellOpacity)
-            }
-            // The arms go on last, over the shell: a claw behind the rim looks
-            // like a crab standing under its answer, and a claw over the rim
-            // looks like a crab carrying it. Drawn whole, they take their own
-            // outline with them.
-            .overlay { CrabArmsView(rig: rig, colors: tint.shell, line: tint.line) }
+        let crabAndShell = AnswerCrabSprite(
+            rig: rig,
+            bodyWidth: bodyWidth,
+            roll: CrabSprite.roll(stepPhase: gait,
+                                  isWalking: isStepping,
+                                  facing: crab.facing),
+            bob: CrabSprite.bob(bodyWidth: bodyWidth,
+                                stepPhase: gait,
+                                isWalking: isStepping),
+            // The drawing is made for a crab on the King's left; one that came
+            // in from his right is the whole thing flipped.
+            mirrored: crab.facing < 0,
+            gaze: gaze.width,
+            // Once the shell has gone, the claws stop reaching for it and drop
+            // back to the pose they are drawn in.
+            grip: shellOpacity > 0 ? (left: hold.left, right: hold.right) : nil
+        ) {
+            AnswerShell(text: crab.text,
+                        palette: palette,
+                        isPad: isPad,
+                        isGolden: isGolden)
+                // The shell swings a beat behind the body, the way anything
+                // held over your head does.
+                .rotationEffect(.degrees(cardAngle))
+                .scaleEffect(1 - 0.18 * handOver)
+                .offset(x: cardCentre.x, y: cardCentre.y)
+                .opacity(shellOpacity)
+        }
 
         return Group {
             if crab.phase == .burrowing {
@@ -1003,7 +1047,7 @@ private struct AnswerCrabView: View {
         let reach = bodyWidth * 8
         return Rectangle()
             .frame(width: reach, height: reach)
-            .offset(y: Self.groundLine * bodyWidth - reach / 2)
+            .offset(y: groundLine * bodyWidth - reach / 2)
     }
 
     /// How wide the disturbed sand is this frame. It opens while the crab works
@@ -1027,7 +1071,7 @@ private struct AnswerCrabView: View {
                                endRadius: max(1, pitWidth * 0.55))
             )
             .frame(width: pitWidth, height: pitWidth * 0.36)
-            .offset(y: Self.groundLine * bodyWidth)
+            .offset(y: groundLine * bodyWidth)
     }
 
     /// The spoil heap, drawn in *front* of the crab: sand does not stay in the
@@ -1050,7 +1094,7 @@ private struct AnswerCrabView: View {
                         .stroke(palette.sandDeep.opacity(0.25), lineWidth: 1)
                         .frame(width: width, height: width * 0.30 * rise)
                 }
-                .offset(y: Self.groundLine * bodyWidth + width * 0.10 * rise)
+                .offset(y: groundLine * bodyWidth + width * 0.10 * rise)
                 .blur(radius: 0.8)
         }
         .opacity(pitFade)
@@ -1124,10 +1168,26 @@ private struct AnswerShellShape: Shape {
         CGPoint(x: 0.02 + 0.96 * t, y: 0.56 - 0.52 * sin(.pi * t))
     }
 
-    /// Where the left claw closes: down on the shell's bottom corner, so the
-    /// crab holds it underneath and its arms stay short. Reaching further up
-    /// the shoulder stretches them into stilts.
-    static var grip: CGPoint { shoulderPoint(0.58) }
+    /// Where the left claw closes, for a crab whose two pincers are `span`
+    /// apart. The pincers are drawn where they are drawn, so the shell has to
+    /// be gripped that far in from its middle rather than out at its corners —
+    /// which is what puts the mouth of a claw on the rim instead of past it.
+    static func grip(span: CGFloat, width: CGFloat) -> CGPoint {
+        shoulderPoint(atX: 0.5 - min(0.46, span / max(1, width) / 2))
+    }
+
+    /// The point on the shoulder curve at a given share across the shell. The
+    /// curve is monotonic in x over the stretch that matters, so a handful of
+    /// halvings lands on it closely enough for a claw a few points wide.
+    private static func shoulderPoint(atX x: CGFloat) -> CGPoint {
+        var low: CGFloat = 0
+        var high: CGFloat = 1
+        for _ in 0..<24 {
+            let mid = (low + high) / 2
+            if shoulderPoint(mid).x > x { low = mid } else { high = mid }
+        }
+        return shoulderPoint((low + high) / 2)
+    }
 
     /// A point along the shoulder curve, from the hinge (0) to the rim (1).
     private static func shoulderPoint(_ t: CGFloat) -> CGPoint {
@@ -2245,10 +2305,66 @@ private struct ArenaEffectsCanvas: View {
     }
 }
 
+/// The nearest layer in the scene: a few soft, out-of-focus specks drifting up
+/// between the eye and the arena.
+///
+/// Deliberately almost invisible. Anything readable here would compete with the
+/// answers a child is trying to read; what it is for is parallax. These move
+/// several times faster than anything on the sea floor, and that difference is
+/// what puts the arena at a distance.
+private struct NearDrift: View, Equatable {
+    let clock: Double
+
+    /// x, diameter, rise rate, wobble phase.
+    private static let specks: [(CGFloat, CGFloat, CGFloat, Double)] = [
+        (0.13, 46, 15, 0.0), (0.31, 26, 22, 2.4), (0.49, 60, 11, 4.1),
+        (0.67, 30, 19, 1.2), (0.84, 52, 13, 3.6), (0.94, 22, 25, 5.4)
+    ]
+
+    var body: some View {
+        Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+            guard !ArenaPerformanceBudget.isConstrained else { return }
+
+            for speck in Self.specks {
+                let travel = size.height + speck.1 * 2
+                // Rising and wrapping, so the layer has no start and no end.
+                let raw = size.height - CGFloat(clock) * speck.2
+                    + speck.3 * 40
+                let wrapped = raw.truncatingRemainder(dividingBy: travel)
+                let y = (wrapped >= 0 ? wrapped : wrapped + travel) - speck.1
+                let x = size.width * speck.0
+                    + CGFloat(sin(clock * 0.29 + speck.3)) * 14
+                let radius = speck.1 / 2
+
+                context.fill(
+                    Path(ellipseIn: CGRect(x: x - radius, y: y - radius,
+                                           width: speck.1, height: speck.1)),
+                    with: .radialGradient(
+                        Gradient(stops: [
+                            .init(color: .white.opacity(0.05), location: 0),
+                            .init(color: .white.opacity(0.09), location: 0.72),
+                            .init(color: .white.opacity(0), location: 1)
+                        ]),
+                        center: CGPoint(x: x, y: y), startRadius: 0, endRadius: radius
+                    )
+                )
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
 // MARK: - Water
 
 /// The water column: the whole screen, from the surface at the very top edge
 /// down to the sea floor.
+///
+/// Four rungs rather than two. Shallow tropical water reads as *shallow*
+/// because of what happens between the surface and the floor: it goes in
+/// almost white-cyan, saturates to blue through the open middle, and turns
+/// green again as it picks the sand back up. A straight top-to-bottom fade
+/// between two blues gives depth but no water.
 private struct WaterColumn: View, Equatable {
     let palette: ReefPalette
     let clock: Double
@@ -2258,8 +2374,211 @@ private struct WaterColumn: View, Equatable {
     }
 
     var body: some View {
-        LinearGradient(colors: [palette.waterTop, palette.waterDeep],
-                       startPoint: .top, endPoint: .bottom)
+        // The surface breathes on two periods that never come back round
+        // together, so the top of the screen never settles into a pulse.
+        let breath = 0.5 + 0.5 * sin(clock * 0.21)
+        let glint = 0.5 + 0.5 * sin(clock * 0.13 + 1.7)
+
+        ZStack(alignment: .top) {
+            LinearGradient(stops: [
+                .init(color: palette.waterSurface, location: 0),
+                .init(color: palette.waterShallow, location: 0.11),
+                .init(color: palette.waterMid, location: 0.34),
+                .init(color: palette.waterMid, location: 0.52),
+                .init(color: palette.waterFloor, location: 0.84),
+                .init(color: palette.waterFloor, location: 1)
+            ], startPoint: .top, endPoint: .bottom)
+
+            // The sun going in. It sits over the middle of the top edge, which
+            // is where the shafts below hang from, and slowly gains and loses
+            // its edge the way a surface seen from underneath does.
+            SurfaceGlow(strength: 0.72 + 0.28 * breath, glint: glint)
+        }
+        // The glow adds itself to the water under it and to nothing else. Left
+        // ungrouped, `plusLighter` would reach past the column into whatever
+        // the playfield is sitting on.
+        .compositingGroup()
+    }
+}
+
+/// The lit surface at the very top of the screen: a wide bloom over the middle
+/// and a couple of soft bands under it, standing in for the ceiling of moving
+/// water that the whole scene is lit through.
+private struct SurfaceGlow: View {
+    let strength: Double
+    let glint: Double
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            // Only the top of the screen is surface; everything below it is
+            // water, and painting over that would flatten the column.
+            let band = height * 0.22
+
+            ZStack(alignment: .top) {
+                // The bloom itself, centred and wider than it is tall.
+                Ellipse()
+                    .fill(
+                        // Bright, but not white: the surface is the most
+                        // saturated turquoise in the picture, and washing it
+                        // out is what turns "sunlit water" into "overexposed".
+                        RadialGradient(
+                            colors: [.white.opacity(0.40 * strength),
+                                     .white.opacity(0.12 * strength),
+                                     .white.opacity(0)],
+                            center: .center, startRadius: 0, endRadius: width * 0.62
+                        )
+                    )
+                    .frame(width: width * 1.6, height: band * 1.5)
+                    .offset(y: -band * 0.75)
+
+                // Two bands of glancing light just under it. They are what make
+                // the ceiling read as water rather than as a lamp.
+                LinearGradient(stops: [
+                    .init(color: .white.opacity(0.30 * glint), location: 0),
+                    .init(color: .white.opacity(0.10 * glint), location: 0.35),
+                    .init(color: .white.opacity(0), location: 1)
+                ], startPoint: .top, endPoint: .bottom)
+                    .frame(height: band * 0.55)
+
+                LinearGradient(stops: [
+                    .init(color: .white.opacity(0), location: 0),
+                    .init(color: .white.opacity(0.12 * (1 - glint)), location: 0.5),
+                    .init(color: .white.opacity(0), location: 1)
+                ], startPoint: .top, endPoint: .bottom)
+                    .frame(height: band * 0.42)
+                    .offset(y: band * 0.30)
+            }
+            .frame(width: width, height: height, alignment: .top)
+            .blendMode(.plusLighter)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// The depth that sits over everything scenic: darker, bluer water down both
+/// outer edges and along the very top corners.
+///
+/// Drawn above the sea floor but below the animals. The edges of a real arena
+/// fall away into the water, which is what hands the middle of the screen its
+/// attention for free — but a crab walking in at the side still has to be as
+/// readable as one in the centre, so the fall-off never reaches them.
+private struct DepthVignette: View, Equatable {
+    let palette: ReefPalette
+
+    var body: some View {
+        LinearGradient(stops: [
+            .init(color: palette.waterDeep.opacity(0.42), location: 0),
+            .init(color: palette.waterDeep.opacity(0.12), location: 0.16),
+            .init(color: .clear, location: 0.34),
+            .init(color: .clear, location: 0.66),
+            .init(color: palette.waterDeep.opacity(0.12), location: 0.84),
+            .init(color: palette.waterDeep.opacity(0.42), location: 1)
+        ], startPoint: .leading, endPoint: .trailing)
+        .blendMode(.multiply)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// The water standing between the eye and the far end of the sea floor.
+///
+/// The crest itself is taken care of where the sand is drawn, on the curve.
+/// This is the rest of it: a wash of the water's own blue-green over the far
+/// third of the bed, so the reef and the stones back there lose their contrast
+/// the way the sand under them already has.
+private struct DistanceHaze: View, Equatable {
+    let palette: ReefPalette
+
+    var body: some View {
+        LinearGradient(stops: [
+            .init(color: palette.waterFloor.opacity(0.34), location: 0),
+            .init(color: palette.waterFloor.opacity(0.24), location: 0.14),
+            .init(color: palette.waterFloor.opacity(0.08), location: 0.28),
+            .init(color: palette.waterFloor.opacity(0), location: 0.42)
+        ], startPoint: .top, endPoint: .bottom)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+/// Thin weed and a few plant silhouettes along the outer edges of the open
+/// water, above the sea floor.
+///
+/// They are almost the water's own colour: at that distance a plant is a
+/// shape, not a thing with leaves. They keep to the outermost tenth of each
+/// side so the middle of the screen stays the open blue the arena is read
+/// against, and they are the slowest-moving layer in the scene.
+private struct DistantWeeds: View, Equatable {
+    let palette: ReefPalette
+    let crest: CGFloat
+    let clock: Double
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.palette.character == rhs.palette.character
+            && lhs.crest == rhs.crest
+            && lhs.clock == rhs.clock
+    }
+
+    /// x (share of width), height (share of the water above the crest), lean,
+    /// sway rate, phase, thickness.
+    private static let blades: [(CGFloat, CGFloat, CGFloat, Double, Double, CGFloat)] = [
+        (0.018, 0.62, 0.10, 0.28, 0.0, 1.00), (0.052, 0.44, -0.08, 0.34, 1.9, 0.72),
+        (0.086, 0.30, 0.13, 0.31, 3.4, 0.58), (0.030, 0.24, -0.14, 0.39, 5.1, 0.46),
+        (0.982, 0.58, -0.11, 0.26, 0.8, 0.94), (0.948, 0.40, 0.09, 0.36, 2.7, 0.68),
+        (0.914, 0.27, -0.12, 0.30, 4.3, 0.54), (0.968, 0.20, 0.15, 0.41, 5.8, 0.42)
+    ]
+
+    private var blades: [(CGFloat, CGFloat, CGFloat, Double, Double, CGFloat)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.blades.enumerated().filter { $0.offset.isMultiple(of: 2) }.map(\.element)
+            : Self.blades
+    }
+
+    var body: some View {
+        Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+            let bed = max(1, size.height - crest)
+            // How much water there is to grow up through, and therefore how
+            // tall anything back there can afford to be.
+            let reach = max(80, crest)
+
+            for blade in blades {
+                let sway = sin(clock * blade.3 + blade.4)
+                let lean = blade.2 + CGFloat(sway) * 0.09
+                // Rooted on the sand as it actually lies at this x, not on the
+                // crown of the mound. These grow at the very edges of the
+                // screen, which is where the sea floor has fallen furthest
+                // away from its middle — root them all at the crest and they
+                // hang in open water.
+                let fromMiddle = pow(abs(blade.0 - 0.5) * 2, 1.4)
+                let root = crest + bed * 0.16 * fromMiddle + bed * 0.01
+                let top = root - reach * blade.1
+                let x = size.width * blade.0
+                let width = max(2, size.width * 0.010 * blade.5)
+
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: root))
+                path.addCurve(
+                    to: CGPoint(x: x + reach * blade.1 * lean, y: top),
+                    control1: CGPoint(x: x, y: root - reach * blade.1 * 0.45),
+                    control2: CGPoint(x: x + reach * blade.1 * lean * 1.5,
+                                      y: root - reach * blade.1 * 0.78)
+                )
+                context.stroke(
+                    path,
+                    with: .linearGradient(
+                        Gradient(colors: [palette.waterFloor.opacity(0.16),
+                                          palette.plant.opacity(0.44)]),
+                        startPoint: CGPoint(x: x, y: top),
+                        endPoint: CGPoint(x: x, y: root)
+                    ),
+                    style: StrokeStyle(lineWidth: width, lineCap: .round)
+                )
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -2274,12 +2593,35 @@ private struct LightShafts: View, Equatable {
     let clock: Double
     let isPad: Bool
 
-    /// centre x, width, lean, drift rate, brightness.
-    private static let shafts: [(CGFloat, CGFloat, Double, Double, Double)] = [
-        (0.14, 0.30, -14, 0.17, 0.85), (0.33, 0.17, -11, 0.13, 0.55),
-        (0.52, 0.26, -9, 0.10, 0.75), (0.72, 0.15, -13, 0.15, 0.50),
-        (0.88, 0.24, -8, 0.12, 0.70)
+    /// centre x, width, lean, drift rate, brightness, breathing rate.
+    ///
+    /// The leans open *outward* from the middle of the top edge: left-hand
+    /// shafts fall to the left, right-hand ones to the right. That is the one
+    /// thing that says the light has a source rather than being a rain of
+    /// parallel stripes — and the source is exactly where the surface bloom
+    /// hangs, over the middle of the screen.
+    ///
+    /// The widths are deliberately uneven. Two broad, two narrow and a thin
+    /// bright one between them is what water does; five of the same width is
+    /// what a pattern does.
+    private static let shafts: [(CGFloat, CGFloat, Double, Double, Double, Double)] = [
+        (0.09, 0.32, -19, 0.17, 0.86, 0.11),
+        (0.26, 0.11, -12, 0.23, 0.66, 0.19),
+        (0.36, 0.30, -6, 0.13, 0.58, 0.09),
+        (0.50, 0.26, 1, 0.27, 0.50, 0.23),
+        (0.67, 0.30, 8, 0.10, 0.62, 0.14),
+        (0.82, 0.14, 14, 0.20, 0.66, 0.17),
+        (0.94, 0.28, 20, 0.15, 0.78, 0.12)
     ]
+
+    /// Four beams where the frame budget is tightest. They are full-height
+    /// gradients across the whole scene, so this is the cheapest place in the
+    /// backdrop to give something back.
+    private var shafts: [(CGFloat, CGFloat, Double, Double, Double, Double)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.shafts.enumerated().filter { !$0.offset.isMultiple(of: 2) }.map(\.element)
+            : Self.shafts
+    }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.clock == rhs.clock && lhs.isPad == rhs.isPad
@@ -2291,36 +2633,50 @@ private struct LightShafts: View, Equatable {
             let height = proxy.size.height
 
             ZStack(alignment: .top) {
-                ForEach(Array(Self.shafts.enumerated()), id: \.offset) { index, shaft in
+                ForEach(Array(shafts.enumerated()), id: \.offset) { index, shaft in
+                    // Each beam gains and loses strength on its own period, so
+                    // the light over the arena is never twice the same and
+                    // never visibly a loop.
+                    let pulse = 0.72 + 0.28 * sin(clock * shaft.5 + Double(index) * 1.7)
+
                     Rectangle()
                         .fill(
                             LinearGradient(stops: [
                                 .init(color: .white.opacity(0), location: 0),
-                                .init(color: .white.opacity(0.55 * shaft.4), location: 0.42),
-                                .init(color: .white.opacity(0.70 * shaft.4), location: 0.55),
+                                .init(color: .white.opacity(0.50 * shaft.4 * pulse),
+                                      location: 0.40),
+                                .init(color: .white.opacity(0.72 * shaft.4 * pulse),
+                                      location: 0.54),
+                                .init(color: .white.opacity(0.34 * shaft.4 * pulse),
+                                      location: 0.70),
                                 .init(color: .white.opacity(0), location: 1)
                             ], startPoint: .leading, endPoint: .trailing)
                         )
-                        .frame(width: width * shaft.1, height: height * 1.5)
+                        .frame(width: width * shaft.1, height: height * 1.6)
                         // The beam is brightest just under the surface and gone
                         // long before the deepest sand.
                         .mask {
                             LinearGradient(stops: [
-                                .init(color: .white.opacity(0.25), location: 0),
-                                .init(color: .white, location: 0.20),
-                                .init(color: .white.opacity(0.50), location: 0.55),
-                                .init(color: .clear, location: 0.95)
+                                .init(color: .white.opacity(0.30), location: 0),
+                                .init(color: .white, location: 0.16),
+                                .init(color: .white.opacity(0.46), location: 0.40),
+                                .init(color: .white.opacity(0.12), location: 0.64),
+                                .init(color: .clear, location: 0.86)
                             ], startPoint: .top, endPoint: .bottom)
                         }
                         .rotationEffect(.degrees(shaft.2), anchor: .top)
                         .offset(x: width * (shaft.0 - 0.5)
-                                    + CGFloat(sin(clock * shaft.3 + Double(index))) * width * 0.03)
+                                    + CGFloat(sin(clock * shaft.3 + Double(index))) * width * 0.035)
                 }
             }
             .frame(width: width, height: height, alignment: .top)
         }
         .blendMode(.plusLighter)
-        .opacity(0.17)
+        // Seven beams rather than five, so each one carries less. Over water
+        // they can be as strong as they like; the sand they land on is already
+        // the brightest thing in the picture, and a beam that stays bright all
+        // the way down stops being light and becomes a stripe.
+        .opacity(0.15)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
@@ -2349,6 +2705,11 @@ private struct ArenaFloor: View, Equatable {
         GeometryReader { proxy in
             let size = proxy.size
             let sandHeight = max(140, size.height - crest)
+            // The whole floor leans with the water, by a hand's width at most,
+            // and each layer by less than the one in front of it. There is no
+            // camera to move, so this is where the scene's depth comes from:
+            // far weed barely stirs, the near corners visibly do.
+            let drift = CGFloat(sin(clock * 0.11))
 
             ZStack(alignment: .bottom) {
                 // The sand itself does not move. The floor around it is rebuilt
@@ -2359,13 +2720,16 @@ private struct ArenaFloor: View, Equatable {
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
-                // The light that reaches the bottom, and everything lying in it.
-                SandDetail(palette: palette, isPad: isPad, clock: clock)
+                // The far bed's own light, hanging in the water above it.
+                CrestGlow(palette: palette)
+                    .equatable()
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
-                // The reef itself, hugging both edges where nothing walks.
-                ReefBorder(palette: palette, isPad: isPad, clock: clock)
+                // Ripples, dimples, stones and shells. All of it lies still, so
+                // none of it takes the clock.
+                SandRelief(palette: palette, isPad: isPad)
+                    .equatable()
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
@@ -2373,6 +2737,35 @@ private struct ArenaFloor: View, Equatable {
                 SeaGardens(palette: palette, isPad: isPad, clock: clock)
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
+                    .offset(x: drift * 1.5)
+
+                // The reef itself, hugging both edges where nothing walks.
+                ReefBorder(palette: palette, isPad: isPad, clock: clock)
+                    .frame(height: sandHeight)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .offset(x: drift * 2.5)
+
+                // Everything above this line is far away, and the water it is
+                // seen through takes its edge off — the far reef included.
+                DistanceHaze(palette: palette)
+                    .equatable()
+                    .frame(height: sandHeight)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+
+                // The light comes last of the far layers, so it falls across
+                // the stones and the coral as well as the sand. Light that
+                // stopped at the sand would put the reef in front of a picture
+                // of the sea floor rather than in it.
+                SandLight(palette: palette, isPad: isPad, clock: clock)
+                    .frame(height: sandHeight)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+
+                // The near corners: the only part of the reef the water has not
+                // washed out, and the closest thing in the scene.
+                ForegroundReef(palette: palette, isPad: isPad, clock: clock)
+                    .frame(height: sandHeight)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .offset(x: drift * 4.5)
             }
             .frame(width: size.width, height: size.height)
         }
@@ -2389,24 +2782,110 @@ private struct SandBed: View, Equatable {
     var body: some View {
         SandShape()
             .fill(
+                // Warmest through the middle, where the sun lands, and darker
+                // again right at the bottom edge — sand close enough to the eye
+                // to be under the reef rather than lit by the surface.
                 LinearGradient(stops: [
                     .init(color: palette.sand, location: 0),
-                    .init(color: palette.sand, location: 0.30),
+                    .init(color: palette.sand, location: 0.26),
+                    .init(color: palette.sandSunlit, location: 0.54),
+                    .init(color: palette.sand, location: 0.78),
                     .init(color: palette.sandDeep, location: 1)
                 ], startPoint: .top, endPoint: .bottom)
             )
             .overlay {
+                // The far end of the bed, taking the water's own colour. It
+                // is stroked along the crest rather than laid across the top
+                // of the frame, because the crest is a curve: a horizontal
+                // band of haze would sit right on the middle of the mound and
+                // miss both corners, which are the furthest sand in the
+                // picture and the part that most needs to go.
+                SandCrestShape()
+                    .stroke(palette.waterFloor, lineWidth: 64)
+                    .blur(radius: 26)
+                    .mask { SandShape() }
+                    .opacity(0.85)
+            }
+            .overlay {
                 // A pale lip along the crest, where the light hits the ridge
-                // the whole arena sits on.
+                // the whole arena sits on. Kept faint: the haze laid over it
+                // is what the distance is made of, and a crisp lip under that
+                // would put the horizon straight back.
                 SandShape()
-                    .stroke(.white.opacity(0.34), lineWidth: 2.5)
+                    .stroke(.white.opacity(0.14), lineWidth: 2.5)
                     .blur(radius: 1.5)
                     .mask {
                         LinearGradient(colors: [.white, .clear],
                                        startPoint: .top, endPoint: .bottom)
                     }
             }
+            // The crest itself is dissolved rather than drawn: the sand is
+            // masked by a blurred copy of its own outline, so it comes up out
+            // of the water over some forty points instead of starting at a
+            // line. Tinting either side of a hard edge cannot do this — the
+            // edge has to stop existing.
+            //
+            // The mask is grown past the frame on the sides and the bottom
+            // first, so the same blur that softens the crest does not eat the
+            // sand where it runs off the screen.
+            .mask {
+                SandShape()
+                    .fill(.white)
+                    .padding(EdgeInsets(top: 0, leading: -34, bottom: -34, trailing: -34))
+                    .blur(radius: 17)
+            }
             .accessibilityHidden(true)
+    }
+}
+
+/// The far side of the bed glowing through the water above it.
+///
+/// The same curve as the crest, stroked pale and blurred wide enough to bleed
+/// on both sides of it. Distance in water is not something that happens to the
+/// floor and stops: the light comes off it and hangs in the water in front of
+/// it, and that overspill is the reason there is nothing here that could be
+/// pointed at and called the horizon.
+private struct CrestGlow: View, Equatable {
+    let palette: ReefPalette
+
+    var body: some View {
+        SandCrestShape()
+            .stroke(palette.sand.opacity(0.55), lineWidth: 24)
+            .blur(radius: 24)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+/// How far below the top of the sand bed the crest actually lies, at its
+/// lowest — the two outer corners, where `SandShape`'s mound has dropped away
+/// from its middle.
+///
+/// Anything drawn *on* the floor starts below this line. A ripple or a patch
+/// of light that began at the top of the bed would be over the crest and out
+/// in open water at both edges, which is the one mistake that gives away that
+/// the sea floor is a rectangle with a curve drawn on it.
+private let sandBedTop: CGFloat = 0.17
+
+/// The crest of `SandShape` on its own, as an open curve.
+///
+/// Anything that belongs *to the edge* of the sea floor rather than to its
+/// surface is drawn along this: the haze, the glow above it. Stroking the
+/// closed sand shape instead would run the same line down both sides of the
+/// screen and along the bottom, and put fog in the near corners.
+private struct SandCrestShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        path.move(to: CGPoint(x: rect.minX, y: h * 0.16))
+        path.addCurve(to: CGPoint(x: w * 0.50, y: 0),
+                      control1: CGPoint(x: w * 0.16, y: h * 0.14),
+                      control2: CGPoint(x: w * 0.30, y: -h * 0.02))
+        path.addCurve(to: CGPoint(x: rect.maxX, y: h * 0.14),
+                      control1: CGPoint(x: w * 0.72, y: h * 0.01),
+                      control2: CGPoint(x: w * 0.86, y: h * 0.15))
+        return path
     }
 }
 
@@ -2431,16 +2910,36 @@ private struct SandShape: Shape {
     }
 }
 
-/// Everything lying on the sand: the moving net of light from the surface, and
-/// the pebbles, shells and starfish scattered between the walking lanes.
+/// Everything lying still on the sand: the ripples the swell leaves behind, the
+/// dimples between them, and the pebbles, shells and starfish scattered along
+/// the walking lanes.
 ///
-/// One immediate-mode pass for all of it. Their positions are fixed — a floor
-/// that reshuffled itself between rounds would be noticed immediately — and only
-/// the light actually moves.
-private struct SandDetail: View {
+/// One immediate-mode pass for all of it, and no clock anywhere in it. Their
+/// positions are fixed — a floor that reshuffled itself between rounds would be
+/// noticed immediately — so the whole layer says it is unchanged and the sway
+/// step steps straight over it.
+///
+/// Everything here is drawn with depth in mind: the same ripple is finer,
+/// flatter and fainter at the top of the bed than at the bottom, because the
+/// top of the bed is metres further away.
+private struct SandRelief: View, Equatable {
     let palette: ReefPalette
     let isPad: Bool
-    let clock: Double
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.palette.character == rhs.palette.character && lhs.isPad == rhs.isPad
+    }
+
+    /// Ribbed sand, from the far bed down to the near edge.
+    private static let rippleRows = 16
+
+    /// Hollows scooped out between the ribs: x, y, width, depth of shading.
+    private static let dimples: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
+        (0.21, 0.20, 0.10, 0.55), (0.62, 0.28, 0.08, 0.45),
+        (0.38, 0.47, 0.13, 0.70), (0.83, 0.52, 0.11, 0.60),
+        (0.14, 0.63, 0.12, 0.65), (0.55, 0.71, 0.16, 0.85),
+        (0.30, 0.86, 0.15, 0.90), (0.76, 0.92, 0.18, 1.00)
+    ]
 
     /// Where the loose stones lie. Pebbles gather: a scattering of single ones
     /// reads as noise, while three or four together read as a sea floor.
@@ -2471,59 +2970,117 @@ private struct SandDetail: View {
         (0.815, 0.46, 0.68)
     ]
 
-    /// x, y, radius factor, drift phase — the caustic net of light. Many small
-    /// patches read as sunlight through moving water; a few large ones only
-    /// read as clouds on the floor.
-    private static let dapples: [(CGFloat, CGFloat, CGFloat, Double)] = [
-        (0.09, 0.12, 0.90, 0.4), (0.24, 0.07, 0.62, 2.1), (0.41, 0.15, 0.78, 3.7),
-        (0.57, 0.06, 0.58, 5.2), (0.72, 0.13, 0.84, 1.3), (0.88, 0.08, 0.66, 4.4),
-        (0.14, 0.31, 0.72, 0.9), (0.33, 0.38, 0.90, 2.8), (0.52, 0.30, 0.60, 5.9),
-        (0.69, 0.36, 0.80, 3.1), (0.86, 0.29, 0.68, 1.7), (0.06, 0.52, 0.62, 4.9),
-        (0.27, 0.58, 0.84, 2.3), (0.47, 0.53, 0.66, 0.2), (0.65, 0.60, 0.90, 3.9),
-        (0.83, 0.55, 0.58, 5.5), (0.17, 0.76, 0.76, 1.1), (0.40, 0.82, 0.62, 4.2),
-        (0.60, 0.75, 0.86, 2.6), (0.80, 0.84, 0.70, 0.7)
-    ]
-
-    /// Half the patches where the frame budget is tightest: the floor still
-    /// reads as dappled, at half the gradient fills.
-    private var dapples: [(CGFloat, CGFloat, CGFloat, Double)] {
-        ArenaPerformanceBudget.isConstrained
-            ? Self.dapples.enumerated().filter { $0.offset.isMultiple(of: 2) }.map(\.element)
-            : Self.dapples
-    }
-
     var body: some View {
         Canvas(opaque: false, rendersAsynchronously: false) { context, size in
-            drawLight(in: &context, size: size)
+            drawRipples(in: &context, size: size)
+            drawDimples(in: &context, size: size)
             drawSpecks(in: &context, size: size)
+            drawGrain(in: &context, size: size)
         }
         .opacity(0.85)
         .accessibilityHidden(true)
     }
 
-    /// Slow, overlapping patches of surface light. They breathe rather than
-    /// travel, which is what sunlight through moving water actually does.
-    private func drawLight(in context: inout GraphicsContext, size: CGSize) {
-        let base = size.width * (isPad ? 0.075 : 0.095)
-        for dapple in dapples {
-            let breath = 1 + 0.20 * sin(clock * 0.46 + dapple.3)
-            let radius = base * dapple.2 * CGFloat(breath)
-            let centre = CGPoint(x: size.width * dapple.0
-                                    + CGFloat(sin(clock * 0.23 + dapple.3)) * 5,
-                                 y: size.height * dapple.1
-                                    + CGFloat(cos(clock * 0.19 + dapple.3)) * 3)
-            let rect = CGRect(x: centre.x - radius, y: centre.y - radius * 0.58,
-                              width: radius * 2, height: radius * 1.16)
+    /// The ribs the swell leaves in shallow sand: long, soft, roughly parallel
+    /// ridges, each one a shadow with a lit lip above it.
+    ///
+    /// The rows are spaced by the square of their depth, which is what a flat
+    /// plane does when you look along it: far ribs crowd together near the
+    /// crest and open out toward the bottom of the screen. Their height, their
+    /// wavelength and their contrast all follow the same curve, so the bed
+    /// recedes without a single row of it being drawn differently.
+    private func drawRipples(in context: inout GraphicsContext, size: CGSize) {
+        let rows = ArenaPerformanceBudget.isConstrained
+            ? Self.rippleRows / 2 : Self.rippleRows
+
+        for row in 0..<rows {
+            let t = (Double(row) + 0.5) / Double(rows)
+            let depth = pow(t, 1.5)
+            let y = size.height * (sandBedTop + (1 - sandBedTop) * CGFloat(depth))
+            // Height off the bed, how far apart the crests run, and how much
+            // of the ripple the water still lets through at that distance.
+            let amplitude = size.height * CGFloat(0.003 + 0.013 * depth)
+            let crests = 2.6 - 0.9 * depth
+            let strength = 0.06 + 0.26 * depth
+            let weight = 1 + 1.8 * CGFloat(depth)
+            // A turn of the golden angle per row: no two rows line up, and the
+            // bed never falls into a plaid.
+            let phase = Double(row) * 2.399963
+
+            // Sampled far finer than the wave is long. A ripple undersampled
+            // is not a soft ripple: it is a zigzag, and it reads as a pattern
+            // printed on the sand rather than as sand.
+            var ridge = Path()
+            let steps = 44
+            for step in 0...steps {
+                let along = Double(step) / Double(steps)
+                let x = size.width * (CGFloat(along) * 1.1 - 0.05)
+                let wave = sin(along * crests * 2 * .pi + phase)
+                    + 0.28 * sin(along * crests * 3.3 * .pi + phase * 1.6)
+                let point = CGPoint(x: x, y: y + amplitude * CGFloat(wave))
+                if step == 0 { ridge.move(to: point) } else { ridge.addLine(to: point) }
+            }
+
+            // The trough first, then the crest sitting on top of it. Two lines
+            // a hair apart is all a ripple is.
+            context.stroke(ridge,
+                           with: .color(palette.sandDeep.opacity(strength)),
+                           style: StrokeStyle(lineWidth: weight, lineCap: .round))
+            context.stroke(ridge.offsetBy(dx: 0, dy: -weight * 0.85),
+                           with: .color(.white.opacity(strength * 0.55)),
+                           style: StrokeStyle(lineWidth: weight * 0.7, lineCap: .round))
+        }
+    }
+
+    /// Shallow scoops in the bed. A dimple is only ever a dark rim on the far
+    /// side and a lit one on the near side; anything more turns into a hole.
+    private func drawDimples(in context: inout GraphicsContext, size: CGSize) {
+        guard !ArenaPerformanceBudget.isConstrained else { return }
+
+        for dimple in Self.dimples {
+            let width = size.width * dimple.2
+            let height = width * 0.44
+            let rect = CGRect(x: size.width * dimple.0 - width / 2,
+                              y: size.height * dimple.1 - height / 2,
+                              width: width, height: height)
             context.fill(
                 Path(ellipseIn: rect),
-                with: .radialGradient(
+                with: .linearGradient(
                     Gradient(stops: [
-                        .init(color: .white.opacity(0.15), location: 0),
-                        .init(color: .white.opacity(0.09), location: 0.55),
-                        .init(color: .white.opacity(0), location: 1)
+                        .init(color: palette.sandDeep.opacity(0.30 * dimple.3), location: 0),
+                        .init(color: palette.sandDeep.opacity(0.05 * dimple.3), location: 0.62),
+                        .init(color: .white.opacity(0.16 * dimple.3), location: 1)
                     ]),
-                    center: centre, startRadius: 0, endRadius: radius
+                    startPoint: CGPoint(x: rect.midX, y: rect.minY),
+                    endPoint: CGPoint(x: rect.midX, y: rect.maxY)
                 )
+            )
+        }
+    }
+
+    /// Individual grains, and only where the eye could possibly resolve them:
+    /// the near third of the bed. Further back the same speckle would read as
+    /// dirt on the screen rather than as sand.
+    private func drawGrain(in context: inout GraphicsContext, size: CGSize) {
+        guard !ArenaPerformanceBudget.isConstrained else { return }
+
+        var seed: UInt64 = 0x5EA_F100
+        func next() -> Double {
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+            return Double(seed >> 11) / Double(UInt64(1) << 53)
+        }
+
+        for _ in 0..<90 {
+            let depth = 0.62 + next() * 0.38
+            let x = size.width * CGFloat(next())
+            let y = size.height * CGFloat(depth)
+            let side = CGFloat(0.7 + next() * 1.4) * (isPad ? 1.5 : 1)
+            let lit = next() > 0.45
+            let fade = (depth - 0.62) / 0.38
+            context.fill(
+                Path(ellipseIn: CGRect(x: x, y: y, width: side, height: side)),
+                with: .color(lit ? .white.opacity(0.26 * fade)
+                                 : palette.sandDeep.opacity(0.30 * fade))
             )
         }
     }
@@ -2589,6 +3146,121 @@ private struct SandDetail: View {
         }
     }
 
+}
+
+/// The net of surface light on the floor, and the warm patch the sun lays in
+/// the middle of it.
+///
+/// This is the one layer of the sea floor that actually moves, so it is the
+/// only one that takes the clock. Caustics are drawn at two scales: broad soft
+/// cells that breathe in place, and small bright cores inside them that drift.
+/// One scale alone reads either as clouds or as confetti; the two together are
+/// what sunlight through moving water looks like.
+private struct SandLight: View {
+    let palette: ReefPalette
+    let isPad: Bool
+    let clock: Double
+
+    /// x, y, radius factor, drift phase. Many small patches read as sunlight
+    /// through moving water; a few large ones only read as clouds on the floor.
+    private static let dapples: [(CGFloat, CGFloat, CGFloat, Double)] = [
+        (0.09, 0.12, 0.90, 0.4), (0.24, 0.07, 0.62, 2.1), (0.41, 0.15, 0.78, 3.7),
+        (0.57, 0.06, 0.58, 5.2), (0.72, 0.13, 0.84, 1.3), (0.88, 0.08, 0.66, 4.4),
+        (0.14, 0.31, 0.72, 0.9), (0.33, 0.38, 0.90, 2.8), (0.52, 0.30, 0.60, 5.9),
+        (0.69, 0.36, 0.80, 3.1), (0.86, 0.29, 0.68, 1.7), (0.06, 0.52, 0.62, 4.9),
+        (0.27, 0.58, 0.84, 2.3), (0.47, 0.53, 0.66, 0.2), (0.65, 0.60, 0.90, 3.9),
+        (0.83, 0.55, 0.58, 5.5), (0.17, 0.76, 0.76, 1.1), (0.40, 0.82, 0.62, 4.2),
+        (0.60, 0.75, 0.86, 2.6), (0.80, 0.84, 0.70, 0.7)
+    ]
+
+    /// Half the patches where the frame budget is tightest: the floor still
+    /// reads as dappled, at half the gradient fills.
+    private var dapples: [(CGFloat, CGFloat, CGFloat, Double)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.dapples.enumerated().filter { $0.offset.isMultiple(of: 2) }.map(\.element)
+            : Self.dapples
+    }
+
+    var body: some View {
+        Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+            drawSunPool(in: &context, size: size)
+            drawCaustics(in: &context, size: size)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    /// Where the shafts land. The middle of the arena is the brightest and the
+    /// warmest sand in the picture, which is what carries the eye down from the
+    /// surface to the floor the game is played on.
+    private func drawSunPool(in context: inout GraphicsContext, size: CGSize) {
+        let breath = 1 + 0.06 * sin(clock * 0.14)
+        let centre = CGPoint(x: size.width * 0.5 + CGFloat(sin(clock * 0.08)) * size.width * 0.02,
+                             y: size.height * 0.46)
+        let radius = size.width * 0.62 * CGFloat(breath)
+        context.fill(
+            Path(ellipseIn: CGRect(x: centre.x - radius, y: centre.y - radius * 0.66,
+                                   width: radius * 2, height: radius * 1.32)),
+            with: .radialGradient(
+                Gradient(stops: [
+                    .init(color: palette.sandSunlit.opacity(0.34), location: 0),
+                    .init(color: palette.sandSunlit.opacity(0.16), location: 0.52),
+                    .init(color: palette.sandSunlit.opacity(0), location: 1)
+                ]),
+                center: centre, startRadius: 0, endRadius: radius
+            )
+        )
+    }
+
+    /// Slow, overlapping patches of surface light. They breathe rather than
+    /// travel, which is what sunlight through moving water actually does — but
+    /// the bright core inside each one does travel, a little, and that is the
+    /// part the eye reads as the water itself moving.
+    private func drawCaustics(in context: inout GraphicsContext, size: CGSize) {
+        let base = size.width * (isPad ? 0.075 : 0.095)
+        let showsCores = !ArenaPerformanceBudget.isConstrained
+
+        for dapple in dapples {
+            let breath = 1 + 0.20 * sin(clock * 0.46 + dapple.3)
+            let radius = base * dapple.2 * CGFloat(breath)
+            let centre = CGPoint(x: size.width * dapple.0
+                                    + CGFloat(sin(clock * 0.23 + dapple.3)) * 7,
+                                 y: size.height * (sandBedTop + (1 - sandBedTop) * dapple.1)
+                                    + CGFloat(cos(clock * 0.19 + dapple.3)) * 4)
+            let rect = CGRect(x: centre.x - radius, y: centre.y - radius * 0.58,
+                              width: radius * 2, height: radius * 1.16)
+            context.fill(
+                Path(ellipseIn: rect),
+                with: .radialGradient(
+                    Gradient(stops: [
+                        .init(color: .white.opacity(0.15), location: 0),
+                        .init(color: .white.opacity(0.09), location: 0.55),
+                        .init(color: .white.opacity(0), location: 1)
+                    ]),
+                    center: centre, startRadius: 0, endRadius: radius
+                )
+            )
+
+            guard showsCores else { continue }
+
+            // The bright knot inside the cell, wandering around its own middle
+            // on a period that has nothing to do with the cell's.
+            let coreRadius = radius * 0.34
+            let core = CGPoint(x: centre.x + CGFloat(cos(clock * 0.37 + dapple.3 * 1.7)) * radius * 0.30,
+                               y: centre.y + CGFloat(sin(clock * 0.31 + dapple.3 * 2.3)) * radius * 0.18)
+            context.fill(
+                Path(ellipseIn: CGRect(x: core.x - coreRadius, y: core.y - coreRadius * 0.5,
+                                       width: coreRadius * 2, height: coreRadius)),
+                with: .radialGradient(
+                    Gradient(stops: [
+                        .init(color: .white.opacity(0.22), location: 0),
+                        .init(color: .white.opacity(0), location: 1)
+                    ]),
+                    center: core, startRadius: 0, endRadius: coreRadius
+                )
+            )
+        }
+    }
 }
 
 // MARK: - Rock gardens
@@ -2853,14 +3525,31 @@ private struct ReefBorder: View {
     /// y (share of the band), scale, style, colour index, phase. Mirrored onto
     /// the right-hand edge with its own offsets, so the two sides never look
     /// like a stamped pair.
+    ///
+    /// They grow as they come forward. A coral high up the band is far away and
+    /// stays small and sparse; the ones near the bottom are close, larger and
+    /// packed together, which is what turns two edges into a frame.
     private static let leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.16, 0.66, 0, 0, 0.5), (0.42, 0.58, 2, 2, 2.4),
-        (0.70, 0.92, 1, 1, 4.1), (0.93, 0.78, 3, 3, 1.2)
+        (0.23, 0.40, 2, 2, 3.6), (0.31, 0.52, 0, 0, 0.5),
+        (0.47, 0.66, 2, 2, 2.4), (0.61, 0.74, 3, 4, 5.3),
+        (0.78, 0.98, 1, 1, 4.1), (0.94, 0.88, 3, 3, 1.2)
     ]
     private static let rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.22, 0.60, 2, 4, 3.3), (0.50, 0.80, 1, 0, 0.8),
-        (0.76, 0.66, 3, 2, 5.0), (0.96, 0.88, 0, 1, 2.0)
+        (0.26, 0.38, 1, 3, 1.5), (0.35, 0.50, 2, 4, 3.3),
+        (0.53, 0.72, 1, 0, 0.8), (0.67, 0.62, 0, 2, 4.7),
+        (0.83, 0.86, 3, 2, 5.0), (0.97, 0.98, 0, 1, 2.0)
     ]
+
+    /// Two fewer per side where the frame budget is tightest, taken from the
+    /// far end of the band: the corals that were smallest and least visible.
+    private var leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Array(Self.leftClusters.dropFirst(2)) : Self.leftClusters
+    }
+    private var rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Array(Self.rightClusters.dropFirst(2)) : Self.rightClusters
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -2880,12 +3569,12 @@ private struct ReefBorder: View {
                     .scaleEffect(x: -1, y: 1)
                     .position(x: width * 0.97, y: height * 0.86)
 
-                ForEach(Array(Self.leftClusters.enumerated()), id: \.offset) { index, cluster in
+                ForEach(Array(leftClusters.enumerated()), id: \.offset) { index, cluster in
                     coral(cluster, unit: unit)
                         .position(x: width * (index.isMultiple(of: 2) ? 0.085 : 0.15),
                                   y: height * cluster.0)
                 }
-                ForEach(Array(Self.rightClusters.enumerated()), id: \.offset) { index, cluster in
+                ForEach(Array(rightClusters.enumerated()), id: \.offset) { index, cluster in
                     coral(cluster, unit: unit)
                         .scaleEffect(x: -1, y: 1)
                         .position(x: width * (index.isMultiple(of: 2) ? 0.915 : 0.85),
@@ -2909,6 +3598,224 @@ private struct ReefBorder: View {
             .rotationEffect(.degrees(3.4 * sway), anchor: .bottom)
             // Rooted at the point it is placed on, rather than centred on it.
             .offset(y: -side * 0.6)
+    }
+}
+
+/// The closest thing in the scene: the reef piling up in the two bottom
+/// corners of the screen.
+///
+/// This is the layer that makes the arena an *arena*. Everything above it has
+/// been drawn to recede — hazed, cooled, flattened — and the picture needs
+/// something at the front to recede *from*. So these corals are the largest,
+/// the most saturated and the only ones with no water drawn over them at all,
+/// and they sway more than anything behind them.
+///
+/// They keep to the outer eighth of each side and lean outward, away from the
+/// middle. The centre of the floor stays the open sand the crabs walk in on.
+private struct ForegroundReef: View {
+    let palette: ReefPalette
+    let isPad: Bool
+    let clock: Double
+
+    /// x (share of width), root depth below the bottom edge, scale, style,
+    /// colour index, phase, mirrored.
+    private static let corals: [(CGFloat, CGFloat, CGFloat, Int, Int, Double, Bool)] = [
+        (0.030, 0.02, 1.00, 2, 1, 0.4, false),
+        (0.098, 0.06, 0.74, 1, 0, 2.2, false),
+        (0.162, 0.10, 0.50, 3, 4, 4.0, false),
+        (0.970, 0.02, 0.94, 0, 2, 1.3, true),
+        (0.900, 0.07, 0.76, 3, 3, 3.1, true),
+        (0.838, 0.11, 0.48, 1, 1, 5.2, true)
+    ]
+
+    /// The four largest where the frame budget is tightest. Losing the small
+    /// ones costs the corner some density; losing a big one would leave a hole.
+    private var corals: [(CGFloat, CGFloat, CGFloat, Int, Int, Double, Bool)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.corals.filter { $0.2 > 0.6 } : Self.corals
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            let unit = min(width * 0.30, isPad ? 250 : 148)
+
+            ZStack {
+                // The stone the corner is built on, low and wide so the coral
+                // above it has something to have grown out of.
+                RockPile(palette: palette)
+                    .equatable()
+                    .frame(width: unit * 1.15, height: unit * 0.56)
+                    .position(x: width * 0.05, y: height * 1.02)
+                RockPile(palette: palette)
+                    .equatable()
+                    .frame(width: unit * 1.05, height: unit * 0.50)
+                    .scaleEffect(x: -1, y: 1)
+                    .position(x: width * 0.95, y: height * 1.04)
+
+                BarrelSponge(colour: palette.reefAccent(4), shade: palette.reefAccentDeep(4))
+                    .frame(width: unit * 0.40, height: unit * 0.62)
+                    .position(x: width * 0.135, y: height - unit * 0.24)
+                BarrelSponge(colour: palette.reefAccent(2), shade: palette.reefAccentDeep(2))
+                    .frame(width: unit * 0.33, height: unit * 0.52)
+                    .position(x: width * 0.872, y: height - unit * 0.20)
+
+                ForEach(Array(corals.enumerated()), id: \.offset) { index, coral in
+                    let sway = sin(clock * (0.44 + Double(index) * 0.04) + coral.5)
+                    let side = unit * coral.2
+
+                    CoralCluster(style: coral.3,
+                                 colour: palette.reefAccent(coral.4),
+                                 shade: palette.reefAccentDeep(coral.4),
+                                 bend: CGFloat(sway) * 0.20)
+                        .frame(width: side, height: side * 1.25)
+                        .rotationEffect(.degrees(4.6 * sway), anchor: .bottom)
+                        .scaleEffect(x: coral.6 ? -1 : 1, y: 1)
+                        // Rooted just under the bottom edge, so the corner is
+                        // full rather than a row of plants standing on a line.
+                        .position(x: width * coral.0,
+                                  y: height * (1 + coral.1) - side * 0.625)
+                }
+
+                // Long weed in front of the lot, drawn last and swaying hardest.
+                // Movement is depth: this is the closest thing to the eye, so it
+                // is also the thing the water most obviously pushes around.
+                ForegroundWeed(palette: palette, clock: clock, unit: unit)
+            }
+            .frame(width: width, height: height)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// Tall ribbon weed in the two near corners.
+private struct ForegroundWeed: View {
+    let palette: ReefPalette
+    let clock: Double
+    let unit: CGFloat
+
+    /// x, height factor, sway rate, phase, thickness.
+    private static let blades: [(CGFloat, CGFloat, Double, Double, CGFloat)] = [
+        (0.012, 1.05, 0.51, 0.0, 1.00), (0.062, 0.78, 0.62, 1.8, 0.78),
+        (0.118, 0.94, 0.47, 3.5, 0.86), (0.188, 0.58, 0.68, 5.0, 0.62),
+        (0.988, 1.00, 0.49, 0.9, 0.96), (0.936, 0.72, 0.64, 2.6, 0.74),
+        (0.882, 0.90, 0.44, 4.2, 0.82), (0.812, 0.54, 0.71, 5.7, 0.58)
+    ]
+
+    private var blades: [(CGFloat, CGFloat, Double, Double, CGFloat)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.blades.enumerated().filter { $0.offset.isMultiple(of: 2) }.map(\.element)
+            : Self.blades
+    }
+
+    var body: some View {
+        Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+            for blade in blades {
+                let sway = sin(clock * blade.2 + blade.3)
+                let length = unit * blade.1
+                let x = size.width * blade.0
+                let root = size.height + 4
+                let tip = root - length
+                // The whole blade leans, but the tip leans further than the
+                // middle: weed bends, it does not pivot.
+                let lean = CGFloat(sway) * length * 0.22
+
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: root))
+                path.addCurve(
+                    to: CGPoint(x: x + lean, y: tip),
+                    control1: CGPoint(x: x + lean * 0.10, y: root - length * 0.42),
+                    control2: CGPoint(x: x + lean * 0.78, y: root - length * 0.76)
+                )
+                context.stroke(
+                    path,
+                    with: .linearGradient(
+                        Gradient(colors: [palette.plantLight, palette.plant]),
+                        startPoint: CGPoint(x: x, y: tip),
+                        endPoint: CGPoint(x: x, y: root)
+                    ),
+                    style: StrokeStyle(lineWidth: max(3, unit * 0.055 * blade.4),
+                                       lineCap: .round)
+                )
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// A barrel sponge: a thick tapered tube with an open rim, ribbed down its
+/// side. Nothing else on this floor has a hole in it, which is most of why one
+/// of these is worth drawing.
+private struct BarrelSponge: View {
+    let colour: Color
+    let shade: Color
+
+    var body: some View {
+        GeometryReader { proxy in
+            let w = proxy.size.width
+            let h = proxy.size.height
+
+            ZStack {
+                BarrelSpongeShape()
+                    .fill(LinearGradient(colors: [colour, shade],
+                                         startPoint: .topLeading,
+                                         endPoint: .bottomTrailing))
+                    .overlay {
+                        BarrelSpongeRibs()
+                            .stroke(shade.opacity(0.55),
+                                    style: StrokeStyle(lineWidth: max(1, w * 0.045),
+                                                       lineCap: .round))
+                    }
+
+                // The mouth, and the lit lip around it.
+                Ellipse()
+                    .fill(shade)
+                    .frame(width: w * 0.40, height: h * 0.13)
+                    .overlay {
+                        Ellipse()
+                            .stroke(.white.opacity(0.28), lineWidth: max(1, w * 0.035))
+                    }
+                    .position(x: w * 0.50, y: h * 0.11)
+            }
+            .frame(width: w, height: h)
+        }
+        .shadow(color: shade.opacity(0.30), radius: 4, y: 3)
+    }
+}
+
+private struct BarrelSpongeShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        var path = Path()
+        path.move(to: CGPoint(x: w * 0.29, y: h * 0.11))
+        path.addQuadCurve(to: CGPoint(x: w * 0.15, y: h),
+                          control: CGPoint(x: w * 0.13, y: h * 0.62))
+        path.addQuadCurve(to: CGPoint(x: w * 0.85, y: h),
+                          control: CGPoint(x: w * 0.50, y: h * 1.12))
+        path.addQuadCurve(to: CGPoint(x: w * 0.71, y: h * 0.11),
+                          control: CGPoint(x: w * 0.87, y: h * 0.62))
+        path.addQuadCurve(to: CGPoint(x: w * 0.29, y: h * 0.11),
+                          control: CGPoint(x: w * 0.50, y: h * -0.05))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct BarrelSpongeRibs: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        var path = Path()
+        for rib in [0.30, 0.50, 0.70] {
+            path.move(to: CGPoint(x: w * rib, y: h * 0.20))
+            path.addQuadCurve(
+                to: CGPoint(x: w * (0.5 + (rib - 0.5) * 1.5), y: h * 0.94),
+                control: CGPoint(x: w * (0.5 + (rib - 0.5) * 1.3), y: h * 0.58)
+            )
+        }
+        return path
     }
 }
 
@@ -2942,9 +3849,13 @@ private struct CoralCluster: View {
                                                    lineWidth: max(1, unit * 0.03))
                         }
                 case 1:
+                    // Thick enough to be coral. A branching growth drawn thin
+                    // is the one shape on this floor that can read as a bare
+                    // twig, and one twig is all it takes to make the corner
+                    // look like a winter hedge rather than a reef.
                     BranchingCoralShape(bend: bend)
                         .stroke(gradient,
-                                style: StrokeStyle(lineWidth: max(3, unit * 0.15),
+                                style: StrokeStyle(lineWidth: max(4, unit * 0.21),
                                                    lineCap: .round, lineJoin: .round))
                 case 2:
                     ZStack(alignment: .bottom) {
@@ -3180,6 +4091,18 @@ private struct BranchingCoralShape: Shape {
         path.addCurve(to: CGPoint(x: w * (0.10 + bend * 0.54), y: h * 0.10),
                       control1: CGPoint(x: w * 0.20, y: h * 0.34),
                       control2: CGPoint(x: w * (0.13 + bend * 0.40), y: h * 0.22))
+
+        // Two short growths off the lower trunk. Without them the whole thing
+        // is a trunk and three arms — which at the size the near corners draw
+        // it at reads as a bare branch standing in the sand rather than as
+        // something alive.
+        path.move(to: CGPoint(x: w * 0.51, y: h * 0.84))
+        path.addQuadCurve(to: CGPoint(x: w * (0.78 + bend * 0.5), y: h * 0.55),
+                          control: CGPoint(x: w * 0.72, y: h * 0.78))
+
+        path.move(to: CGPoint(x: w * 0.50, y: h * 0.30))
+        path.addQuadCurve(to: CGPoint(x: w * (0.61 + bend * 0.9), y: h * 0.06),
+                          control: CGPoint(x: w * (0.60 + bend * 0.6), y: h * 0.20))
 
         return path
     }

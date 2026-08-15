@@ -200,7 +200,7 @@ struct SettingsView: View {
                     Circle()
                         .fill(animal.color.opacity(0.22))
                         .frame(width: 52, height: 52)
-                    animal.artwork
+                    animal.thumbArtwork
                         .resizable()
                         .scaledToFit()
                         .frame(width: 46, height: 46)

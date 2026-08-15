@@ -269,7 +269,7 @@ struct TutorialMessageCard: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: isPad ? 14 : 10) {
-            theme.artwork
+            theme.thumbArtwork
                 .resizable()
                 .scaledToFit()
                 .padding(isPad ? 4 : 3)

@@ -66,12 +66,17 @@ struct CharacterRig {
     /// — not the frame's own edge — is the line he stands on: his shadow, his
     /// lean and his squash all work from it.
     let groundLine: CGFloat
-    /// Non-zero for the two characters who hold their arms *across* their own
-    /// ears rather than behind them. Those claws are laid down twice: once
-    /// under the body, which is what buries the connector, and again over it
-    /// with this much cut away around the joint. The cut is a circle centred on
-    /// the joint, so it does not move when the claw swings, and it is kept
-    /// inside the body's own outline, so the seam is never on screen.
+    /// How much of a claw stays buried when that claw is also drawn in front.
+    ///
+    /// Everyone but the King holds his arms *across* himself rather than behind
+    /// himself: two of them are drawn that way at rest, and the rest need it the
+    /// moment they raise a claw, or the cheer puts both pincers behind their own
+    /// head. Those claws are laid down twice — once under the body, which is
+    /// what buries the connector, and again over it with this much cut away
+    /// around the joint. The cut is a circle centred on the joint, so it does
+    /// not move when the claw swings, and it is kept inside the body's own
+    /// outline, so the seam is never on screen. Zero leaves the claw behind the
+    /// shell, which is where the King's own pincers read best.
     let clawFrontRadius: CGFloat
 
     var bodyImage: Image { Image(body) }
@@ -106,7 +111,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.058, y: 0.3412),
             rightClawTip: UnitPoint(x: 0.9405, y: 0.3502),
             groundLine: 0.8842,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0),
         "elephant": CharacterRig(
             body: "2_body",
             leftClaw: CharacterRigLimb(imageName: "2_left_claw",
@@ -124,7 +129,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0909, y: 0.3602),
             rightClawTip: UnitPoint(x: 0.9076, y: 0.3419),
             groundLine: 0.8612,
-            clawFrontRadius: 0.0249,),
+            clawFrontRadius: 0.0249),
         "bear": CharacterRig(
             body: "3_body",
             leftClaw: CharacterRigLimb(imageName: "3_left_claw",
@@ -142,7 +147,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0646, y: 0.3282),
             rightClawTip: UnitPoint(x: 0.9346, y: 0.3282),
             groundLine: 0.8581,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0293),
         "fox": CharacterRig(
             body: "4_body",
             leftClaw: CharacterRigLimb(imageName: "4_left_claw",
@@ -160,7 +165,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0692, y: 0.3607),
             rightClawTip: UnitPoint(x: 0.93, y: 0.3607),
             groundLine: 0.8955,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0297),
         "frog": CharacterRig(
             body: "5_body",
             leftClaw: CharacterRigLimb(imageName: "5_left_claw",
@@ -178,7 +183,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0657, y: 0.287),
             rightClawTip: UnitPoint(x: 0.9335, y: 0.2855),
             groundLine: 0.8688,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0292),
         "penguin": CharacterRig(
             body: "6_body",
             leftClaw: CharacterRigLimb(imageName: "6_left_claw",
@@ -196,7 +201,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0697, y: 0.3115),
             rightClawTip: UnitPoint(x: 0.9295, y: 0.3115),
             groundLine: 0.8802,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0255),
         "bunny": CharacterRig(
             body: "7_body",
             leftClaw: CharacterRigLimb(imageName: "7_left_claw",
@@ -214,7 +219,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0584, y: 0.3948),
             rightClawTip: UnitPoint(x: 0.9401, y: 0.3948),
             groundLine: 0.9458,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0247),
         "dog": CharacterRig(
             body: "8_body",
             leftClaw: CharacterRigLimb(imageName: "8_left_claw",
@@ -232,7 +237,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.1052, y: 0.3604),
             rightClawTip: UnitPoint(x: 0.8933, y: 0.3604),
             groundLine: 0.8787,
-            clawFrontRadius: 0.0218,),
+            clawFrontRadius: 0.0218),
         "lion": CharacterRig(
             body: "9_body",
             leftClaw: CharacterRigLimb(imageName: "9_left_claw",
@@ -250,7 +255,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0743, y: 0.3502),
             rightClawTip: UnitPoint(x: 0.9242, y: 0.3502),
             groundLine: 0.8581,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0262),
         "octopus": CharacterRig(
             body: "10_body",
             leftClaw: CharacterRigLimb(imageName: "10_left_claw",
@@ -268,7 +273,7 @@ struct CharacterRig {
             leftClawTip: UnitPoint(x: 0.0626, y: 0.3366),
             rightClawTip: UnitPoint(x: 0.9367, y: 0.3366),
             groundLine: 0.8551,
-            clawFrontRadius: 0.0,),
+            clawFrontRadius: 0.0276),
     ]
 }
 

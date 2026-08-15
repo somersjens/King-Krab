@@ -305,6 +305,16 @@ struct ReefPalette: Equatable {
     private static let depth = (0.10, 0.45, 0.66)
     private static let sandTone = (0.96, 0.90, 0.74)
     private static let sandShadow = (0.80, 0.68, 0.46)
+    /// The four rungs of the water column, from the surface just off the top of
+    /// the screen down to the sand. Shallow tropical water is not one blue: it
+    /// is almost white-cyan where the sun goes in, saturated blue through the
+    /// open middle, and green again where it picks the sea floor back up.
+    private static let surfaceTone = (0.74, 0.97, 0.99)
+    private static let shallowTone = (0.36, 0.83, 0.93)
+    private static let midTone = (0.13, 0.55, 0.82)
+    private static let floorTone = (0.26, 0.63, 0.71)
+    /// The warm patch the sun lays down in the middle of the arena.
+    private static let sandSunTone = (1.00, 0.95, 0.79)
 
     // Every one of these used to be recomputed on each access — a tuple blend
     // and a fresh `Color` — and the drawing code reads them constantly: the
@@ -314,6 +324,20 @@ struct ReefPalette: Equatable {
     let waterDeep: Color
     let sand: Color
     let sandDeep: Color
+
+    /// The rungs of the water column, top to bottom. `waterTop` stays the
+    /// shallow blue the rest of the app already borrows for menus; these carry
+    /// the depth the arena itself is drawn with.
+    let waterSurface: Color
+    let waterShallow: Color
+    let waterMid: Color
+    /// The colour everything far away is losing itself to — the water at the
+    /// depth the sand starts at. Haze, distant weed and the far sand all mix
+    /// toward this, which is what makes the floor recede instead of simply
+    /// starting at a line.
+    let waterFloor: Color
+    /// Sand with the sun full on it, for the bright patch in the middle.
+    let sandSunlit: Color
 
     /// The coral keeps the character's own colour: it is the one warm thing on
     /// the sea floor, and it frames the arena the King holds.
@@ -338,6 +362,11 @@ struct ReefPalette: Equatable {
         waterDeep = Self.mix(character.primaryRGB, Self.depth, 0.85)
         sand = Self.mix(character.tintRGB, Self.sandTone, 0.72)
         sandDeep = Self.mix(character.deepRGB, Self.sandShadow, 0.62)
+        waterSurface = Self.mix(character.skyRGB, Self.surfaceTone, 0.82)
+        waterShallow = Self.mix(character.skyRGB, Self.shallowTone, 0.88)
+        waterMid = Self.mix(character.primaryRGB, Self.midTone, 0.84)
+        waterFloor = Self.mix(character.primaryRGB, Self.floorTone, 0.82)
+        sandSunlit = Self.mix(character.tintRGB, Self.sandSunTone, 0.86)
         coral = character.color
         coralDeep = character.deepColor
         rock = Self.mix((0.52, 0.57, 0.66), character.primaryRGB, 0.18)
