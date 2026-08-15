@@ -93,7 +93,7 @@ private struct CharacterTrailRenderer {
 
     // Uneven vertical spacing and varied lengths preserve the hand-drawn,
     // organic rhythm of the reference instead of creating a mechanical fan.
-    private let wisps: [Wisp] = [
+    private static let wisps: [Wisp] = [
         .init(start: .init(x: 0.05, y: 0.29), control1: .init(x: 0.24, y: 0.25), control2: .init(x: 0.47, y: 0.34), end: .init(x: 0.76, y: 0.31), width: 0.012, phase: 0.2, opacity: 0.76),
         .init(start: .init(x: 0.16, y: 0.38), control1: .init(x: 0.34, y: 0.35), control2: .init(x: 0.51, y: 0.43), end: .init(x: 0.82, y: 0.40), width: 0.007, phase: 1.7, opacity: 0.52),
         .init(start: .init(x: 0.02, y: 0.52), control1: .init(x: 0.21, y: 0.49), control2: .init(x: 0.43, y: 0.59), end: .init(x: 0.73, y: 0.55), width: 0.014, phase: 3.1, opacity: 0.82),
@@ -103,7 +103,7 @@ private struct CharacterTrailRenderer {
 
     // Bubbles intentionally form three loose clusters, with empty space in
     // between. That distribution is an important part of the reference image.
-    private let bubbles: [Bubble] = [
+    private static let bubbles: [Bubble] = [
         .init(origin: .init(x: 0.18, y: 0.22), diameter: 0.064, speed: 0.030, phase: 0.10),
         .init(origin: .init(x: 0.27, y: 0.29), diameter: 0.027, speed: 0.042, phase: 0.56),
         .init(origin: .init(x: 0.12, y: 0.48), diameter: 0.042, speed: 0.035, phase: 0.31),
@@ -115,11 +115,11 @@ private struct CharacterTrailRenderer {
     func draw(in context: inout GraphicsContext) {
         guard size.width > 0, size.height > 0, intensity > 0 else { return }
 
-        for (index, wisp) in wisps.enumerated() {
+        for (index, wisp) in Self.wisps.enumerated() {
             draw(wisp: wisp, index: index, in: &context)
         }
 
-        for bubble in bubbles {
+        for bubble in Self.bubbles {
             draw(bubble: bubble, in: &context)
         }
     }

@@ -112,6 +112,10 @@ final class ProgressSync: ObservableObject {
     /// incoming iCloud update. Writing the winner to both stores makes this
     /// safe to call repeatedly and lets @AppStorage update the visible UI.
     private func reconcileAllProgress() {
+        // This is the one route by which a score can move without the store
+        // itself writing it, so its read cache has to be dropped first — the
+        // sweep below is what refills it with the merged values.
+        Progress.store.invalidateCaches()
         for topic in MathTopic.allCases {
             for level in LevelCatalog.levels(for: topic) {
                 _ = Progress.store.bestScoreAcrossBoards(level: level)

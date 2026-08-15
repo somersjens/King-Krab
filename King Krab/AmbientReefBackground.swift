@@ -15,7 +15,7 @@ struct AmbientReefBackground: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var palette: ReefPalette { ReefPalette(character: character) }
+    private var palette: ReefPalette { ReefPalette.palette(for: character) }
 
     var body: some View {
         // The geometry sits outside the timeline: only the bubbles move from
@@ -126,7 +126,7 @@ private struct AmbientBubbleField: View {
     let phase: Double
     let size: CGSize
 
-    private let bubbles: [Bubble] = [
+    private static let bubbles: [Bubble] = [
         .init(id: 0, x: 0.06, y: 0.18, diameter: 12, speed: 3.2),
         .init(id: 1, x: 0.13, y: 0.66, diameter: 22, speed: 4.0),
         .init(id: 2, x: 0.22, y: 0.90, diameter: 8, speed: 2.7),
@@ -138,7 +138,7 @@ private struct AmbientBubbleField: View {
 
     var body: some View {
         ZStack {
-            ForEach(bubbles) { bubble in
+            ForEach(Self.bubbles) { bubble in
                 let travel = size.height + 100
                 let shifted = bubble.y * travel - CGFloat(phase) * bubble.speed
                 let wrapped = shifted.truncatingRemainder(dividingBy: travel)

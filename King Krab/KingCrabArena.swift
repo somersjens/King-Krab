@@ -118,10 +118,14 @@ enum ArenaConfig {
     /// what tells the player the sand is being *moved*.
     static let burrowPuffInterval = 0.065
 
-    /// Handing the answer over: the right crab reaches its shell up to the King
-    /// and gives it to him. A crab that got the answer right is on the King's
-    /// side, so it is never swept aside — it hands over and digs itself in.
+    /// Handing the answer over: the right crab reaches its shell out to the
+    /// King's claws and comes back down out of the reach. A crab that got the
+    /// answer right is on the King's side, so it is never swept aside — it
+    /// gives, and digs itself in.
     static let deliverDuration = 0.62
+    /// Where in that movement the stone is actually down and let go of, and
+    /// with it the moment the King's own shell can leave for the score.
+    static let deliverGiveShare = 0.62
     /// Swept aside by the King's own blow, which throws them much further.
     static let sweptDuration = 0.62
 
@@ -192,6 +196,23 @@ enum ArenaConfig {
     static let kingHopHeight: CGFloat = 0.68
     static let kingHopSettle = 0.16
     static let kingExitDuration = 0.72
+
+    /// The streak celebration: the King steps out to one side, back across to
+    /// the other and home again, while his claws dip and then go up as high as
+    /// the artwork carries them — see `streakCelebrationClawTouch`.
+    static let streakCelebrationDuration = 1.5
+    /// How far to either side he travels, as a share of his own size. He is
+    /// back on his anchor by the end, so this only ever borrows the ground.
+    static let streakCelebrationSway: CGFloat = 0.30
+    /// How far each claw turns as it goes up. As high as the artwork allows:
+    /// the rig draws the body *over* the limbs, so a claw carried further than
+    /// this slides behind the head and disappears instead of reading as raised.
+    /// Measured on the device — at 52° only the shoulders still showed, and the
+    /// turn that would actually touch the two pincers together over the crown
+    /// (about 74°) hides them completely.
+    static let streakCelebrationClawTouch = 40.0
+    /// The dip that precedes it, as a share of that same turn.
+    static let streakCelebrationClawDip = 0.24
 
     // MARK: Carrier crabs
 
@@ -270,25 +291,77 @@ enum ArenaConfig {
 /// The arena's colours. Each one starts from the player's own character colours
 /// and is pulled toward the sea, so a fox arena and a penguin arena are still
 /// recognisably theirs while both read as an underwater sea floor.
-struct ReefPalette {
+struct ReefPalette: Equatable {
     let character: AnimalCharacter
+
+    /// The character decides every colour in here, so it is the whole of the
+    /// comparison. This is what lets the scenery views be `Equatable` on their
+    /// palette and skip a rebuild they would only redraw identically.
+    static func == (lhs: ReefPalette, rhs: ReefPalette) -> Bool {
+        lhs.character == rhs.character
+    }
 
     private static let surface = (0.60, 0.87, 0.95)
     private static let depth = (0.10, 0.45, 0.66)
     private static let sandTone = (0.96, 0.90, 0.74)
     private static let sandShadow = (0.80, 0.68, 0.46)
 
-    var waterTop: Color { Self.mix(character.skyRGB, Self.surface, 0.72) }
-    var waterDeep: Color { Self.mix(character.primaryRGB, Self.depth, 0.85) }
-    var sand: Color { Self.mix(character.tintRGB, Self.sandTone, 0.72) }
-    var sandDeep: Color { Self.mix(character.deepRGB, Self.sandShadow, 0.62) }
+    // Every one of these used to be recomputed on each access — a tuple blend
+    // and a fresh `Color` — and the drawing code reads them constantly: the
+    // sand shadow alone is asked for once per crab and once per leg, on every
+    // frame. They depend on nothing but the character, so they are mixed once.
+    let waterTop: Color
+    let waterDeep: Color
+    let sand: Color
+    let sandDeep: Color
 
     /// The coral keeps the character's own colour: it is the one warm thing on
     /// the sea floor, and it frames the arena the King holds.
-    var coral: Color { character.color }
-    var coralDeep: Color { character.deepColor }
-    var plant: Color { Color(red: 0.18, green: 0.56, blue: 0.34) }
-    var plantLight: Color { Color(red: 0.43, green: 0.72, blue: 0.30) }
+    let coral: Color
+    let coralDeep: Color
+    let rock: Color
+    let rockDeep: Color
+    /// The reef's accents, resolved for every hue up front: `reefAccent(_:)` is
+    /// called from inside the sea floor's rebuild, once per coral.
+    private let accents: [Color]
+    private let accentsDeep: [Color]
+
+    var plant: Color { Self.plantColor }
+    var plantLight: Color { Self.plantLightColor }
+
+    private static let plantColor = Color(red: 0.18, green: 0.56, blue: 0.34)
+    private static let plantLightColor = Color(red: 0.43, green: 0.72, blue: 0.30)
+
+    init(character: AnimalCharacter) {
+        self.character = character
+        waterTop = Self.mix(character.skyRGB, Self.surface, 0.72)
+        waterDeep = Self.mix(character.primaryRGB, Self.depth, 0.85)
+        sand = Self.mix(character.tintRGB, Self.sandTone, 0.72)
+        sandDeep = Self.mix(character.deepRGB, Self.sandShadow, 0.62)
+        coral = character.color
+        coralDeep = character.deepColor
+        rock = Self.mix((0.52, 0.57, 0.66), character.primaryRGB, 0.18)
+        rockDeep = Self.mix((0.31, 0.36, 0.46), character.deepRGB, 0.18)
+        accents = Self.reefHues.map { Self.mix($0, character.primaryRGB, 0.26) }
+        accentsDeep = Self.reefHues.map {
+            Self.mix(Self.mix3($0, 0.62), character.deepRGB, 0.24)
+        }
+    }
+
+    /// One palette per character, built once. The playfield asks for its
+    /// palette from inside `body`, so without this every frame mixed the whole
+    /// set again and handed the scenery views a value they could not recognise
+    /// as unchanged.
+    @MainActor
+    private static var cache: [String: ReefPalette] = [:]
+
+    @MainActor
+    static func palette(for character: AnimalCharacter) -> ReefPalette {
+        if let cached = cache[character.id] { return cached }
+        let palette = ReefPalette(character: character)
+        cache[character.id] = palette
+        return palette
+    }
 
     /// A real reef is not one colour. These are the garden's own hues, each
     /// pulled a quarter of the way toward the character's, so a fox reef and a
@@ -302,19 +375,12 @@ struct ReefPalette {
     ]
 
     func reefAccent(_ index: Int) -> Color {
-        let hue = Self.reefHues[abs(index) % Self.reefHues.count]
-        return Self.mix(hue, character.primaryRGB, 0.26)
+        accents[abs(index) % accents.count]
     }
 
     func reefAccentDeep(_ index: Int) -> Color {
-        let hue = Self.reefHues[abs(index) % Self.reefHues.count]
-        return Self.mix(Self.mix3(hue, 0.62), character.deepRGB, 0.24)
+        accentsDeep[abs(index) % accentsDeep.count]
     }
-
-    /// The stones the reef grows on: cool, desaturated, and always behind
-    /// everything else.
-    var rock: Color { Self.mix((0.52, 0.57, 0.66), character.primaryRGB, 0.18) }
-    var rockDeep: Color { Self.mix((0.31, 0.36, 0.46), character.deepRGB, 0.18) }
 
     /// Darkens a hue toward its own shadow.
     private static func mix3(_ base: (Double, Double, Double),
@@ -364,6 +430,11 @@ struct AnswerCrab: Identifiable {
     let optionID: UUID
     let text: String
     let isCorrect: Bool
+    /// Whether this crab came up gold, decided once when its wave was laid out.
+    /// A crab never changes colour on the sand: the streak starting or breaking
+    /// under one is the *next* wave's news, not a repaint of the crabs the
+    /// player is already reading.
+    let isGolden: Bool
 
     /// Off the side of the screen: a crab walks in rather than appearing.
     private(set) var start: CGPoint
@@ -574,6 +645,8 @@ struct KingState {
     var entranceAge: Double?
     /// Time since the board was won: the hop, and then the run off to the right.
     var farewellAge: Double?
+    /// Time since the streak landed, or nil when he is not celebrating one.
+    var streakAge: Double?
     /// He has run off and stays off. The result card comes up while he is still
     /// leaving, so without this he would be put back on his anchor underneath it
     /// and read as walking off and then reappearing.
@@ -663,6 +736,8 @@ final class KingCrabArena: ObservableObject {
 
     private var round: GameRound?
     private var isLive = false
+    /// The colour the next wave is laid out in. See `setGolden`.
+    private var isGolden = false
     private var speedMultiplier = 1.0
     /// Counts down while several arrivals are gathered into one sweep.
     private var sweepGather: Double?
@@ -812,6 +887,11 @@ final class KingCrabArena: ObservableObject {
     /// after the guarded answer was smashed directly, which still moves on to
     /// a fresh sum rather than repeating the one just given away.
     func load(round: GameRound?) {
+        // The streak flipping does not install a round, so the same sum can
+        // arrive here again purely because the gold flag moved. Nothing about
+        // the wave on the sand changes then — repainting or respawning it is
+        // exactly what a crab is not allowed to do mid-walk.
+        guard round?.id != self.round?.id else { return }
         let previousRoundNumber = self.round?.number
         self.round = round
         guard let round else {
@@ -859,6 +939,13 @@ final class KingCrabArena: ObservableObject {
         let count = min(requestedCount, availableRounds.count)
         bonusTriggerRounds = Array(availableRounds.shuffled().prefix(count)).sorted()
         nextBonusTrigger = 0
+    }
+
+    /// Which colour the *next* wave comes up in. Crabs already on the sand keep
+    /// the colour they were laid out in, so a streak that starts or breaks
+    /// under them never repaints a crab the player is in the middle of reading.
+    func setGolden(_ golden: Bool) {
+        isGolden = golden
     }
 
     /// Play is live only while the session is accepting an answer.
@@ -994,6 +1081,26 @@ final class KingCrabArena: ObservableObject {
         king.entranceAge = 0
         footPuff = 0
         placeKing(0)
+    }
+
+    /// The streak has just landed. The King steps out to one side, back across
+    /// to the other and home again, and takes his claws down and then up beside
+    /// his crown — so the player is told something has changed by the animal
+    /// rather than only by the colour.
+    ///
+    /// He never leaves his anchor: crabs keep walking at the same spot, and a
+    /// wave that arrives mid-celebration is answered from it exactly as always.
+    func beginStreakCelebration() {
+        // Not over the top of the two journeys that move him off his anchor for
+        // real, and not while the board is being wrapped up.
+        guard completionElapsed == nil,
+              king.entranceAge == nil,
+              king.farewellAge == nil,
+              !king.hasLeft else { return }
+        king.streakAge = 0
+        // So the first sand comes up with the first stride rather than
+        // whenever the walk-on's timer happened to leave the countdown.
+        footPuff = 0
     }
 
     /// Takes over after the final answer: the King hops for the board he has
@@ -1231,7 +1338,10 @@ final class KingCrabArena: ObservableObject {
         // Anything already thrown or digging itself in keeps its animation: the
         // new wave arrives over the top of the old one leaving.
         crabs.removeAll { $0.isLive }
-        sweepGather = nil
+        // A crab still standing at the ring keeps its gather: it is the tail of
+        // the last sum, waiting to be answered, and taking the timer away from
+        // it would strand it there.
+        if !crabs.contains(where: { $0.phase == .arrived }) { sweepGather = nil }
         isResolvingWave = false
         pendingWaveRestart = false
         guard let round, arena.height > 0, !tutorialPlan.suppressesAnswers else { return }
@@ -1261,6 +1371,7 @@ final class KingCrabArena: ObservableObject {
                 optionID: option.id,
                 text: option.text,
                 isCorrect: option.isCorrect,
+                isGolden: isGolden,
                 start: start,
                 target: target,
                 position: start,
@@ -1513,6 +1624,13 @@ final class KingCrabArena: ObservableObject {
                 // Held at the ring, shuffling in place until the King answers.
                 let jitter = CGFloat(sin(crab.age * 11)) * crabSize * 0.02
                 crab.position = CGPoint(x: crab.target.x + jitter, y: crab.target.y)
+                // A crab standing at the ring is *always* waiting on a gather
+                // to resolve it. Anything that clears that timer out from under
+                // it — a new sum arriving in the same breath as the crab, most
+                // of all — would otherwise leave it stood there holding its
+                // answer until some later, unrelated arrival happened to re-arm
+                // the timer and free them both at once.
+                if sweepGather == nil { sweepGather = ArenaConfig.sweepGather }
 
             case .hit:
                 // Held in place until the sand actually lands on it.
@@ -1596,6 +1714,10 @@ final class KingCrabArena: ObservableObject {
         if let age = king.farewellAge {
             king.farewellAge = age + dt
         }
+        if var age = king.streakAge {
+            age += dt
+            king.streakAge = age >= ArenaConfig.streakCelebrationDuration ? nil : age
+        }
         if var age = king.sweepAge {
             age += dt
             king.sweepAge = (age >= ArenaConfig.sweepDuration && !king.isCheering) ? nil : age
@@ -1619,6 +1741,10 @@ final class KingCrabArena: ObservableObject {
         var point = king.anchor
         var effort = 0.0
         var lift: CGFloat = 0
+        // Which way he is heading, so the sand comes off the side he is
+        // leaving behind. Every journey but the celebration crosses the floor
+        // rightward, which is the direction this used to be hardcoded to.
+        var travel: Double = 1
 
         if let age = king.entranceAge {
             // He comes on at a scurry and eases down onto his spot, so the
@@ -1648,6 +1774,25 @@ final class KingCrabArena: ObservableObject {
                 effort = 1
                 if t >= 1 { king.hasLeft = true }
             }
+        } else if let age = king.streakAge {
+            // Out to the left, across to the right and home: one full turn of
+            // the sine, which is what puts him back on his anchor to the point
+            // rather than near it.
+            let t = min(1, age / ArenaConfig.streakCelebrationDuration)
+            let turn = t * 2 * .pi
+            let swing = sin(turn)
+            point.x -= CGFloat(swing) * kingSize * ArenaConfig.streakCelebrationSway
+            // He is at his quickest crossing the middle and stands still at
+            // each end of the sway, so the legs — and with them the sand —
+            // work off how fast he is actually moving rather than off how far
+            // out he is. That is `cos`, the rate the sine above changes at.
+            let speed = cos(turn)
+            effort = 0.30 + 0.62 * abs(speed)
+            // `point.x` moves against the sine, so he is heading right exactly
+            // while that rate is negative. The sign flips at the two ends,
+            // where `effort` has dipped under the sand threshold — so no puff
+            // is ever thrown on an ambiguous direction.
+            travel = speed < 0 ? 1 : -1
         }
 
         // The stride only ever runs forward, so a walk that speeds up or slows
@@ -1661,11 +1806,11 @@ final class KingCrabArena: ObservableObject {
         footPuff -= dt
         guard footPuff <= 0 else { return }
         footPuff = ArenaConfig.entrancePuffInterval
-        // Sand kicked out behind him. He is always travelling right, so it is
-        // always thrown back to the left.
-        burst(at: CGPoint(x: king.position.x - kingSize * 0.22,
+        // Sand kicked out from under the feet, off the side he is leaving
+        // behind and drifting back the way he came.
+        burst(at: CGPoint(x: king.position.x - CGFloat(travel) * kingSize * 0.22,
                           y: king.anchor.y + kingSize * 0.30),
-              strength: 0.5, drift: -230)
+              strength: 0.5, drift: -230 * travel)
     }
 
     // MARK: The claws
@@ -1813,20 +1958,22 @@ final class KingCrabArena: ObservableObject {
         }
     }
 
-    /// The right answer, delivered by hand. The crab reaches its shell up to
-    /// the King's claws; `moveCrabs` sends it digging itself in once it lets go.
+    /// The right answer, presented. The crab turns to the King, bows, and sets
+    /// its shell down on the sand in front of him; `moveCrabs` sends it digging
+    /// itself in once it has straightened up again.
     private func deliver(index: Int) {
         var crab = crabs[index]
         crab.phase = .delivering
         crab.phaseAge = 0
         crab.isRushing = false
-        // Where the King's claws are, seen from the crab.
+        // Where the King is, seen from the crab: it is the way the crab turns
+        // and bows, and the way the shell goes down in front of it.
         crab.handOver = CGPoint(x: king.anchor.x - crab.position.x,
-                                y: king.anchor.y - kingSize * 0.30 - crab.position.y)
+                                y: king.anchor.y - crab.position.y)
         crabs[index] = crab
         // The King's own shell goes up to the score as he takes it, not before:
-        // the hand-over has to happen first for it to be a gift.
-        shellHandOver = ArenaConfig.deliverDuration * 0.62
+        // the stone has to be down at his feet first for it to be a gift.
+        shellHandOver = ArenaConfig.deliverDuration * ArenaConfig.deliverGiveShare
     }
 
     private func fling(index: Int) {

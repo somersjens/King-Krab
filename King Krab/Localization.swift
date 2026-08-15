@@ -211,8 +211,48 @@ final class LanguageManager: ObservableObject {
                 defaults.removeObject(forKey: Self.overrideKey)
             }
             Bundle.setLanguage(override?.code)
+            // The chosen language is the only thing everything below is derived
+            // from, and this is the only place it can change.
+            resolved = nil
         }
     }
+
+    /// The chosen language and everything resolved from it, worked out once.
+    ///
+    /// Every one of these used to be recomputed on each access: `effective`
+    /// walks `Bundle.main.preferredLocalizations` matching each entry against
+    /// the roster, and `locale` then builds a `Locale` from the result. A single
+    /// `L(...)` asks for both — and the menu resolves hundreds of strings and
+    /// numbers per redraw, with the game asking again inside its frame loop.
+    private struct Resolved {
+        let language: AppLanguage
+        let locale: Locale
+        let bundle: Bundle
+        let layoutDirection: LayoutDirection
+        /// Every standalone number on screen goes through `LN`, which built a
+        /// fresh format style each time. It only depends on the locale.
+        let numberStyle: IntegerFormatStyle<Int>
+    }
+
+    private var resolved: Resolved?
+
+    private var current: Resolved {
+        if let resolved { return resolved }
+        let language = resolveEffective()
+        let locale = Locale(identifier: language.code)
+        let value = Resolved(
+            language: language,
+            locale: locale,
+            bundle: Self.fallbackBundles.value(for: language.code),
+            layoutDirection: language.isRightToLeft ? .rightToLeft : .leftToRight,
+            numberStyle: IntegerFormatStyle<Int>().locale(locale)
+        )
+        resolved = value
+        return value
+    }
+
+    /// How this language writes a plain number. See `LN`.
+    var numberStyle: IntegerFormatStyle<Int> { current.numberStyle }
 
     private init() {
         if let raw = UserDefaults.standard.string(forKey: Self.overrideKey) {
@@ -225,7 +265,9 @@ final class LanguageManager: ObservableObject {
     /// match among the languages we support. Matching is generic over
     /// `AppLanguage.all`, so adding a language to the roster (and the string
     /// catalog) is all it takes to have the device follow it automatically.
-    var effective: AppLanguage {
+    var effective: AppLanguage { current.language }
+
+    private func resolveEffective() -> AppLanguage {
         if let override { return override }
         for identifier in Bundle.main.preferredLocalizations {
             // `preferredLocalizations` can hand back a regional or script
@@ -238,22 +280,20 @@ final class LanguageManager: ObservableObject {
 
     /// Drives the environment locale, which both formats numbers correctly and
     /// forces every `Text` to re-render when the language changes.
-    var locale: Locale { Locale(identifier: effective.code) }
+    var locale: Locale { current.locale }
 
     /// Which way the chosen language reads. Set explicitly at the app root:
     /// SwiftUI derives layout direction from the *bundle's* language, which the
     /// in-app switch deliberately overrides, so it would otherwise stay
     /// left-to-right when the player picks Arabic or Hebrew.
-    var layoutDirection: LayoutDirection {
-        effective.isRightToLeft ? .rightToLeft : .leftToRight
-    }
+    var layoutDirection: LayoutDirection { current.layoutDirection }
 
     /// The bundle strings are resolved from. `String(localized:)` ignores the
     /// runtime redirection installed on `Bundle.main`, so any string resolved in
     /// code must be pointed at this bundle explicitly (see `L`). It falls back
     /// to English for anything the chosen language has not translated, and is
     /// English outright for a language whose `.lproj` has not shipped at all.
-    var bundle: Bundle { Self.fallbackBundles.value(for: effective.code) }
+    var bundle: Bundle { current.bundle }
 
     /// The English `.lproj`, the last-resort fallback for every other language,
     /// and the locale to format its arguments with.
@@ -356,7 +396,7 @@ func L(key: String) -> String {
 /// numerals. Every standalone number the player sees goes through here, so a
 /// new language gets the right shape without touching the views.
 func LN(_ value: Int) -> String {
-    value.formatted(.number.locale(LanguageManager.shared.locale))
+    value.formatted(LanguageManager.shared.numberStyle)
 }
 
 // MARK: - Bundle redirection (the mechanism behind a live switch)

@@ -19,6 +19,13 @@ import UIKit
 
 // MARK: - Playfield
 
+/// The two things a wave is laid out from, observed as one value so they can
+/// never reach the arena a round apart. See the `onChange` that uses it.
+private struct WaveInput: Equatable {
+    let round: GameRound?
+    let isGolden: Bool
+}
+
 struct KingCrabPlayfield: View {
     let round: GameRound?
     let maximumRounds: Int
@@ -64,7 +71,7 @@ struct KingCrabPlayfield: View {
 
     @StateObject private var arena = KingCrabArena()
 
-    private var palette: ReefPalette { ReefPalette(character: character) }
+    private var palette: ReefPalette { ReefPalette.palette(for: character) }
 
     /// Where the sum's banner sits, and therefore where the walking area starts.
     private var bannerTop: CGFloat { topReserve + (isPad ? 12 : 8) }
@@ -126,7 +133,7 @@ struct KingCrabPlayfield: View {
                     AnswerCrabView(crab: crab,
                                    palette: palette,
                                    isPad: isPad,
-                                   isGolden: isStreakBoostActive,
+                                   isGolden: crab.isGolden,
                                    clock: arena.clock)
                         .position(crab.position)
                         .allowsHitTesting(false)
@@ -147,11 +154,13 @@ struct KingCrabPlayfield: View {
                         .allowsHitTesting(false)
                 }
 
-                ForEach(arena.celebration) { speck in
-                    CelebrationSpeckView(speck: speck, palette: palette)
-                        .position(speck.position)
-                        .allowsHitTesting(false)
-                }
+                // Over the animals, under the sum — exactly where a `ForEach` of
+                // speck views used to sit. The streak throws up to a hundred of
+                // these at once, and as views each one carried its own layout,
+                // its own `.position` and its own gradient; one immediate-mode
+                // pass draws the lot for the cost of the paths themselves.
+                CelebrationCanvas(specks: arena.celebration, palette: palette)
+                    .allowsHitTesting(false)
 
                 // The sum sits above everything: no crab and no sand may ever
                 // cover the question the player is answering.
@@ -204,6 +213,9 @@ struct KingCrabPlayfield: View {
                 arena.layout(size: size, arena: rect, isPad: isPad)
                 arena.configureBonusCrab(maximumRounds: maximumRounds)
                 arena.applyTutorial(tutorialPlan)
+                // Before the round: a session resumed mid-streak has to lay its
+                // first wave out gold rather than red.
+                arena.setGolden(isStreakBoostActive)
                 arena.load(round: round)
                 arena.setLive(isLive)
                 arena.setBonusAura(hasBonusPower)
@@ -236,8 +248,17 @@ struct KingCrabPlayfield: View {
         // previous one — nil on the very first round, which left the arena
         // without a wave and the sum blank. Only the value handed to the
         // closure is current, so the new round has to be the value observed.
-        .onChange(of: round) { newRound in
-            arena.load(round: newRound)
+        //
+        // The gold flag rides along with the round rather than sitting in its
+        // own `onChange`: a streak starts on the answer that also installs the
+        // next sum, so two separate observers would race, and the wave would
+        // come up in the colour the streak had one round ago. Observed
+        // together, both values reach the arena in the same call. Only the
+        // round drives the wave; `load` ignores a repeat of the sum it is
+        // already showing, which is what a colour-only change looks like.
+        .onChange(of: WaveInput(round: round, isGolden: isStreakBoostActive)) { input in
+            arena.setGolden(input.isGolden)
+            arena.load(round: input.round)
         }
         .onChange(of: isLive) { live in
             arena.setLive(live)
@@ -253,6 +274,8 @@ struct KingCrabPlayfield: View {
         }
         .onChange(of: isStreakBoostActive) { active in
             arena.setSpeedMultiplier(active ? GameConfig.streakSpeedMultiplier : 1)
+            // Only the streak landing is worth celebrating; it breaking is not.
+            if active, !reduceMotion { arena.beginStreakCelebration() }
         }
         .onChange(of: scoreTarget) { target in
             arena.setScoreTarget(target)
@@ -432,9 +455,38 @@ private struct KingCrabView: View {
             }
         }
 
+        // The streak: both claws swing up over the crown until the pincers
+        // meet. Positive lifts the left claw and drops the right, so the two
+        // sides take the same number with opposite signs.
+        if let age = king.streakAge {
+            let t = min(1, age / ArenaConfig.streakCelebrationDuration)
+            let raise = streakClaw(t) * ArenaConfig.streakCelebrationClawTouch
+            pose.leftClaw += raise
+            pose.rightClaw -= raise
+            // He draws himself up as the claws go, and sinks a little into the
+            // dip that starts it.
+            pose.stretch += CGFloat(streakClaw(t)) * 0.07
+        }
+
         pose.leftClaw += throwAngle(king.leftClaw, isRight: false)
         pose.rightClaw += throwAngle(king.rightClaw, isRight: true)
         return pose
+    }
+
+    /// The claws through the celebration, as a share of the full turn that
+    /// brings the two pincers together: down first, then all the way up, held
+    /// there while it reads, and back down to rest. Negative is the dip.
+    private func streakClaw(_ t: Double) -> Double {
+        let dip = 0.16       // down
+        let up = 0.46        // and all the way over the crown
+        let hold = 0.78      // held together
+        let low = -ArenaConfig.streakCelebrationClawDip
+        func ease(_ u: Double) -> Double { u * u * (3 - 2 * u) }
+
+        if t < dip { return low * ease(t / dip) }
+        if t < up { return low + (1 - low) * ease((t - dip) / (up - dip)) }
+        if t < hold { return 1 }
+        return 1 - ease((t - hold) / (1 - hold))
     }
 
     /// One throw: the claw cocks up, snaps out to full reach — which is where
@@ -1895,9 +1947,15 @@ private struct CrabArmRig {
         let shoulder = CGPoint(x: bodyWidth * 0.30, y: -bodyHeight * 0.06)
         // Short segments: a crab's arms are stubby, and holding the load low
         // means the elbow has somewhere to bend to.
+        // A quarter shorter than the arms were first drawn at: long arms let the
+        // load drift out to the side of the head and wobble there, and the card
+        // has to sit square over the animal that is carrying it.
         let upper = bodyWidth * 0.42
-        let fore = bodyWidth * 0.38
-        let hand = bodyWidth * 0.30
+        let fore = bodyWidth * 0.36
+        // The pincer is the character's face after its face: a crab is *its
+        // claws*, so the hand is drawn at the size a real one is — a good third
+        // of the body — rather than as a fingertip on the end of the arm.
+        let hand = bodyWidth * 0.44
 
         func arm(shoulder: CGPoint, grip: CGPoint, bend: CGFloat) -> Arm {
             let toLoad = CGPoint(x: hold.centre.x - grip.x, y: hold.centre.y - grip.y)
@@ -1906,44 +1964,54 @@ private struct CrabArmRig {
             // The palm stays outside the edge it holds and only the two finger
             // tips cross it. A claw whose whole hand sits on the shell reads as
             // stuck to it; one that closes on the edge reads as pinching it.
-            let palm = CGPoint(x: grip.x - bite.x * hand * 0.55,
-                               y: grip.y - bite.y * hand * 0.55)
-            let heel = CGPoint(x: palm.x - bite.x * hand * 0.30,
-                               y: palm.y - bite.y * hand * 0.30)
-            let elbow = crabJoint(from: shoulder, to: palm,
+            let palm = CGPoint(x: grip.x - bite.x * hand * 0.88,
+                               y: grip.y - bite.y * hand * 0.88)
+            // The heel is offset across the bite as well as back along it, so
+            // the hand is a claw lying at an angle on the wrist rather than a
+            // sausage pointing straight at what it holds.
+            let wrist = CGPoint(x: palm.x - bite.x * hand * 0.46 - bite.y * hand * 0.10 * bend,
+                                y: palm.y - bite.y * hand * 0.46 + bite.x * hand * 0.10 * bend)
+            let elbow = crabJoint(from: shoulder, to: wrist,
                                   first: upper, second: fore, bend: bend)
-            let axis = atan2(Double(bite.y), Double(bite.x))
+            /// A point on the claw, in the claw's own frame: `along` runs from
+            /// the knuckle out towards the edge being held, `across` is the
+            /// side the pincer opens to. Both are shares of the hand's own
+            /// size, so the whole claw scales with the animal.
+            func onClaw(_ along: CGFloat, _ across: CGFloat) -> CGPoint {
+                CGPoint(x: palm.x + (bite.x * along - bite.y * across * bend) * hand,
+                        y: palm.y + (bite.y * along + bite.x * across * bend) * hand)
+            }
 
-            /// One jaw. It leaves the palm splayed and curls back in on its way
-            /// to the tip, so the two of them close on the edge like a pincer
-            /// rather than forking away from it.
-            func jaw(degrees: Double, length: CGFloat, root: CGFloat, tip: CGFloat) -> LimbShape {
-                func point(_ turn: Double, _ reach: CGFloat) -> CGPoint {
-                    let angle = axis + turn * .pi / 180
-                    return CGPoint(x: palm.x + CGFloat(cos(angle)) * reach,
-                                   y: palm.y + CGFloat(sin(angle)) * reach)
-                }
-                return LimbShape(points: [palm,
-                                          point(degrees * 1.30, length * 0.52),
-                                          point(degrees * 0.78, length)],
-                                 widths: [root, (root + tip) * 0.5, tip])
+            /// One jaw, drawn as a hook: it leaves the knuckle splayed wide,
+            /// carries its bulk half way out and curls back onto the axis at
+            /// the tip. The two of them close on the edge with a sliver left
+            /// between them — and that dark sliver, more than the outline, is
+            /// what makes a claw read as a pincer rather than as a mitten.
+            func jaw(_ points: [(CGFloat, CGFloat)], _ widths: [CGFloat]) -> LimbShape {
+                LimbShape(points: points.map { onClaw($0.0, $0.1) },
+                          widths: widths.map { $0 * hand })
             }
 
             return Arm(
-                // As thick as the legs at the shoulder: an arm carrying a shell
-                // twice the animal's width cannot be the thinnest thing on it.
-                limb: LimbShape(points: [shoulder, elbow, palm],
-                                widths: [bodyWidth * 0.075, bodyWidth * 0.060,
-                                         bodyWidth * 0.052]),
-                palm: LimbShape(points: [heel, palm],
-                                widths: [hand * 0.30, hand * 0.38]),
-                // A short movable jaw over a longer fixed one, near enough
-                // closed that the shell's edge shows in the gap between them.
+                // A crab's arm is thicker than its walking legs: it is the limb
+                // the animal carries things with, and an arm holding a shell
+                // twice the body's width cannot be the thinnest thing on it.
+                limb: LimbShape(points: [shoulder, elbow, wrist],
+                                widths: [bodyWidth * 0.098, bodyWidth * 0.082,
+                                         bodyWidth * 0.070]),
+                // The heel of the claw: a fat pear lying along the wrist, wider
+                // at the knuckle than where it joins the arm, which is the one
+                // part that keeps two jaws from reading as a fork on a stick.
+                palm: LimbShape(points: [wrist, palm],
+                                widths: [hand * 0.22, hand * 0.30]),
                 fingers: [
-                    jaw(degrees: -22, length: hand * 0.78,
-                        root: hand * 0.20, tip: hand * 0.085),
-                    jaw(degrees: 19, length: hand * 0.92,
-                        root: hand * 0.23, tip: hand * 0.10)
+                    // The fixed jaw: the long, heavy one on the outside of the
+                    // claw, which is the one taking the shell's weight.
+                    jaw([(0.02, 0.16), (0.40, 0.42), (0.74, 0.36), (0.96, 0.20)],
+                        [0.20, 0.175, 0.145, 0.100]),
+                    // The movable jaw, closing onto it from the other side.
+                    jaw([(0.02, -0.16), (0.34, -0.38), (0.64, -0.30), (0.84, -0.14)],
+                        [0.18, 0.155, 0.130, 0.090])
                 ]
             )
         }
@@ -2042,36 +2110,68 @@ private struct ShellRewardView: View {
     }
 }
 
-private struct CelebrationSpeckView: View {
-    let speck: CelebrationSpeck
+/// The streak's shower of shells and bubbles, all of it in one drawing pass.
+///
+/// A speck has no state, no hit testing and nothing to lay out — it is a shape
+/// at a point — so it never needed a view of its own, and the celebration puts
+/// a hundred of them on screen at once while the King is dancing.
+private struct CelebrationCanvas: View {
+    let specks: [CelebrationSpeck]
     let palette: ReefPalette
 
     var body: some View {
-        Group {
-            switch speck.kind {
-            case .shell:
-                CurrencyIcon(size: speck.radius * 2.4)
-                    .foregroundStyle(palette.coralDeep)
-            case .bubble:
-                Circle()
-                    .fill(
-                        RadialGradient(colors: [.white.opacity(0.42),
-                                                palette.waterTop.opacity(0.22),
-                                                .white.opacity(0.16)],
-                                       center: .topLeading,
-                                       startRadius: 1,
-                                       endRadius: speck.radius * 1.4)
-                    )
-                    .overlay {
-                        Circle().stroke(.white.opacity(0.48),
-                                        lineWidth: max(1, speck.radius * 0.09))
-                    }
-                    .frame(width: speck.radius * 2, height: speck.radius * 2)
+        // Synchronous, for the same reason as the effects canvas: an
+        // asynchronously rendered pass can trail the animals by a frame.
+        Canvas(opaque: false, rendersAsynchronously: false) { context, _ in
+            for speck in specks {
+                // They pop in rather than appearing at full size.
+                let scale = min(1, CGFloat(speck.age / 0.18))
+                guard scale > 0 else { continue }
+                switch speck.kind {
+                case .shell:
+                    draw(shell: speck, scale: scale, in: &context)
+                case .bubble:
+                    draw(bubble: speck, scale: scale, in: &context)
+                }
             }
         }
-        .scaleEffect(min(1, CGFloat(speck.age / 0.18)))
-        .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    private func draw(shell speck: CelebrationSpeck, scale: CGFloat,
+                      in context: inout GraphicsContext) {
+        let side = speck.radius * 2.4 * scale
+        let rect = CGRect(x: speck.position.x - side / 2,
+                          y: speck.position.y - side / 2,
+                          width: side, height: side)
+        // The same even-odd fill `CurrencyIcon` uses, so the shell keeps its
+        // ribs rather than filling in solid.
+        context.fill(ShellShape().path(in: rect),
+                     with: .color(palette.coralDeep),
+                     style: FillStyle(eoFill: true))
+    }
+
+    private func draw(bubble speck: CelebrationSpeck, scale: CGFloat,
+                      in context: inout GraphicsContext) {
+        let radius = speck.radius * scale
+        let rect = CGRect(x: speck.position.x - radius, y: speck.position.y - radius,
+                          width: radius * 2, height: radius * 2)
+        let path = Path(ellipseIn: rect)
+        context.fill(
+            path,
+            with: .radialGradient(
+                Gradient(colors: [.white.opacity(0.42),
+                                  palette.waterTop.opacity(0.22),
+                                  .white.opacity(0.16)]),
+                // `.topLeading` of the bubble's own box, as the gradient was
+                // anchored when each speck had a frame to be relative to.
+                center: CGPoint(x: rect.minX, y: rect.minY),
+                startRadius: 1,
+                endRadius: radius * 1.4
+            )
+        )
+        context.stroke(path, with: .color(.white.opacity(0.48)),
+                       lineWidth: max(1, speck.radius * 0.09))
     }
 }
 
@@ -2251,7 +2351,11 @@ private struct ArenaFloor: View, Equatable {
             let sandHeight = max(140, size.height - crest)
 
             ZStack(alignment: .bottom) {
+                // The sand itself does not move. The floor around it is rebuilt
+                // on every sway step, so the pieces that hold still say so and
+                // are skipped rather than re-solved into the same picture.
                 SandBed(palette: palette)
+                    .equatable()
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
@@ -2279,7 +2383,7 @@ private struct ArenaFloor: View, Equatable {
 
 /// The sand itself: one soft mound rather than a straight edge, running off the
 /// bottom of the screen so the floor never ends in a visible line.
-private struct SandBed: View {
+private struct SandBed: View, Equatable {
     let palette: ReefPalette
 
     var body: some View {
@@ -2560,16 +2664,23 @@ private struct RockGarden: View {
                     coralTuft(width: w, height: h)
                 }
 
-                boulder(width: w * 0.52, height: h * 0.52)
+                // Stones and starfish are the still half of a garden. Only the
+                // grass and the coral tuft above take the clock, so these say
+                // they are unchanged and the sway step steps straight over them.
+                Boulder(palette: palette, width: w * 0.52, height: h * 0.52)
+                    .equatable()
                     .position(x: w * 0.42, y: h * 0.70)
-                boulder(width: w * 0.34, height: h * 0.34)
+                Boulder(palette: palette, width: w * 0.34, height: h * 0.34)
+                    .equatable()
                     .position(x: w * 0.72, y: h * 0.80)
-                boulder(width: w * 0.22, height: h * 0.22)
+                Boulder(palette: palette, width: w * 0.22, height: h * 0.22)
+                    .equatable()
                     .position(x: w * 0.20, y: h * 0.87)
 
                 if variant == 2 {
                     StarfishView(colour: palette.reefAccent(1),
                                  shade: palette.reefAccentDeep(1))
+                        .equatable()
                         .frame(width: w * 0.30, height: w * 0.30)
                         .rotationEffect(.degrees(-18))
                         .position(x: w * 0.74, y: h * 0.62)
@@ -2612,8 +2723,15 @@ private struct RockGarden: View {
             .position(x: w * 0.68, y: h * 0.52)
     }
 
-    /// A stone: rounded, lit from above, and sitting in its own dimple of sand.
-    private func boulder(width: CGFloat, height: CGFloat) -> some View {
+}
+
+/// A stone: rounded, lit from above, and sitting in its own dimple of sand.
+private struct Boulder: View, Equatable {
+    let palette: ReefPalette
+    let width: CGFloat
+    let height: CGFloat
+
+    var body: some View {
         ZStack {
             Ellipse()
                 .fill(palette.sandDeep.opacity(0.34))
@@ -2662,7 +2780,7 @@ private struct RockShape: Shape {
 }
 
 /// A starfish with proper rounded arms, a paler middle and its own speckles.
-private struct StarfishView: View {
+private struct StarfishView: View, Equatable {
     let colour: Color
     let shade: Color
 
@@ -2751,10 +2869,13 @@ private struct ReefBorder: View {
             let unit = min(width * 0.17, isPad ? 132 : 84)
 
             ZStack {
+                // Stone does not sway; only the coral growing between it does.
                 RockPile(palette: palette)
+                    .equatable()
                     .frame(width: unit * 1.5, height: unit * 0.78)
                     .position(x: width * 0.03, y: height * 0.93)
                 RockPile(palette: palette)
+                    .equatable()
                     .frame(width: unit * 1.35, height: unit * 0.66)
                     .scaleEffect(x: -1, y: 1)
                     .position(x: width * 0.97, y: height * 0.86)
@@ -2922,7 +3043,7 @@ private struct CupCoral: View {
     let colour: Color
     let shade: Color
 
-    private let cups: [(CGFloat, CGFloat, CGFloat)] = [
+    private static let cups: [(CGFloat, CGFloat, CGFloat)] = [
         (0.28, 0.66, 0.46), (0.56, 0.50, 0.60), (0.78, 0.72, 0.40), (0.44, 0.84, 0.34)
     ]
 
@@ -2931,7 +3052,7 @@ private struct CupCoral: View {
             let w = proxy.size.width
             let h = proxy.size.height
             ZStack {
-                ForEach(Array(cups.enumerated()), id: \.offset) { _, cup in
+                ForEach(Array(Self.cups.enumerated()), id: \.offset) { _, cup in
                     let side = w * cup.2
                     Circle()
                         .fill(LinearGradient(colors: [colour, shade],
@@ -2950,7 +3071,7 @@ private struct CupCoral: View {
 }
 
 /// The stones the reef grows on, at the very corners of the floor.
-private struct RockPile: View {
+private struct RockPile: View, Equatable {
     let palette: ReefPalette
 
     var body: some View {

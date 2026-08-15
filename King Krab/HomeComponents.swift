@@ -491,7 +491,16 @@ struct LevelCardView: View {
     /// card until the bubbles have finished counting. Only then do the gold
     /// card, crown and ferns arrive together.
     private var isNewMaximumCelebration: Bool {
-        celebrationStartedAt != nil && (celebrationStart ?? best) < maximum && best >= maximum
+        isNewMaximumCelebration(startedAt: celebrationStartedAt)
+    }
+
+    /// Takes the start date as a parameter rather than reading
+    /// `celebrationStartedAt` directly: `animateIfCelebrating` needs this
+    /// computed against the *new* value while it's still inside the
+    /// `onChange` closure, where the property itself reads as the value from
+    /// before the update.
+    private func isNewMaximumCelebration(startedAt: Date?) -> Bool {
+        startedAt != nil && (celebrationStart ?? best) < maximum && best >= maximum
     }
 
     // MARK: Body
@@ -526,8 +535,14 @@ struct LevelCardView: View {
         }
         .buttonStyle(.plain)
         .disabled(isLocked)
-        .onAppear { animateIfCelebrating() }
-        .onChange(of: celebrationStartedAt) { _ in animateIfCelebrating() }
+        .onAppear { animateIfCelebrating(startedAt: celebrationStartedAt) }
+        // `onChange(of:perform:)` (needed for the iOS 16.4 floor) runs its
+        // closure against the view value from *before* the update, so
+        // reading `celebrationStartedAt` in here would still see the old
+        // value — nil on the transition that starts the celebration, which
+        // skipped the score pulse entirely. Only the value handed to the
+        // closure is current.
+        .onChange(of: celebrationStartedAt) { newValue in animateIfCelebrating(startedAt: newValue) }
         .accessibilityIdentifier("level-\(level.index)")
         .accessibilityLabel(Text(L("home.levelAccessibility \(level.index)")))
         .accessibilityValue(Text(verbatim: pausedCards.map {
@@ -536,9 +551,10 @@ struct LevelCardView: View {
     }
 
     /// A little kick on the glyph at the moment the number lands.
-    private func animateIfCelebrating() {
-        completionRevealed = !isNewMaximumCelebration
-        guard celebrationStartedAt != nil, (celebrationStart ?? best) < best else {
+    private func animateIfCelebrating(startedAt: Date?) {
+        let isNewMax = isNewMaximumCelebration(startedAt: startedAt)
+        completionRevealed = !isNewMax
+        guard startedAt != nil, (celebrationStart ?? best) < best else {
             scorePulse = false
             return
         }
@@ -546,7 +562,7 @@ struct LevelCardView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + landing) {
             withAnimation(.spring(response: 0.52, dampingFraction: 0.62)) {
                 scorePulse = true
-                if isNewMaximumCelebration { completionRevealed = true }
+                if isNewMax { completionRevealed = true }
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + landing + 0.62) {
@@ -902,7 +918,7 @@ private struct CompletionFern: View {
         let rotation: Double
     }
 
-    private let leaves: [Leaf] = [
+    private static let leaves: [Leaf] = [
         Leaf(id: 0, x: 0.63, y: 0.82, width: 0.25, height: 0.12, rotation: 48),
         Leaf(id: 1, x: 0.29, y: 0.75, width: 0.27, height: 0.12, rotation: 27),
         Leaf(id: 2, x: 0.62, y: 0.66, width: 0.28, height: 0.12, rotation: -42),
@@ -940,7 +956,7 @@ private struct CompletionFern: View {
                             style: StrokeStyle(lineWidth: max(1, proxy.size.width * 0.05),
                                                lineCap: .round))
 
-                ForEach(leaves) { leaf in
+                ForEach(Self.leaves) { leaf in
                     let progress = leafProgress(leaf, at: elapsed)
                     let leafX = proxy.size.width * leaf.x
                     let leafY = proxy.size.height * leaf.y

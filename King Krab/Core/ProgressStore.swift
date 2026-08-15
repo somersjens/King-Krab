@@ -160,10 +160,47 @@ public final class ProgressStore {
     private let defaults: KeyValueStore
     /// Optional hook so best scores can be merged with iCloud. Left nil in
     /// tests, which keeps the store pure.
-    public var cloudMerge: ((String, Int) -> Int)?
+    public var cloudMerge: ((String, Int) -> Int)? {
+        didSet { invalidateCaches() }
+    }
+
+    /// Reading a score is by far the busiest thing this store does. One redraw
+    /// of the menu asks for the best on every board of all ninety-nine levels
+    /// to total the topic, and then again for each card on screen — several
+    /// hundred lookups, every one of them building three key strings, going out
+    /// to UserDefaults and merging against iCloud on the way back.
+    ///
+    /// Nothing about those values can change without passing through this class
+    /// or through an iCloud update, so they are held here and served from
+    /// memory in between.
+    ///
+    /// Same idea as `PausedSessionStore`'s decode cache, and the same rule: a
+    /// write updates the cache in place, and anything that can change the
+    /// underlying values from outside clears it.
+    ///
+    /// Keyed by `storageID` rather than by the board, because that — not
+    /// `LevelBoard`'s own equality — is what identifies a scoreboard. Outside
+    /// Supermix a board carries whichever `mixedVariant` the player last chose
+    /// there, and `storageID` ignores it; two such boards are the same
+    /// scoreboard while comparing as different values. Keyed by the board, a
+    /// score written under one would leave the other serving a stale reading of
+    /// the same stored number.
+    private var bestCache: [String: Int] = [:]
+    private var completionCache: [String: Int] = [:]
+    /// A level's boards added up, which is what the topic totals are built from.
+    private var levelTotalCache: [MathLevel: Int] = [:]
 
     public init(defaults: KeyValueStore) {
         self.defaults = defaults
+    }
+
+    /// Drops every cached score. Called after migration and whenever iCloud
+    /// reports that another device has moved progress on: those values arrive
+    /// behind this store's back, so the next read has to go and fetch them.
+    public func invalidateCaches() {
+        bestCache.removeAll(keepingCapacity: true)
+        completionCache.removeAll(keepingCapacity: true)
+        levelTotalCache.removeAll(keepingCapacity: true)
     }
 
     // MARK: - Migration
@@ -182,6 +219,9 @@ public final class ProgressStore {
             migrateToFixedAnswerCount(from: stored)
         }
 
+        // Migration writes straight to `defaults`, so anything read before it
+        // ran describes the old layout.
+        invalidateCaches()
         defaults.set(GameConfig.storageVersion, forKey: Key.storageVersion)
         return GameConfig.storageVersion
     }
@@ -335,10 +375,14 @@ public final class ProgressStore {
     // MARK: - Personal bests
 
     public func bestScore(_ board: LevelBoard) -> Int {
+        let id = board.storageID
+        if let cached = bestCache[id] { return cached }
         // Existing saves may contain scores earned before this board received
         // its shorter target. Keep them for syncing, but never present more
         // bubbles than the board can now hold.
-        min(mergedValue(forKey: Key.best(board)), board.maximum)
+        let score = min(mergedValue(forKey: Key.best(board)), board.maximum)
+        bestCache[id] = score
+        return score
     }
 
     /// Every board a level has been played on, added up. The topic and the menu
@@ -346,7 +390,10 @@ public final class ProgressStore {
     /// combination, must not vanish from the totals because the player has
     /// since switched.
     public func bestScoreAcrossBoards(level: MathLevel) -> Int {
-        LevelBoard.all(for: level).reduce(0) { $0 + bestScore($1) }
+        if let cached = levelTotalCache[level] { return cached }
+        let total = LevelBoard.all(for: level).reduce(0) { $0 + bestScore($1) }
+        levelTotalCache[level] = total
+        return total
     }
 
     /// Records a session score on one board. The stored best is capped at that
@@ -361,6 +408,8 @@ public final class ProgressStore {
         guard capped > previous else { return (false, previous) }
         let key = Key.best(board)
         defaults.set(capped, forKey: key)
+        bestCache[board.storageID] = capped
+        levelTotalCache[board.level] = nil
         _ = cloudMerge?(key, capped)
         return (true, previous)
     }
@@ -369,7 +418,12 @@ public final class ProgressStore {
 
     /// How often this board has been taken all the way to its maximum.
     public func maxCompletionCount(_ board: LevelBoard) -> Int {
-        min(GameConfig.maximumCompletionCount, mergedValue(forKey: Key.maxCompletions(board)))
+        let id = board.storageID
+        if let cached = completionCache[id] { return cached }
+        let count = min(GameConfig.maximumCompletionCount,
+                        mergedValue(forKey: Key.maxCompletions(board)))
+        completionCache[id] = count
+        return count
     }
 
     /// Counts one more run that reached the maximum, and returns the new tally.
@@ -378,6 +432,7 @@ public final class ProgressStore {
         let next = min(GameConfig.maximumCompletionCount, maxCompletionCount(board) + 1)
         let key = Key.maxCompletions(board)
         defaults.set(next, forKey: key)
+        completionCache[board.storageID] = next
         _ = cloudMerge?(key, next)
         return next
     }

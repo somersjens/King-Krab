@@ -83,9 +83,11 @@ nonisolated public enum GameConfig {
 
     // MARK: Bonuses
 
-    /// Three correct answers in a row turn the crabs gold: the streak mode
-    /// pays double and lasts until the next mistake.
-    public static let streakThreshold = 3
+    /// Five correct answers in a row turn the crabs gold: the streak mode
+    /// pays double and lasts until the next mistake. Five rather than three
+    /// makes it a run the player has to actually string together, which is
+    /// what earns the King his celebration when it lands.
+    public static let streakThreshold = 5
     public static let streakMultiplier = 2
     /// The gold crabs march a little faster, so the doubled points are earned
     /// under real pressure rather than handed over.

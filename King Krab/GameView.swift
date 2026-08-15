@@ -133,7 +133,21 @@ struct GameView: View {
                            onPlayAgain: {
                                showsResult = false
                                playsLevelCompletion = false
-                               Task { await model.restart() }
+                               Task {
+                                   await model.restart()
+                                   // A won board ends with the King running off
+                                   // the right of the screen, and nothing put
+                                   // him back: the next run opened on an empty
+                                   // arena with its crabs walking at a spot he
+                                   // was not standing on. He walks on again
+                                   // exactly as he does for a fresh session.
+                                   //
+                                   // After the restart, not alongside it: until
+                                   // it lands the session still reads as over,
+                                   // which holds the whole arena — and with it
+                                   // the walk — stopped.
+                                   playsKingEntrance = true
+                               }
                            },
                            onExit: { dismiss() })
                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
