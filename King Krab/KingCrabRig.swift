@@ -429,7 +429,15 @@ struct RiggedCharacterView<Carried: View>: View {
     let size: CGFloat
     @ViewBuilder let carried: () -> Carried
 
+    /// How much wider than the artwork square the flattened layer is. Claws at
+    /// rest already reach the square's edge; a throw or cheer swings them past
+    /// it, and `drawingGroup` would shear them off without this margin.
+    static var canvasScale: CGFloat { 1.85 }
+
     var body: some View {
+        // Artwork lives on a `size` square; the canvas is wider so a swung claw
+        // is not clipped by `drawingGroup` (which always clips to its frame).
+        let canvas = size * Self.canvasScale
         ZStack {
             legs(rig.leftLegs, side: 1, degrees: pose.leftLegs)
             legs(rig.rightLegs, side: -1, degrees: pose.rightLegs)
@@ -446,16 +454,25 @@ struct RiggedCharacterView<Carried: View>: View {
                 limb(rig.rightClaw, degrees: pose.rightClaw, cutAtJoint: true)
             }
         }
-        .frame(width: size, height: size)
+        .frame(width: canvas, height: canvas)
         // Squashing and stretching around the feet rather than the middle is
         // what makes a landing land: he compresses onto the sand, not into it.
         .scaleEffect(x: 1 / pose.stretch, y: pose.stretch, anchor: ground)
         .rotationEffect(.degrees(pose.lean), anchor: ground)
         .offset(y: -size * pose.rise)
+        // One Metal layer for the whole rig — claw cutouts and stepped legs
+        // otherwise re-composite as separate Images every display frame.
+        .drawingGroup(opaque: false)
     }
 
     /// The line his feet come down on, which is what all of him pivots around.
-    private var ground: UnitPoint { UnitPoint(x: 0.5, y: rig.groundLine) }
+    /// Mapped from the artwork square into the wider canvas so stretch and lean
+    /// still hinge on the feet rather than on empty padding below them.
+    private var ground: UnitPoint {
+        let scale = Self.canvasScale
+        let top = 0.5 * (1 - 1 / scale)
+        return UnitPoint(x: 0.5, y: top + rig.groundLine / scale)
+    }
 
     /// A run of legs. Where one has been cut out of the artwork, the run is
     /// laid out of copies of it and each takes its own turn in the stride — see

@@ -79,9 +79,9 @@ enum ArenaPerformanceBudget {
     static var maximumLiveGrains: Int { isConstrained ? 36 : 56 }
     static var celebrationInterval: Double { isConstrained ? 0.10 : 0.065 }
     static var celebrationSpeckCap: Int { isConstrained ? 48 : 90 }
-    /// Cap the display link itself. ProMotion 120 Hz doubles SwiftUI crab
-    /// rebuilds for almost no visual gain on this scene.
-    static var preferredFramesPerSecond: Int { isConstrained ? 45 : 60 }
+    /// Always target 60 Hz. Dropping to 45 under pressure reads as lag to the
+    /// player; particle budgets already shed load without chopping motion.
+    static var preferredFramesPerSecond: Int { 60 }
     /// Scenery sway: 16 Hz normally, 10 Hz where the frame budget is tightest.
     static var swayInterval: Double { isConstrained ? 1.0 / 10.0 : 1.0 / 16.0 }
     static var driftInterval: Double { isConstrained ? 1.0 / 4.0 : 1.0 / 6.0 }
@@ -164,7 +164,9 @@ enum ArenaConfig {
 
     // MARK: The King
 
-    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 266 : 196 }
+    /// Sized so outstretched claws keep clear of the screen edges on a phone;
+    /// the rig canvas is wider still so a swing is not clipped by its own layer.
+    static func kingSize(isPad: Bool) -> CGFloat { isPad ? 248 : 178 }
     /// Where a walking crab stops: on a ring around the King, wide enough that
     /// four arrivals stand around him rather than on top of him.
     static let arrivalRingFactor: CGFloat = 0.72
@@ -191,27 +193,71 @@ enum ArenaConfig {
     /// Answering a tap: the claw on that side winds up and throws a handful of
     /// sand at the crab the player picked. Short enough that a child who taps
     /// twice in a second sees both throws.
-    static let clawThrowDuration = 0.32
-    /// The share of the throw spent cocking the claw back.
-    static let clawWindUpShare = 0.36
+    static let clawThrowDuration = 0.40
+    /// The share of the throw spent cocking the claw (scoop or overhead).
+    static let clawWindUpShare = 0.40
     /// How much of the throw the strike itself takes, measured from the end of
     /// the wind-up. What is left is the arm easing back to rest.
-    static let clawStrikeShare = 0.22
+    static let clawStrikeShare = 0.24
     /// Where in the throw the sand actually leaves: near the end of the strike,
     /// with the arm at full reach and moving fastest.
-    static let clawReleaseShare = 0.54
+    static let clawReleaseShare = 0.58
     /// A second crab taken on the same side waits its turn rather than cutting
     /// the throw short, so the arm always completes the swing it started.
     static let clawThrowQueue = 3
     /// How long the thrown sand takes to reach what it was thrown at.
     static let sandFlightDuration = 0.18
-    /// How long a tapped crab holds still before the sand actually reaches it
+    /// How long a tapped crab keeps walking before the sand actually reaches it
     /// and it starts flying: the same span the claw takes to wind up and
     /// release, plus the sand's own time in the air.
     static let sandImpactDelay = clawThrowDuration * clawReleaseShare + sandFlightDuration
     /// The pincer at rest, as a share of the King's size from his centre. The
     /// sand leaves from here so it comes out of a claw, not out of his middle.
     static let clawTip = CGSize(width: 0.353, height: -0.255)
+
+    /// True when the target sits in front of the King on screen (larger y).
+    /// Forward throws scoop sand low; backward throws cock the claw high.
+    static func isForwardThrow(targetY: CGFloat, kingY: CGFloat) -> Bool {
+        targetY >= kingY
+    }
+
+    /// Unsigned claw angle for a sand throw before the left/right sign flip.
+    /// Positive lifts the left claw (and drops the right once signed).
+    static func clawThrowPoseAngle(progress: Double,
+                                   targetRise: Double,
+                                   isForward: Bool) -> Double {
+        let wind = clawWindUpShare
+        let strike = clawStrikeShare
+        let aim = max(-1, min(1, targetRise))
+        let windAngle: Double
+        let thrownAngle: Double
+        if isForward {
+            // Scoop: dip to the sand, then fling out and forward.
+            windAngle = -26 + aim * 4
+            thrownAngle = -68 + aim * 10
+        } else {
+            // Overhead: cock up toward the crown, then hurl back at a high target.
+            windAngle = 42 + aim * 8
+            thrownAngle = -22 + aim * 20
+        }
+
+        let value: Double
+        if progress < wind {
+            let u = progress / wind
+            // Ease into the wind-up; a soft overshoot sells the scoop / cock.
+            value = windAngle * (1 - pow(1 - u, 2.4))
+        } else if progress < wind + strike {
+            let u = (progress - wind) / strike
+            let snap = u * u * (3 - 2 * u)
+            value = windAngle + (thrownAngle - windAngle) * snap
+        } else {
+            let u = (progress - wind - strike) / max(0.001, 1 - wind - strike)
+            // Follow-through past the release, then settle home.
+            let coast = thrownAngle * (1 + 0.12 * (1 - u))
+            value = coast * (1 - u) * (1 - u)
+        }
+        return value
+    }
 
     /// The finale: a hop on the spot, a beat to gather himself, then off to the
     /// right at a run. A jump this high needs the airtime to match — halve the
@@ -514,8 +560,8 @@ struct AnswerCrab: Identifiable {
         case walking
         /// Standing at the King's ring, waiting for the sweep that answers it.
         case arrived
-        /// Tapped, and holding still while the thrown sand is still on its way
-        /// to it. It only starts flying once the sand actually arrives.
+        /// Tapped, and still walking while the thrown sand is on its way to it.
+        /// It only starts flying once the sand actually arrives.
         case hit
         /// Hit by the player.
         case smashed
@@ -767,7 +813,9 @@ struct CelebrationSpeck: Identifiable {
     var age: Double = 0
 }
 
-/// One swing of one claw: the wind-up, the throw, and the sand it lets go of.
+/// One swing of one claw: scoop or overhead wind-up, the throw, and the sand
+/// it lets go of. Forward targets (lower on screen) scoop; backward targets
+/// cock the claw high.
 struct ClawThrow {
     /// What is being thrown at, in arena coordinates.
     let target: CGPoint
@@ -1165,12 +1213,12 @@ final class KingCrabArena: ObservableObject {
             lastFrameTargetTimestamp = nil
             let link = CADisplayLink(target: displayLinkTarget,
                                      selector: #selector(DisplayLinkTarget.advance(_:)))
-            // Never chase ProMotion 120 Hz: every tick publishes `clock` and
-            // rebuilds every crab. 60 FPS (45 under pressure) is smooth enough
-            // and halves the SwiftUI cost on modern phones.
+            // Lock to exactly 60 Hz — never ProMotion 120 (too much SwiftUI
+            // work) and never a floating minimum that lets the system settle
+            // on a choppy 45.
             let fps = Float(ArenaPerformanceBudget.preferredFramesPerSecond)
             link.preferredFrameRateRange = CAFrameRateRange(
-                minimum: max(30, fps - 15),
+                minimum: fps,
                 maximum: fps,
                 preferred: fps
             )
@@ -1497,21 +1545,17 @@ final class KingCrabArena: ObservableObject {
 
     private func smash(index: Int) {
         var crab = crabs[index]
-        // The crab holds still, tapped but not yet hit: it only starts flying
-        // once the thrown sand actually reaches it in `moveCrabs`, rather than
-        // the instant the player's finger lands.
+        // A tap only marks the crab: it keeps covering ground until the sand
+        // lands in `moveCrabs`, and only then starts flying.
         crab.phase = .hit
         crab.phaseAge = 0
-        // The King throws sand at whatever the player picks, so the crab is
-        // thrown away from *him* and up out of the sand: the blast and the crab
-        // it clears travel the same way, and the hit reads as one blow rather
-        // than as a disappearance.
-        requestClawThrow(at: hitCentre(of: crab))
-        let dx = crab.position.x - king.anchor.x
-        let dy = crab.position.y - king.anchor.y
-        let length = max(1, hypot(dx, dy))
-        crab.flingVelocity = CGPoint(x: dx / length * CGFloat.random(in: 220...320),
-                                     y: dy / length * 90 - CGFloat.random(in: 240...330))
+        // Aim where the crab will be when the sand arrives, not where the
+        // finger landed — otherwise the throw trails a walking target.
+        var aim = crab
+        advanceWalking(&aim, dt: ArenaConfig.sandImpactDelay, emitEffects: false)
+        requestClawThrow(at: hitCentre(of: aim))
+        // Fling is computed at impact from the live position, so a crab that
+        // kept walking still flies away from the King rather than from the tap.
         crab.spin = Double.random(in: -9...9)
         crabs[index] = crab
         if crab.isCorrect { onSmash?(true) }
@@ -1803,6 +1847,83 @@ final class KingCrabArena: ObservableObject {
 
     // MARK: Crabs
 
+    /// Advances a crab along its path for one simulation step. Does not change
+    /// phase: callers decide what reaching the King means (arrival vs. still
+    /// waiting on sand). Pass `emitEffects: false` when only predicting where
+    /// the crab will be (e.g. aiming a throw).
+    private func advanceWalking(_ crab: inout AnswerCrab, dt: Double,
+                                emitEffects: Bool = true) {
+        // The walk is a straight line from off screen to the King; the
+        // waddle only makes it look like walking, never like drifting.
+        // Progress itself stays free of per-crab scuttle so every
+        // careful crab in the wave still shares one arrival — a single
+        // King sweep, not a trickle of blows.
+        var run = 0.0
+        if crab.isRushing {
+            crab.rushAge += dt
+            let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
+            run = ramp * ramp
+        }
+        // A careful crab still hesitates in place along its path: the
+        // surge is visual only and averages out, so arrival time does
+        // not drift crab-to-crab the way a rate multiplier would.
+        let scuttle = sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
+            * (1 - 0.8 * run)
+        // The on-screen stretch is the one the duration is about; the
+        // rush over the last of the off-screen stretch eases out of
+        // itself, so the crab arrives in view already walking.
+        let onScreen = max(0.05, 1 - crab.entryProgress)
+        var rate = onScreen / crab.duration
+        if crab.progress < crab.entryProgress {
+            let left = 1 - crab.progress / crab.entryProgress
+            rate *= 1 + (ArenaConfig.approachRush - 1) * left * left
+        }
+        rate *= 1 + (ArenaConfig.rushSpeed - 1) * run
+        crab.progress = min(1, crab.progress + dt * speedMultiplier * rate)
+        let eased = crab.progress
+        let base = CGPoint(
+            x: crab.start.x + (crab.target.x - crab.start.x) * CGFloat(eased),
+            y: crab.start.y + (crab.target.y - crab.start.y) * CGFloat(eased)
+        )
+        let along = CGVector(dx: crab.target.x - crab.start.x,
+                             dy: crab.target.y - crab.start.y)
+        let length = max(1, hypot(along.dx, along.dy))
+        // Sideways sway across the line of travel, one lean per pair of
+        // steps, which is how a crab actually crosses open ground.
+        let sway = CGFloat(sin(crab.age * crab.waddleRate)) * crab.waddleAmplitude
+        // A little surge along the path — stop-start feel without
+        // changing when the crab reaches the ring.
+        let surge = CGFloat(scuttle) * crab.waddleAmplitude * 0.55
+            * CGFloat(eased * (1 - eased) * 4)
+        let stepped = CGPoint(
+            x: base.x - along.dy / length * sway + along.dx / length * surge,
+            y: base.y + along.dx / length * sway + along.dy / length * surge
+        )
+        crab.walked += hypot(stepped.x - crab.position.x,
+                             stepped.y - crab.position.y)
+        crab.position = stepped
+        guard emitEffects else { return }
+        // Each footfall takes a little of the floor with it, which is
+        // where a walk on sand shows.
+        shedSandIfStepped(&crab.walked, next: &crab.nextFootfall,
+                          at: crab.position, of: crabSize,
+                          strideFactor: crab.strideFactor,
+                          facing: crab.facing,
+                          onScreen: crab.progress > crab.entryProgress
+                              && arena.contains(crab.position))
+        // A run kicks up the sea floor behind it. Only once the crab
+        // is actually on screen: sand thrown from off the edge would
+        // announce a crab the player cannot see yet.
+        if crab.isRushing, crab.progress > crab.entryProgress {
+            crab.puffCountdown -= dt
+            if crab.puffCountdown <= 0 {
+                crab.puffCountdown = ArenaConfig.rushPuffInterval
+                burst(at: crab.position, strength: 0.3,
+                      drift: -crab.facing * 120)
+            }
+        }
+    }
+
     private func moveCrabs(_ dt: Double) {
         for index in crabs.indices {
             var crab = crabs[index]
@@ -1820,74 +1941,7 @@ final class KingCrabArena: ObservableObject {
                 }
 
             case .walking:
-                // The walk is a straight line from off screen to the King; the
-                // waddle only makes it look like walking, never like drifting.
-                // Progress itself stays free of per-crab scuttle so every
-                // careful crab in the wave still shares one arrival — a single
-                // King sweep, not a trickle of blows.
-                var run = 0.0
-                if crab.isRushing {
-                    crab.rushAge += dt
-                    let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
-                    run = ramp * ramp
-                }
-                // A careful crab still hesitates in place along its path: the
-                // surge is visual only and averages out, so arrival time does
-                // not drift crab-to-crab the way a rate multiplier would.
-                let scuttle = sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
-                    * (1 - 0.8 * run)
-                // The on-screen stretch is the one the duration is about; the
-                // rush over the last of the off-screen stretch eases out of
-                // itself, so the crab arrives in view already walking.
-                let onScreen = max(0.05, 1 - crab.entryProgress)
-                var rate = onScreen / crab.duration
-                if crab.progress < crab.entryProgress {
-                    let left = 1 - crab.progress / crab.entryProgress
-                    rate *= 1 + (ArenaConfig.approachRush - 1) * left * left
-                }
-                rate *= 1 + (ArenaConfig.rushSpeed - 1) * run
-                crab.progress = min(1, crab.progress + dt * speedMultiplier * rate)
-                let eased = crab.progress
-                let base = CGPoint(
-                    x: crab.start.x + (crab.target.x - crab.start.x) * CGFloat(eased),
-                    y: crab.start.y + (crab.target.y - crab.start.y) * CGFloat(eased)
-                )
-                let along = CGVector(dx: crab.target.x - crab.start.x,
-                                     dy: crab.target.y - crab.start.y)
-                let length = max(1, hypot(along.dx, along.dy))
-                // Sideways sway across the line of travel, one lean per pair of
-                // steps, which is how a crab actually crosses open ground.
-                let sway = CGFloat(sin(crab.age * crab.waddleRate)) * crab.waddleAmplitude
-                // A little surge along the path — stop-start feel without
-                // changing when the crab reaches the ring.
-                let surge = CGFloat(scuttle) * crab.waddleAmplitude * 0.55
-                    * CGFloat(eased * (1 - eased) * 4)
-                let stepped = CGPoint(
-                    x: base.x - along.dy / length * sway + along.dx / length * surge,
-                    y: base.y + along.dx / length * sway + along.dy / length * surge
-                )
-                crab.walked += hypot(stepped.x - crab.position.x,
-                                     stepped.y - crab.position.y)
-                crab.position = stepped
-                // Each footfall takes a little of the floor with it, which is
-                // where a walk on sand shows.
-                shedSandIfStepped(&crab.walked, next: &crab.nextFootfall,
-                                  at: crab.position, of: crabSize,
-                                  strideFactor: crab.strideFactor,
-                                  facing: crab.facing,
-                                  onScreen: crab.progress > crab.entryProgress
-                                      && arena.contains(crab.position))
-                // A run kicks up the sea floor behind it. Only once the crab
-                // is actually on screen: sand thrown from off the edge would
-                // announce a crab the player cannot see yet.
-                if crab.isRushing, crab.progress > crab.entryProgress {
-                    crab.puffCountdown -= dt
-                    if crab.puffCountdown <= 0 {
-                        crab.puffCountdown = ArenaConfig.rushPuffInterval
-                        burst(at: crab.position, strength: 0.3,
-                              drift: -crab.facing * 120)
-                    }
-                }
+                advanceWalking(&crab, dt: dt)
                 if crab.progress >= 1 {
                     crab.phase = .arrived
                     crab.phaseAge = 0
@@ -1908,8 +1962,20 @@ final class KingCrabArena: ObservableObject {
                 if sweepGather == nil { sweepGather = ArenaConfig.sweepGather }
 
             case .hit:
-                // Held in place until the sand actually lands on it.
+                // Keep walking until the sand lands — a tap must not plant it.
+                // Reaching the ring here does not count as an arrival: the
+                // answer was already taken, and the sand is still on its way.
+                advanceWalking(&crab, dt: dt)
+                if crab.progress >= 1 {
+                    crab.position = crab.target
+                }
                 if crab.phaseAge >= ArenaConfig.sandImpactDelay {
+                    let dx = crab.position.x - king.anchor.x
+                    let dy = crab.position.y - king.anchor.y
+                    let length = max(1, hypot(dx, dy))
+                    crab.flingVelocity = CGPoint(
+                        x: dx / length * CGFloat.random(in: 220...320),
+                        y: dy / length * 90 - CGFloat.random(in: 240...330))
                     crab.phase = .smashed
                     crab.phaseAge = 0
                     burst(at: crab.position, strength: 1.0)
@@ -2143,10 +2209,15 @@ final class KingCrabArena: ObservableObject {
     /// The handful itself: a cone of sand out of the pincer that opens as it
     /// travels, timed to reach the crab while it is still being thrown clear.
     private func throwSand(at target: CGPoint, isRight: Bool) {
-        let origin = CGPoint(
-            x: king.position.x + kingSize * clawTip.width * (isRight ? 1 : -1),
-            y: king.position.y + kingSize * clawTip.height
-        )
+        let isForward = ArenaConfig.isForwardThrow(targetY: target.y,
+                                                   kingY: king.anchor.y)
+        let rise = Double((king.anchor.y - target.y) / max(1, kingSize))
+        let degrees = ArenaConfig.clawThrowPoseAngle(
+            progress: ArenaConfig.clawReleaseShare,
+            targetRise: rise,
+            isForward: isForward
+        ) * (isRight ? -1 : 1)
+        let origin = clawTipOrigin(degrees: degrees, isRight: isRight, isForward: isForward)
         let dx = target.x - origin.x
         let dy = target.y - origin.y
         let span = max(kingSize * 0.5, hypot(dx, dy))
@@ -2154,26 +2225,50 @@ final class KingCrabArena: ObservableObject {
         let room = ArenaPerformanceBudget.maximumLiveGrains - grains.count
         guard room > 0 else { return }
         let count = min(room, max(12, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 3.2)))
+        // Forward scoops fan wider; overhead sprays tighter and a touch faster.
+        let spray = isForward ? 0.34 : 0.22
+        let speedBias: ClosedRange<CGFloat> = isForward ? 0.66...1.18 : 0.78...1.28
         for _ in 0..<count {
-            let angle = heading + Double.random(in: -0.26...0.26)
+            let angle = heading + Double.random(in: -spray...spray)
             let speed = span / CGFloat(ArenaConfig.sandFlightDuration)
-                * CGFloat.random(in: 0.70...1.20)
+                * CGFloat.random(in: speedBias)
             grains.append(SandGrain(
                 position: CGPoint(x: origin.x + CGFloat.random(in: -4...4),
                                   y: origin.y + CGFloat.random(in: -4...4)),
                 velocity: CGPoint(x: CGFloat(cos(angle)) * speed,
                                   y: CGFloat(sin(angle)) * speed),
-                radius: CGFloat.random(in: 2.2...5.6),
+                radius: CGFloat.random(in: isForward ? 2.4...6.0 : 2.0...5.2),
                 tone: Double.random(in: 0...1),
                 lifetime: Double.random(in: ArenaConfig.sandFlightDuration
                                             ... ArenaConfig.sandFlightDuration * 2.1),
                 // Thrown sand has to carry to what it was thrown at, so it
                 // holds its line where a kicked-up puff would already be back
                 // on the floor.
-                gravity: 150,
-                drag: 0.80
+                gravity: isForward ? 170 : 130,
+                drag: isForward ? 0.78 : 0.84
             ))
         }
+    }
+
+    /// Where the swinging pincer is at `degrees`, so sand leaves the claw rather
+    /// than the rest pose. The shoulder sits a little inside the tip reach.
+    private func clawTipOrigin(degrees: Double, isRight: Bool,
+                               isForward: Bool) -> CGPoint {
+        let side: CGFloat = isRight ? 1 : -1
+        let joint = CGPoint(x: side * 0.12, y: 0.11)
+        let rest = CGPoint(x: clawTip.width * side, y: clawTip.height)
+        let dx = rest.x - joint.x
+        let dy = rest.y - joint.y
+        let rad = degrees * .pi / 180
+        let cosT = cos(rad)
+        let sinT = sin(rad)
+        var tip = CGPoint(x: joint.x + dx * cosT - dy * sinT,
+                          y: joint.y + dx * sinT + dy * cosT)
+        // A scoop releases a touch lower; an overhead toss a touch higher.
+        tip.y += isForward ? 0.04 : -0.06
+        tip.x += side * (isForward ? 0.03 : 0.01)
+        return CGPoint(x: king.position.x + kingSize * tip.x,
+                       y: king.position.y + kingSize * tip.y)
     }
 
     /// One blow answers everything standing at the ring. Two crabs arriving all

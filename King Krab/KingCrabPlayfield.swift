@@ -156,8 +156,9 @@ struct KingCrabPlayfield: View {
                                    palette: palette)
                     .allowsHitTesting(false)
 
-                // The King is drawn before the crabs, so a crab reaching him
-                // passes in front of his claws rather than behind his shell.
+                // Animals must never inherit a parent animation: even a spring
+                // on the missed-sum note would interpolate `.position` between
+                // sim ticks and make every walk look laggy.
                 KingCrabView(king: arena.king,
                              character: character,
                              palette: palette,
@@ -165,6 +166,7 @@ struct KingCrabPlayfield: View {
                              clock: arena.clock,
                              hasBonusPower: arena.hasBonusAura)
                     .position(arena.king.position)
+                    .transaction { $0.animation = nil }
                     .allowsHitTesting(false)
 
                 ForEach(arena.crabs) { crab in
@@ -172,9 +174,9 @@ struct KingCrabPlayfield: View {
                                    palette: palette,
                                    isPad: isPad,
                                    isGolden: crab.isGolden,
-                                   clock: arena.clock,
                                    king: arena.king.anchor)
                         .position(crab.position)
+                        .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                 }
 
@@ -200,12 +202,14 @@ struct KingCrabPlayfield: View {
                                     isPad: isPad,
                                     clock: arena.clock)
                         .position(carrier.position)
+                        .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                 }
 
                 ForEach(arena.shells) { shell in
                     ShellRewardView(shell: shell, palette: palette, isPad: isPad)
                         .position(shell.position)
+                        .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                 }
 
@@ -613,6 +617,8 @@ private struct KingCrabView: View {
 
         pose.leftClaw += throwAngle(king.leftClaw, isRight: false)
         pose.rightClaw += throwAngle(king.rightClaw, isRight: true)
+        applyThrowBody(king.leftClaw, isRight: false, to: &pose)
+        applyThrowBody(king.rightClaw, isRight: true, to: &pose)
         return pose
     }
 
@@ -632,39 +638,54 @@ private struct KingCrabView: View {
         return 1 - ease((t - hold) / (1 - hold))
     }
 
-    /// One throw: the claw cocks up, snaps out to full reach — which is where
-    /// the sand leaves it — and eases home.
-    ///
-    /// Turning a claw *inward* carries it up toward the crown, so the wind-up
-    /// stays the smaller of the two moves: enough to read as a wind-up while
-    /// the pincer stays clear of the head. The strike is the big one, and it
-    /// throws the claw right down and out past the shell.
+    /// One throw: forward scoops sand low and flings out; backward cocks the
+    /// claw high and hurls it. Angles are shared with the arena so the sand
+    /// leaves when the arm is actually at full reach.
     private func throwAngle(_ swing: ClawThrow?, isRight: Bool) -> Double {
         guard let swing else { return 0 }
+        let side: Double = isRight ? -1 : 1
+        let rise = Double((king.anchor.y - swing.target.y) / max(1, size))
+        let isForward = ArenaConfig.isForwardThrow(targetY: swing.target.y,
+                                                   kingY: king.anchor.y)
+        return ArenaConfig.clawThrowPoseAngle(progress: swing.progress,
+                                              targetRise: rise,
+                                              isForward: isForward) * side
+    }
+
+    /// Lean, counter-claw and a bit of squash so a single swinging pincer still
+    /// reads as a whole-body throw.
+    private func applyThrowBody(_ swing: ClawThrow?, isRight: Bool,
+                                to pose: inout KingRigPose) {
+        guard let swing else { return }
         let t = swing.progress
         let wind = ArenaConfig.clawWindUpShare
         let strike = ArenaConfig.clawStrikeShare
-        // Positive degrees lift the left claw and drop the right one, so the
-        // sign of the whole swing flips with the side of the body.
-        let side: Double = isRight ? -1 : 1
-        let raised = 16.0
-        // He throws flatter at a crab above him and further down at one below,
-        // so the claw ends up pointing at what it is throwing at.
-        let rise = Double((king.anchor.y - swing.target.y) / max(1, size))
-        let thrown = -56.0 + max(-1, min(1, rise)) * 12
-
-        let value: Double
+        let envelope: Double
         if t < wind {
             let u = t / wind
-            value = raised * (1 - pow(1 - u, 2))
+            envelope = u * u * (3 - 2 * u)
         } else if t < wind + strike {
-            let u = (t - wind) / strike
-            value = raised + (thrown - raised) * (u * u * (3 - 2 * u))
+            envelope = 1
         } else {
-            let u = (t - wind - strike) / (1 - wind - strike)
-            value = thrown * (1 - u) * (1 - u)
+            let u = (t - wind - strike) / max(0.001, 1 - wind - strike)
+            envelope = (1 - u) * (1 - u)
         }
-        return value * side
+        let toward: Double = isRight ? 1 : -1
+        let isForward = ArenaConfig.isForwardThrow(targetY: swing.target.y,
+                                                   kingY: king.anchor.y)
+        pose.lean += toward * (isForward ? 6.5 : 4.5) * envelope
+        // The free claw braces the other way so the throw is not a lone limb.
+        let counter = (isForward ? 11.0 : 16.0) * envelope
+        if isRight {
+            pose.leftClaw += counter
+        } else {
+            pose.rightClaw -= counter
+        }
+        if t >= wind, t < wind + strike {
+            let u = (t - wind) / strike
+            pose.stretch -= CGFloat(sin(u * .pi) * (isForward ? 0.045 : 0.032))
+            pose.rise += CGFloat(sin(u * .pi) * (isForward ? 0.012 : 0.02))
+        }
     }
 
     var body: some View {
@@ -703,7 +724,8 @@ private struct KingCrabView: View {
                 bonusBadge
             }
         }
-        .frame(width: size * 1.5, height: size * 1.5)
+        .frame(width: size * RiggedCharacterView<EmptyView>.canvasScale,
+               height: size * RiggedCharacterView<EmptyView>.canvasScale)
         .accessibilityHidden(true)
     }
 
@@ -713,9 +735,6 @@ private struct KingCrabView: View {
     private var figure: some View {
         if let rig = character.rig {
             RiggedCharacterView(rig: rig, pose: pose, size: size)
-                // Contact ellipse already grounds him; keep only a light rim
-                // shadow so the figure stays cheap to composite every frame.
-                .shadow(color: palette.coralDeep.opacity(0.16), radius: 2, y: 1)
         } else {
             character.artwork
                 .resizable()
@@ -724,7 +743,7 @@ private struct KingCrabView: View {
                 .overlay(alignment: .top) { crown }
                 .rotationEffect(.degrees(lean))
                 .scaleEffect(pulse)
-                .shadow(color: palette.coralDeep.opacity(0.16), radius: 2, y: 1)
+                .drawingGroup(opaque: false)
         }
     }
 
@@ -840,7 +859,6 @@ private struct AnswerCrabView: View {
     let isPad: Bool
     /// During the streak every crab is gold and every answer pays double.
     let isGolden: Bool
-    let clock: Double
     /// Where the King is standing. A crab keeps its eyes on him.
     let king: CGPoint
 
@@ -1112,9 +1130,10 @@ private struct AnswerCrabView: View {
     }
 
     /// The legs work both when the crab is covering ground and when it is
-    /// digging: a crab burrows with the same six legs it walks on.
+    /// digging: a crab burrows with the same six legs it walks on. A tapped
+    /// crab keeps walking until the sand lands, so its gait stays live too.
     private var isStepping: Bool {
-        crab.phase == .walking || crab.phase == .burrowing
+        crab.phase == .walking || crab.phase == .hit || crab.phase == .burrowing
     }
 
     /// The shell fades out of the crab's claws as the King takes it: the same
@@ -1139,7 +1158,8 @@ private struct AnswerCrabView: View {
 
     /// How far into its run the crab is, 0 → 1, once it is the last one left.
     private var run: Double {
-        guard crab.isRushing, crab.phase == .walking else { return 0 }
+        guard crab.isRushing,
+              crab.phase == .walking || crab.phase == .hit else { return 0 }
         let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
         return ramp * ramp
     }
@@ -1155,7 +1175,7 @@ private struct AnswerCrabView: View {
     @ViewBuilder
     private var shadow: some View {
         switch crab.phase {
-        case .hit, .smashed, .swept:
+        case .smashed, .swept:
             EmptyView()
         default:
             ContactShadow(bodyWidth: bodyWidth,
@@ -1186,7 +1206,8 @@ private struct AnswerCrabView: View {
             // they are drawn in and the shell is locked between them. They only
             // solve for a grip once it starts moving away from them.
             grip: (isHoldingFast || shellOpacity <= 0)
-                ? nil : (left: hold.left, right: hold.right)
+                ? nil : (left: hold.left, right: hold.right),
+            showsFrontJaws: shellOpacity > 0.02
         ) {
             AnswerShell(text: crab.text,
                         palette: palette,
@@ -1396,7 +1417,8 @@ private struct AnswerShell: View {
                     AnswerShellShape()
                         .stroke(rim, lineWidth: isPad ? 3.5 : 2.6)
                 }
-                .shadow(color: .black.opacity(0.16), radius: 2, y: 1)
+                // No drop shadow: the shell sits inside a crab `drawingGroup`,
+                // and a shadow there forces an extra offscreen pass per crab.
 
             Text(verbatim: text)
                 .font(.system(size: height * 0.46, weight: .black, design: .rounded))
@@ -1587,7 +1609,6 @@ private struct CarrierCrabView: View {
                 .opacity(carrier.isCarryingReward ? 1 : 0)
         }
         .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
-        .shadow(color: palette.coralDeep.opacity(0.14), radius: 2, y: 1)
 
         return ZStack {
             ContactShadow(bodyWidth: carrier.bodyWidth,
@@ -2488,7 +2509,7 @@ private struct CelebrationCanvas: View {
     var body: some View {
         // Synchronous, for the same reason as the effects canvas: an
         // asynchronously rendered pass can trail the animals by a frame.
-        Canvas(opaque: false, rendersAsynchronously: false) { context, _ in
+        Canvas(opaque: false, rendersAsynchronously: true) { context, _ in
             for speck in specks {
                 // They pop in rather than appearing at full size.
                 let scale = min(1, CGFloat(speck.age / 0.18))
@@ -2558,9 +2579,9 @@ private struct ArenaEffectsCanvas: View {
     let palette: ReefPalette
 
     var body: some View {
-        // Draw synchronously with the current display frame. Asynchronous
-        // Canvas rendering can trail the crabs by a frame on older hardware.
-        Canvas(opaque: false, rendersAsynchronously: false) { context, _ in
+        // Draw off the main update pass. Grains may trail the feet by a frame;
+        // that is cheaper than blocking every crab redraw on this canvas.
+        Canvas(opaque: false, rendersAsynchronously: true) { context, _ in
             for mote in motes {
                 let rect = CGRect(x: mote.position.x - mote.radius,
                                   y: mote.position.y - mote.radius,

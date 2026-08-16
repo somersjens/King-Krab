@@ -204,12 +204,17 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// coordinates. Nil while the load is simply locked in the claws, which is
     /// the pose they are drawn in.
     var grip: (left: CGPoint, right: CGPoint)?
+    /// False once the shell has left the claws — skips the masked jaw pass.
+    var showsFrontJaws: Bool = true
     @ViewBuilder let carried: () -> Carried
 
     private var square: CGFloat { rig.square(bodyWidth: bodyWidth) }
 
     var body: some View {
         ZStack {
+            // Flatten only the animal under the shell. `drawingGroup` clips to
+            // its own frame, and the answer shell rides well above the crab —
+            // wrapping the whole ZStack cut every shell in half.
             oneSide {
                 claw(rig.rightClaw, pincer: rig.rightPincer, grip: designGrip?.right)
                 legs(rig.leftLegs, side: 1)
@@ -223,19 +228,24 @@ struct AnswerCrabSprite<Carried: View>: View {
                 .offset(y: bob)
                 claw(rig.leftClaw, pincer: rig.leftPincer, grip: designGrip?.left)
             }
+            .drawingGroup(opaque: false)
 
             carried()
 
             // The long jaw of each claw closes over the front of the load; the
-            // short hook is the half that stayed underneath it.
-            oneSide {
-                claw(rig.rightClaw, pincer: rig.rightPincer,
-                     grip: designGrip?.right, bigJawOnly: true)
-                claw(rig.leftClaw, pincer: rig.leftPincer,
-                     grip: designGrip?.left, bigJawOnly: true)
+            // short hook is the half that stayed underneath it. Kept outside
+            // the drawing group so it can sit on top of a full, unclipped shell.
+            if showsFrontJaws {
+                oneSide {
+                    claw(rig.rightClaw, pincer: rig.rightPincer,
+                         grip: designGrip?.right, bigJawOnly: true)
+                    claw(rig.leftClaw, pincer: rig.leftPincer,
+                         grip: designGrip?.left, bigJawOnly: true)
+                }
             }
         }
-        .frame(width: bodyWidth * 1.7, height: bodyWidth * 1.5)
+        // Tall enough for the shell above the claws; width covers a swung arm.
+        .frame(width: bodyWidth * 2.2, height: bodyWidth * 3.2)
     }
 
     /// Both halves are flipped the same way and framed the same way, so the two
