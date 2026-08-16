@@ -7,7 +7,8 @@ hero's picture makes the renderer decode a 640-pixel square to paint something
 the size of a stamp — ten of those is most of what the shop pays to open.
 
 So each character also ships at 192 pixels, which covers the largest chip on
-the largest iPad, and the small slots ask for that one instead.
+the largest iPad — the shop's grid draws the animal at about 90 points there,
+or 180 pixels at 2x — and the small slots ask for that one instead.
 
 Idempotent: it reads the full-length assets that are already in the catalog and
 writes the thumbnails beside them, so it can be re-run after any re-export.

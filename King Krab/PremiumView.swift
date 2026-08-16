@@ -50,7 +50,9 @@ struct PremiumView: View {
     }
     private var isPad: Bool { AppLayout.isPad }
     private var scale: CGFloat { isPad ? 1.4 : 1 }
-    private let characterColumns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
+    private var characterColumns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 8 * scale), count: 5)
+    }
 
     var body: some View {
         let _ = totalCards
@@ -134,7 +136,7 @@ struct PremiumView: View {
     private var hero: some View {
         VStack(spacing: 4) {
             GeometryReader { proxy in
-                let heroSize = min(isPad ? 280 : 220, max(145, proxy.size.width * 0.50))
+                let heroSize = min(isPad ? 336 : 220, max(145, proxy.size.width * 0.50))
                 ZStack {
                     Circle()
                         .fill(RadialGradient(
@@ -155,7 +157,7 @@ struct PremiumView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(height: isPad ? 280 : 220)
+            .frame(height: isPad ? 336 : 220)
 
             Text(character.localizedName)
                 .font(.system(size: 30 * scale, weight: .heavy, design: .rounded))
@@ -281,7 +283,7 @@ struct PremiumView: View {
                 Rectangle().fill(character.color.opacity(0.42)).frame(height: 1)
             }
 
-            LazyVGrid(columns: characterColumns, spacing: 8) {
+            LazyVGrid(columns: characterColumns, spacing: 8 * scale) {
                 ForEach(animals) { animal in characterCell(for: animal) }
             }
         }
@@ -290,7 +292,6 @@ struct PremiumView: View {
     private func characterCell(for animal: AnimalCharacter) -> some View {
         let isSelected = previewCharacterID == animal.id
         let isAccessible = canUse(animal)
-        let artworkSlotSize = 44 * scale
         return Button {
             AppAudio.shared.playMenuTap()
             previewCharacterID = animal.id
@@ -298,15 +299,11 @@ struct PremiumView: View {
         } label: {
             VStack(spacing: 5 * scale) {
                 ZStack(alignment: .topTrailing) {
-                    animal.thumbArtwork
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: artworkSlotSize, height: artworkSlotSize)
-                        .frame(maxWidth: .infinity)
+                    characterArtwork(for: animal)
                 }
                 characterCellChip(for: animal)
             }
-            .padding(.horizontal, 3 * scale)
+            .padding(.horizontal, isPad ? 16 : 3)
             .padding(.vertical, 8 * scale)
             .background(isSelected ? character.color.opacity(0.16) : .white.opacity(0.78),
                         in: RoundedRectangle(cornerRadius: 13, style: .continuous))
@@ -321,6 +318,32 @@ struct PremiumView: View {
         .accessibilityLabel(animal.localizedName)
         .accessibilityValue(Text(isAccessible ? "common.unlocked" : "common.locked"))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    /// The animal inside one grid cell. On iPhone the five columns are barely
+    /// wider than the 44pt slot, so a fixed size fills the cell. On iPad the same
+    /// five columns are spread over a card three times as wide, and a scaled 44pt
+    /// slot leaves the animal floating in the middle of an empty cell — there the
+    /// artwork follows the column instead, inset so it sits inside the chip's
+    /// width the way the iPhone one does rather than touching the cell edges.
+    @ViewBuilder
+    private func characterArtwork(for animal: AnimalCharacter) -> some View {
+        if isPad {
+            Color.clear
+                .aspectRatio(1, contentMode: .fit)
+                .overlay {
+                    animal.thumbArtwork
+                        .resizable()
+                        .scaledToFit()
+                }
+                .padding(.horizontal, 11)
+        } else {
+            animal.thumbArtwork
+                .resizable()
+                .scaledToFit()
+                .frame(width: 44, height: 44)
+                .frame(maxWidth: .infinity)
+        }
     }
 
     @ViewBuilder

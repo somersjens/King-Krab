@@ -20,7 +20,7 @@ import Combine
 
 // MARK: - Steps
 
-/// The eight in-game steps, in the order they are played. The closing step of
+/// The nine in-game steps, in the order they are played. The closing step of
 /// the script is the score pointer on the home screen, which lives there rather
 /// than in a session — see `HomeView`, which shows `tutorial.step.10` itself.
 enum TutorialStep: Int, CaseIterable, Identifiable {
@@ -34,12 +34,15 @@ enum TutorialStep: Int, CaseIterable, Identifiable {
     case lifeCrab
     /// The 2x crab, which doubles the next answer.
     case bonusCrab
-    /// Three right answers in a row, one crab at a time, to reach the streak.
+    /// Right answers in a row, one crab at a time, to reach the streak.
     case buildStreak
     /// The streak is running: gold crabs, double shells.
     case superBonusRunning
-    /// Normal play resumes; the last message clears itself after a few seconds.
+    /// Normal play resumes; the last lesson clears itself after a few seconds.
     case freePlay
+    /// The sign-off, which only says the walkthrough is over and then hands the
+    /// level back untouched.
+    case complete
 
     var id: Int { rawValue }
 
@@ -48,9 +51,15 @@ enum TutorialStep: Int, CaseIterable, Identifiable {
 
     var next: TutorialStep? { TutorialStep(rawValue: rawValue + 1) }
 
-    /// How long the closing message stays before the tutorial hands the level
-    /// back to the player.
-    static let freePlayMessageDuration = 5.0
+    /// How long a message that nothing in the arena can finish stays on screen
+    /// before the script moves itself on.
+    var messageDuration: Double? {
+        switch self {
+        case .freePlay: return 5.0
+        case .complete: return 3.0
+        default: return nil
+        }
+    }
 }
 
 // MARK: - What the arena should send in
@@ -95,6 +104,11 @@ enum CrabTutorialEvent {
 final class TutorialController: ObservableObject {
     @Published private(set) var step: TutorialStep?
     @Published private(set) var plan = CrabTutorialPlan()
+    /// True from the first step until the player leaves the screen — including
+    /// after the last message has gone. The arena keeps the band under the sum
+    /// free for the whole run, so neither the first line appearing nor the last
+    /// one clearing moves the sea floor, the King or a crab already walking.
+    @Published private(set) var reservesMessageArea = false
 
     /// The session being taught. Weak, so the controller can never keep a
     /// finished game alive.
@@ -123,11 +137,13 @@ final class TutorialController: ObservableObject {
         // the player has seen the arena, so the home screen owes them the last
         // step of the script.
         GameSettings.tutorialHomeHintPending = true
+        reservesMessageArea = true
         enter(.smashWrong)
     }
 
     /// Ends the walkthrough and hands the level back unchanged: normal waves,
-    /// normal penalties, normal helper crabs.
+    /// normal penalties, normal helper crabs. The band the messages spoke from
+    /// stays reserved for the rest of the session; see `reservesMessageArea`.
     func finish() {
         guard step != nil else { return }
         generation &+= 1
@@ -146,6 +162,7 @@ final class TutorialController: ObservableObject {
         release()
         step = nil
         plan = CrabTutorialPlan()
+        reservesMessageArea = false
     }
 
     private func release() {
@@ -179,8 +196,8 @@ final class TutorialController: ObservableObject {
         case .guardCorrect, .protectKing, .superBonusRunning:
             if isCorrect { advance() }
         case .buildStreak:
-            // True on the answer that starts the boost, which is the third in a
-            // row — the whole point of this step.
+            // True on the answer that starts the boost, which is the last of
+            // the run of `GameConfig.streakThreshold` — the point of this step.
             if startedStreak { advance() }
         default:
             break
@@ -213,12 +230,12 @@ final class TutorialController: ObservableObject {
             self.plan = Self.plan(for: step)
         }
 
-        if step == .freePlay {
-            DispatchQueue.main.asyncAfter(
-                deadline: .now() + TutorialStep.freePlayMessageDuration
-            ) { [weak self] in
+        // The closing pair of messages have nothing in the arena to finish
+        // them: they simply have their moment and hand on.
+        if let duration = step.messageDuration {
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
                 guard let self, self.generation == token else { return }
-                self.finish()
+                self.advance()
             }
         }
     }
@@ -246,7 +263,7 @@ final class TutorialController: ObservableObject {
             plan.answers = .init(correct: 1, wrong: 1)
         case .superBonusRunning:
             plan.answers = .init(correct: 1, wrong: 2)
-        case .freePlay:
+        case .freePlay, .complete:
             // Nothing shaped any more: full waves, both helper crabs back on
             // their own schedule. Only the message is still the tutorial's.
             break
@@ -257,47 +274,64 @@ final class TutorialController: ObservableObject {
 
 // MARK: - Message
 
-/// The line the tutorial is currently teaching, shown under the HUD in the
-/// game and at the top of the menu for the closing step. The character does the
-/// talking, so it reads as the same voice as the level card.
+/// The line the tutorial is currently teaching: a note tucked in directly under
+/// the sum, in the same white card the sum itself is drawn on, only smaller and
+/// quieter — the same relationship the missed-sum note has to the question above
+/// it. The character does the talking, so it reads as the same voice as the
+/// level card.
+///
+/// It is deliberately a fixed-height strip rather than a card that grows with
+/// its text: the arena keeps exactly this much water free under the sum for the
+/// whole run, so a longer line never pushes the sea floor about. Nothing in the
+/// arena moves when a message arrives or leaves — only the note itself fades.
 struct TutorialMessageCard: View {
     let text: String
     let theme: AnimalCharacter
     var isPad: Bool = AppLayout.isPad
 
-    private var portraitSize: CGFloat { isPad ? 56 : 42 }
+    /// The tallest the strip is ever drawn, which is what the arena reserves.
+    static func height(isPad: Bool) -> CGFloat { isPad ? 92 : 70 }
+
+    private var portraitSize: CGFloat { isPad ? 46 : 34 }
+    private var corner: CGFloat { isPad ? 22 : 18 }
 
     var body: some View {
-        HStack(alignment: .center, spacing: isPad ? 14 : 10) {
+        HStack(alignment: .center, spacing: isPad ? 12 : 9) {
             theme.thumbArtwork
                 .resizable()
                 .scaledToFit()
-                .padding(isPad ? 4 : 3)
+                .padding(isPad ? 3 : 2)
                 .frame(width: portraitSize, height: portraitSize)
-                .background(theme.skyColor,
-                            in: RoundedRectangle(cornerRadius: isPad ? 15 : 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: isPad ? 15 : 12, style: .continuous)
-                    .stroke(theme.deepColor.opacity(0.12), lineWidth: 1))
+                .background(theme.skyColor, in: Circle())
+                .overlay(Circle().stroke(theme.deepColor.opacity(0.14), lineWidth: 1))
 
             Text(verbatim: text)
-                .font(.system(size: isPad ? 19 : 14.5, weight: .bold, design: .rounded))
+                .font(.system(size: isPad ? 17 : 13, weight: .bold, design: .rounded))
                 .foregroundStyle(theme.deepColor)
                 .multilineTextAlignment(.leading)
-                .fixedSize(horizontal: false, vertical: true)
+                // Three lines is what the reserved band holds; a stubbornly
+                // long translation shrinks into it rather than being cut off.
+                .lineLimit(3)
+                .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, isPad ? 16 : 12)
-        .padding(.vertical, isPad ? 12 : 9)
+        .padding(.horizontal, isPad ? 15 : 11)
+        .padding(.vertical, isPad ? 8 : 6)
+        .frame(maxWidth: isPad ? 600 : 400)
+        .frame(height: Self.height(isPad: isPad))
         .background {
-            RoundedRectangle(cornerRadius: isPad ? 24 : 20, style: .continuous)
-                .fill(.white.opacity(0.95))
-                .overlay {
-                    RoundedRectangle(cornerRadius: isPad ? 24 : 20, style: .continuous)
-                        .stroke(.white, lineWidth: 2)
-                }
-                .shadow(color: theme.deepColor.opacity(0.24), radius: 12, y: 6)
+            ZStack {
+                RoundedRectangle(cornerRadius: corner, style: .continuous)
+                    .fill(.white.opacity(0.95))
+                    .shadow(color: theme.deepColor.opacity(0.20), radius: 9, y: 5)
+                // The sum's own dashed edge, one size down: the note reads as a
+                // footnote to the question rather than as a second panel.
+                RoundedRectangle(cornerRadius: corner * 0.78, style: .continuous)
+                    .stroke(theme.deepColor.opacity(0.26),
+                            style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                    .padding(isPad ? 6 : 5)
+            }
         }
-        .frame(maxWidth: isPad ? 620 : 420)
         .accessibilityElement(children: .combine)
     }
 }

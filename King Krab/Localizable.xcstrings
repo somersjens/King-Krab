@@ -115817,13 +115817,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wrong answers are marching on your King! Tap a crab to knock it away — clear them all."
+            "value" : "Wrong answers are marching on your King! Tap a crab to throw sand at it. Clear them all!"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Er komen foute antwoorden op je King af! Tik een krab weg — sla ze allemaal weg."
+            "value" : "Er komen foute antwoorden op je King af! Tik een krab aan om zand te gooien. Sla ze allemaal weg!"
           }
         }
       }
@@ -115851,13 +115851,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every wrong crab that reaches your King costs half a life — and smashing the right one costs a whole life. Protect him!"
+            "value" : "Crabs that reach your King cost half a life, however many of them get through. Throw sand at the right answer and it costs a whole life!"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elke foute krab die je King bereikt kost een half leven — en de goede wegslaan kost een heel leven. Bescherm hem!"
+            "value" : "Krabben die bij je King komen kosten een half leven, ook als er meerdere aankomen. Gooi je zand naar het goede antwoord, dan kost dat een heel leven!"
           }
         }
       }
@@ -115902,13 +115902,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Get three correct answers in a row to earn a super bonus!"
+            "value" : "Get five correct answers in a row to earn a super bonus!"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geef drie goede antwoorden achter elkaar voor een superbonus!"
+            "value" : "Geef vijf goede antwoorden achter elkaar voor een superbonus!"
           }
         }
       }
@@ -115943,6 +115943,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De superbonus blijft tot je een fout maakt. Bewaak je King. Succes!"
+          }
+        }
+      }
+    },
+    "tutorial.step.9" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutorial complete! Now go for the high score!"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutorial afgerond! Ga nu voor de hoogste score!"
           }
         }
       }

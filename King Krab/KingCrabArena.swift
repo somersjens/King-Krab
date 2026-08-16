@@ -260,8 +260,17 @@ enum ArenaConfig {
     /// How long the walkthrough's helper crab takes to come round, both the
     /// first time and after a miss.
     static let tutorialCrabArrival = 0.8
-    /// Water the walkthrough keeps free below the HUD for its message card.
-    static func tutorialMessageReserve(isPad: Bool) -> CGFloat { isPad ? 150 : 116 }
+    /// Water the walkthrough keeps free under the sum for its note: the strip
+    /// itself and a little clear water under it, so a crab walking the top lane
+    /// carries its answer in below the note rather than behind it.
+    ///
+    /// Reserved for the whole run rather than only while a message is up. The
+    /// band changing size is what used to jolt the floor, the King and every
+    /// crab already walking, once when the first line arrived and again when
+    /// the last one cleared.
+    static func tutorialMessageReserve(isPad: Bool) -> CGFloat {
+        TutorialMessageCard.height(isPad: isPad) + (isPad ? 22 : 16)
+    }
 
     // MARK: Level completion
 
@@ -1525,10 +1534,10 @@ final class KingCrabArena: ObservableObject {
     /// itself plays out in full: it is no longer an answer, only the finish of
     /// the last one.
     ///
-    /// The walkthrough is the one place this is wrong — there the point of the
-    /// step is that the *player* takes the right crab — so it stays a walk.
+    /// The walkthrough plays by exactly the same rule: a child who has just
+    /// cleared the wrong answers should see the reward for it there too, and a
+    /// lone crab still picking its way in is the slowest moment of the lesson.
     private func rushLoneCorrectCrab() {
-        guard !tutorialPlan.isActive else { return }
         let live = crabs.indices.filter { crabs[$0].isLive }
         guard live.count == 1, let index = live.first,
               crabs[index].isCorrect, !crabs[index].isRushing

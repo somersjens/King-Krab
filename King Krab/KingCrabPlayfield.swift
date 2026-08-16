@@ -46,6 +46,10 @@ struct KingCrabPlayfield: View {
     let reduceMotion: Bool
     /// What the walkthrough wants in the arena, if one is running.
     var tutorialPlan = CrabTutorialPlan()
+    /// True for a session that is being taught, and it stays true once the last
+    /// message has gone: the strip under the sum is held open for the whole run
+    /// so nothing in the arena ever moves for a message arriving or leaving.
+    var reservesTutorialMessage = false
     /// Screen edges the arena works around: the HUD at the top, the home
     /// indicator at the bottom.
     let topReserve: CGFloat
@@ -81,11 +85,11 @@ struct KingCrabPlayfield: View {
     /// Where the sum's banner sits, and therefore where the walking area starts.
     private var bannerTop: CGFloat { topReserve + (isPad ? 12 : 8) }
 
-    /// The walkthrough's message card hangs under the sum, so while one is
-    /// running the crabs walk below it rather than behind it.
+    /// The walkthrough's note hangs under the sum, so on a taught session the
+    /// crabs walk below it rather than behind it.
     private var arenaTop: CGFloat {
         bannerTop + ArenaConfig.bannerHeight(isPad: isPad) + (isPad ? 26 : 18)
-            + (tutorialPlan.isActive ? ArenaConfig.tutorialMessageReserve(isPad: isPad) : 0)
+            + (reservesTutorialMessage ? ArenaConfig.tutorialMessageReserve(isPad: isPad) : 0)
     }
 
     /// `top` overrides `arenaTop` for callers that already hold a newer value

@@ -286,7 +286,8 @@ struct GameView: View {
                               playsLevelCompletion: playsLevelCompletion,
                               reduceMotion: reduceMotion,
                               tutorialPlan: tutorial.plan,
-                              topReserve: topInset + (isPad ? 54 : 42),
+                              reservesTutorialMessage: reservesTutorialMessage,
+                              topReserve: playfieldTopReserve(topInset: topInset),
                               bottomReserve: screenInsets.bottom,
                               scoreTarget: scoreIconCenter,
                               onGuardedArrival: { model.select(optionID: $0) },
@@ -312,28 +313,30 @@ struct GameView: View {
                 .animation(.easeOut(duration: 0.22), value: showsFinale)
                 .allowsHitTesting(!playsLevelCompletion)
 
-            // The walkthrough speaks from just under the sum, in the water the
-            // arena keeps free for it while a plan is running. It never takes a
-            // touch: every crab stays tappable while a step is being read.
+            // The walkthrough speaks from the strip of water directly under the
+            // sum, which the arena keeps free for the whole run. It never takes
+            // a touch: every crab stays tappable while a step is being read.
             if let message = tutorial.message, !showsFinale {
                 TutorialMessageCard(text: message, theme: character, isPad: isPad)
                     .padding(.horizontal, max(isPad ? 28 : 14, screenInsets.leading + 12))
-                    .padding(.top, topInset + (isPad ? 66 : 50)
-                             + ArenaConfig.bannerHeight(isPad: isPad))
-                    // Scales up in place rather than sliding down: a card that
-                    // travelled would cross the HUD on its way in.
-                    .transition(.opacity.combined(with: .scale(scale: 0.94, anchor: .top)))
+                    .padding(.top, tutorialMessageTop(topInset: topInset))
+                    // Fades in place rather than sliding down: a card that
+                    // travelled would cross the HUD on its way in, and nothing
+                    // around it moves for it either way.
+                    .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
                     .allowsHitTesting(false)
                     .id(tutorial.step)
             }
 
             if showsStreakBanner {
                 StreakBoostBanner(character: character, isPad: isPad)
-                    // Steps down below the walkthrough's own card when one is
-                    // on screen — the streak starts on a tutorial step.
-                    .padding(.top, topInset + (isPad ? 70 : 52)
-                             + ArenaConfig.bannerHeight(isPad: isPad)
-                             + (tutorial.message == nil ? 0 : (isPad ? 100 : 78)))
+                    // Steps down below the walkthrough's own note for as long as
+                    // the run keeps that strip reserved — the streak starts on a
+                    // tutorial step, and the note is still there when it does.
+                    .padding(.top, tutorialMessageTop(topInset: topInset)
+                             + (reservesTutorialMessage
+                                ? TutorialMessageCard.height(isPad: isPad) + (isPad ? 12 : 8)
+                                : 0))
                     .transition(.scale(scale: 0.65).combined(with: .opacity))
                     .allowsHitTesting(false)
             }
@@ -346,6 +349,31 @@ struct GameView: View {
         .onPreferenceChange(ScoreIconCenterPreferenceKey.self) { center in
             scoreIconCenter = center
         }
+    }
+
+    /// Whether the arena holds the strip under the sum free for the
+    /// walkthrough's note. True from the session's very first layout of a run
+    /// that was started to be taught — before the King has even walked on, let
+    /// alone said anything — and it stays true after the last message has gone.
+    /// The band appearing or disappearing is what used to shunt the sea floor,
+    /// the King and every walking crab about, once at the opening and again at
+    /// the end; held for the whole run, nothing moves at all.
+    private var reservesTutorialMessage: Bool {
+        isTutorialArmed || tutorial.reservesMessageArea
+    }
+
+    /// The room the arena leaves for the HUD above it, which is also where the
+    /// sum's banner is measured from.
+    private func playfieldTopReserve(topInset: CGFloat) -> CGFloat {
+        topInset + (isPad ? 54 : 42)
+    }
+
+    /// Where the walkthrough's note sits: flush under the sum's banner, in the
+    /// same geometry `KingCrabPlayfield` places that banner with, so the note
+    /// lands under the question however the safe area works out.
+    private func tutorialMessageTop(topInset: CGFloat) -> CGFloat {
+        playfieldTopReserve(topInset: topInset) + (isPad ? 12 : 8)
+            + ArenaConfig.bannerHeight(isPad: isPad) + (isPad ? 8 : 6)
     }
 
     private func showStreakBanner(for token: Int) {
