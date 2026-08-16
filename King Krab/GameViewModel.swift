@@ -17,6 +17,24 @@ import Combine
 import UIKit
 #endif
 
+/// A sum that was lost, written out with the answer it wanted.
+///
+/// A fresh sum arriving on its own tells a child nothing about the one they
+/// just got wrong: the crabs dig themselves in, the question changes, and the
+/// only trace of the mistake is half a heart fewer. This is that trace made
+/// readable — the sum, and the answer it was waiting for — and it is carried
+/// under the next sum for exactly that one round.
+struct MissedSum: Equatable {
+    /// The sum with its answer filled in, e.g. "7 × 8 = 56".
+    let text: String
+    /// The round it was lost on. It must never be shown under that round: the
+    /// sum is still standing there, and the answer would simply be given away.
+    fileprivate let missedRoundID: UUID?
+    /// The round it is being shown under, taken the moment the next sum
+    /// arrives. It leaves when that round does.
+    fileprivate var shownRoundID: UUID?
+}
+
 @MainActor
 final class GameViewModel: ObservableObject {
     private let request: GameSessionRequest
@@ -43,6 +61,13 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var correctStreak = 0
     @Published private(set) var isStreakBoostActive = false
     @Published private(set) var isLifeCrabAvailable = false
+    /// The sum the player just lost, held under the one that replaced it so a
+    /// mistake is never silent. Nil whenever there is nothing to own up to.
+    @Published private(set) var missedSum: MissedSum?
+    /// The same note while the sum it belongs to is still standing: it is not
+    /// shown yet, because its answer is the one thing that must not be given
+    /// away in the moment between the mistake and the next question.
+    private var pendingMissedSum: MissedSum?
     /// Changes each time the streak boost starts, allowing the view to replay
     /// its banner announcement even after an earlier streak was broken.
     @Published private(set) var streakAnnouncementID = 0
@@ -221,6 +246,8 @@ final class GameViewModel: ObservableObject {
         pendingScoreRewards.removeAll()
         hasBonusFishPower = false
         streakAnnouncementID = 0
+        missedSum = nil
+        pendingMissedSum = nil
         AppAudio.shared.playSessionStart()
         openRound()
         announceRound()
@@ -288,6 +315,9 @@ final class GameViewModel: ObservableObject {
             haptic(.success)
             delay = GameConfig.nextRoundDelay.correct
         case .wrong(_, let lostHalfLife):
+            // Before `advance` moves the session on: this is the last moment
+            // the sum that was just lost is still readable.
+            noteMissedSum()
             sync()
             onAnswerResolved?(false, false)
             AppAudio.shared.playWrong()
@@ -322,6 +352,36 @@ final class GameViewModel: ObservableObject {
             self.sync()
         }
         return true
+    }
+
+    /// Writes down the sum that was just lost, so the next one can carry it.
+    /// A round that comes straight back — the same sum, another attempt — is
+    /// deliberately not noted: its answer is still there to be found.
+    private func noteMissedSum() {
+        guard let round = engine.round else { return }
+        // Whatever was owed before is settled: only the newest mistake is worth
+        // showing, and it takes the place under the next sum.
+        missedSum = nil
+        pendingMissedSum = MissedSum(text: round.question.solved,
+                                     missedRoundID: round.id,
+                                     shownRoundID: nil)
+    }
+
+    /// Carries the missed sum along with the questions: it appears with the sum
+    /// that replaces the one it was lost on, and goes when that sum does.
+    private func syncMissedSum() {
+        let currentRoundID = engine.round?.id
+        if var pending = pendingMissedSum {
+            // Still on the sum it was lost on — the feedback beat before the
+            // next question is installed, or a repeat attempt at the same sum,
+            // which keeps its own answer to itself.
+            guard currentRoundID != pending.missedRoundID else { return }
+            pending.shownRoundID = currentRoundID
+            pendingMissedSum = nil
+            missedSum = pending
+        } else if let shown = missedSum, currentRoundID != shown.shownRoundID {
+            missedSum = nil
+        }
     }
 
     /// A crab was knocked off the sea floor. The blow is pure feedback: what it
@@ -465,6 +525,7 @@ final class GameViewModel: ObservableObject {
         correctStreak = engine.correctStreak
         isStreakBoostActive = engine.isStreakBoostActive
         isLifeCrabAvailable = engine.isLifeCrabAvailable
+        syncMissedSum()
         AppAudio.shared.setGameplayRate(isStreakBoostActive
                                         ? Float(GameConfig.streakSpeedMultiplier) : 1)
     }

@@ -130,6 +130,12 @@ nonisolated public final class MemoryGame {
     /// safe arrival moves the session on to the next sum.
     private var repeatsRound = false
 
+    /// Whether this sum has already been charged for a crab getting through.
+    /// One sum costs half a life however many wrong answers reach the King on
+    /// it: three crabs walking past — together in one sweep, or one after the
+    /// other across the same wave — is one mistake, not three.
+    private var hasBreachedRound = false
+
     /// The walkthrough's first steps let a mistake be made without paying for
     /// it. Every other run, and every later step, leaves this on — the rule
     /// itself is unchanged, it is only waived while the player is being shown
@@ -348,10 +354,17 @@ nonisolated public final class MemoryGame {
     /// A crab carrying a wrong answer walked past the player and reached the
     /// King. It costs half a life and breaks the streak, but the round carries
     /// on: the right answer is still on its way.
+    ///
+    /// Only the first one on a sum is paid for. A wave the player misses
+    /// entirely used to empty a life and a half between two sums, which is a
+    /// punishment out of all proportion to one lapse of attention — so every
+    /// further crab on the same sum walks past for nothing.
     @discardableResult
     public func absorbBreach() -> BreachOutcome {
         guard state == .answering || state == .resolving,
-              lifeHalves > 0 else { return .ignored }
+              lifeHalves > 0,
+              !hasBreachedRound else { return .ignored }
+        hasBreachedRound = true
         result.wrongAnswers += 1
         correctStreak = 0
         if appliesWrongAnswerPenalty {
@@ -411,6 +424,9 @@ nonisolated public final class MemoryGame {
     @discardableResult
     public func advance() -> GameState {
         guard state == .roundComplete else { return state }
+
+        // Whatever comes next is a fresh attempt, and pays for its own breach.
+        hasBreachedRound = false
 
         if lifeHalves <= 0 {
             finish(reason: .outOfLives)

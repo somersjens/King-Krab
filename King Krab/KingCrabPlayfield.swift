@@ -28,6 +28,8 @@ private struct WaveInput: Equatable {
 
 struct KingCrabPlayfield: View {
     let round: GameRound?
+    /// The sum the player lost last, if it is still owed an explanation.
+    var missedSum: MissedSum?
     let maximumRounds: Int
     let character: AnimalCharacter
     let isPad: Bool
@@ -65,6 +67,9 @@ struct KingCrabPlayfield: View {
     let onBonusCrabCaught: () -> Void
     let onLifeCrabArrived: () -> Bool
     let onKingEntranceComplete: () -> Void
+    /// The King has begun his celebration — which is later than the session
+    /// being over, because the crab that won the board walks its shell in first.
+    var onLevelCompletionStarted: () -> Void = {}
     let onLevelCompletionFinished: () -> Void
     /// Everything the walkthrough waits on that only the arena can see.
     var onTutorialEvent: (CrabTutorialEvent) -> Void = { _ in }
@@ -227,9 +232,32 @@ struct KingCrabPlayfield: View {
                            height: ArenaConfig.bannerHeight(isPad: isPad))
                     .position(x: size.width / 2,
                               y: bannerTop + ArenaConfig.bannerHeight(isPad: isPad) / 2)
-                    .opacity(playsLevelCompletion ? 0 : 1)
+                    // Held until the King is actually celebrating rather than
+                    // until the session is over: the last crab is still
+                    // walking its answer in between those two moments.
+                    .opacity(arena.isCelebrating ? 0 : 1)
                     .allowsHitTesting(false)
+
+                // And the sum before it, if that one was lost: tucked in under
+                // the banner, small enough to read as a footnote to the new
+                // question rather than as a second question. The walkthrough
+                // speaks from exactly this spot and explains its own mistakes,
+                // so while one is running the note stays away.
+                if let missedSum, !arena.isCelebrating, !tutorialPlan.isActive {
+                    MissedSumNote(text: missedSum.text, palette: palette, isPad: isPad)
+                        .frame(width: size.width - (isPad ? 160 : 60))
+                        .position(x: size.width / 2,
+                                  y: bannerTop + ArenaConfig.bannerHeight(isPad: isPad)
+                                      + MissedSumNote.height(isPad: isPad) / 2
+                                      + (isPad ? 12 : 9))
+                        .transition(.scale(scale: 0.8, anchor: .top)
+                            .combined(with: .opacity))
+                        .allowsHitTesting(false)
+                }
             }
+            // The note comes and goes with the sum it belongs to, so it is the
+            // sum's own arrival that animates it.
+            .animation(.spring(response: 0.36, dampingFraction: 0.78), value: missedSum)
             .frame(width: size.width, height: size.height)
             .contentShape(Rectangle())
 #if canImport(UIKit)
@@ -285,6 +313,7 @@ struct KingCrabPlayfield: View {
                 }
                 if playsLevelCompletion {
                     arena.beginLevelCompletion(reduceMotion: reduceMotion,
+                                               started: onLevelCompletionStarted,
                                                completion: onLevelCompletionFinished)
                 }
             }
@@ -348,6 +377,7 @@ struct KingCrabPlayfield: View {
         .onChange(of: playsLevelCompletion) { shouldPlay in
             if shouldPlay {
                 arena.beginLevelCompletion(reduceMotion: reduceMotion,
+                                           started: onLevelCompletionStarted,
                                            completion: onLevelCompletionFinished)
             } else {
                 arena.endLevelCompletion()
@@ -427,6 +457,60 @@ private struct QuestionBanner: View {
             withAnimation(.easeOut(duration: 0.20)) { isVisible = true }
         }
     }
+}
+
+/// The sum that was just lost, kept under the one that replaced it.
+///
+/// It is deliberately the same white card as the sum above it, only smaller and
+/// quieter: a child reads it as the last question, not as a new one. The cross
+/// says what happened without a word of text, which matters in an app that runs
+/// in seventy-odd languages, and the answer beside it is the thing actually
+/// worth taking away from a mistake.
+private struct MissedSumNote: View {
+    let text: String
+    let palette: ReefPalette
+    let isPad: Bool
+
+    /// Fixed, so the arena can place it under the banner without measuring it.
+    static func height(isPad: Bool) -> CGFloat { isPad ? 46 : 34 }
+
+    private var markSize: CGFloat { isPad ? 26 : 20 }
+
+    var body: some View {
+        HStack(spacing: isPad ? 10 : 7) {
+            Image(systemName: "xmark")
+                .font(.system(size: markSize * 0.56, weight: .black))
+                .foregroundStyle(.white)
+                .frame(width: markSize, height: markSize)
+                .background(Circle().fill(Self.mark))
+            Text(verbatim: text)
+                .font(.system(size: isPad ? 27 : 20, weight: .heavy, design: .rounded))
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .foregroundStyle(palette.coralDeep.opacity(0.86))
+        }
+        .padding(.horizontal, isPad ? 18 : 13)
+        // Only as wide as the sum it holds — the arena hands it the whole width
+        // to sit in, and it takes the middle of it. A full-width bar would read
+        // as a second banner rather than as a note under the first.
+        .frame(height: Self.height(isPad: isPad))
+        .background {
+            Capsule(style: .continuous)
+                .fill(.white.opacity(0.93))
+                .shadow(color: palette.coralDeep.opacity(0.20), radius: 8, y: 4)
+        }
+        .overlay {
+            Capsule(style: .continuous)
+                .stroke(Self.mark.opacity(0.40), lineWidth: isPad ? 2.5 : 2)
+        }
+        .accessibilityElement()
+        .accessibilityLabel(Text(verbatim: text))
+        .accessibilityValue(Text(L("game.answer.wrong")))
+    }
+
+    /// The red the cross and the edge are drawn in: warm rather than alarming,
+    /// so a mistake stays a small correction on a bright reef.
+    private static let mark = Color(red: 0.90, green: 0.33, blue: 0.34)
 }
 
 // MARK: - The King

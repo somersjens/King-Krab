@@ -135,6 +135,12 @@ enum ArenaConfig {
     static let deliverGiveShare = 0.62
     /// Swept aside by the King's own blow, which throws them much further.
     static let sweptDuration = 0.62
+    /// The longest the finale will wait for the crab that won the board to get
+    /// its shell to the King. A crab that is walking always beats this; it is
+    /// here so that nothing — a stalled wave, a crab caught in some state the
+    /// walk never reaches — can leave a player sat in front of a finished
+    /// board with no celebration coming.
+    static let finalDeliveryWait = 3.5
 
     /// With every wrong answer taken, the right one stops being careful and
     /// runs the rest of the way to the King. This is how much faster than its
@@ -812,6 +818,12 @@ final class KingCrabArena: ObservableObject {
     private(set) var king = KingState()
     private(set) var hasBonusAura = false
 
+    /// True from the frame the King actually starts celebrating. Everything
+    /// drawn over the arena hangs on this rather than on the session being
+    /// over: the crab that won the board is still walking its shell in while
+    /// the session already knows the sum was answered.
+    @Published private(set) var isCelebrating = false
+
     /// Seconds of running time. It stops when the game does, so nothing moves
     /// behind a pause. Everything the player reads timing from follows this at
     /// the display's full cadence (60 or 120 Hz).
@@ -913,6 +925,12 @@ final class KingCrabArena: ObservableObject {
     private var completionCallback: (() -> Void)?
     private var completionSpeckCountdown = 0.0
     private var reducesCompletionMotion = false
+    /// The finale, held back while the crab that won the board is still walking
+    /// its shell up to the King. See `beginLevelCompletion`.
+    private var pendingCompletion: (reduceMotion: Bool,
+                                    started: () -> Void,
+                                    callback: () -> Void)?
+    private var pendingCompletionAge = 0.0
     private var ambientBubbleCountdown = Double.random(in: ArenaConfig.ambientBubbleGap)
 
 #if canImport(UIKit)
@@ -1178,6 +1196,8 @@ final class KingCrabArena: ObservableObject {
         entranceCompletion = nil
         completionElapsed = nil
         completionCallback = nil
+        pendingCompletion = nil
+        isCelebrating = false
         tutorialPlan = CrabTutorialPlan()
         tutorialCrabDelay = nil
         onGuardedArrival = nil
@@ -1232,8 +1252,70 @@ final class KingCrabArena: ObservableObject {
 
     /// Takes over after the final answer: the King hops for the board he has
     /// just won, and runs off to the right while the shells stream up.
-    func beginLevelCompletion(reduceMotion: Bool, completion: @escaping () -> Void) {
-        guard completionElapsed == nil else { return }
+    ///
+    /// The session counts the winning answer the moment the last crab breaks
+    /// into its run, which is a good half-second before that crab reaches the
+    /// King. Celebrating there cut the run off mid-stride and ended the board on
+    /// a crab vanishing. So the finale waits: the crab walks in, bows, puts its
+    /// shell down — and only then does the King jump for it.
+    /// `started` fires at the moment the King actually begins to celebrate,
+    /// which is what the screen around the arena waits for: the sum and the HUD
+    /// belong to a round that is still finishing while the last crab walks.
+    func beginLevelCompletion(reduceMotion: Bool,
+                              started: @escaping () -> Void,
+                              completion: @escaping () -> Void) {
+        guard completionElapsed == nil, pendingCompletion == nil else { return }
+        if awaitsFinalDelivery {
+            // Nothing more can be answered, so the arena is closed to touches
+            // for the walk — but the crabs keep moving, and the sweep that
+            // takes the shell still runs.
+            isLive = false
+            pendingCompletion = (reduceMotion, started, completion)
+            pendingCompletionAge = 0
+            return
+        }
+        startLevelCompletion(reduceMotion: reduceMotion,
+                             started: started,
+                             completion: completion)
+    }
+
+    /// True while the crab that won the board still has its shell in its claws:
+    /// walking in, standing at the ring, or in the middle of handing it over.
+    private var awaitsFinalDelivery: Bool {
+        crabs.contains { crab in
+            guard crab.isCorrect, !crab.hasDelivered else { return false }
+            switch crab.phase {
+            case .waiting, .walking, .arrived:
+                return true
+            case .delivering:
+                // Up to the moment the shell is actually let go of. The dig it
+                // makes afterwards is its own business and may finish, or not,
+                // under the celebration.
+                return crab.phaseAge < ArenaConfig.deliverDuration
+                    * ArenaConfig.deliverGiveShare
+            case .hit, .smashed, .swept, .burrowing:
+                return false
+            }
+        }
+    }
+
+    /// Lets the held-back finale go once the shell is in the King's claws — or
+    /// once the wait has gone on long enough that something must have gone
+    /// wrong, which must never leave a player looking at a finished board.
+    private func releasePendingCompletionIfDue(_ dt: Double) {
+        guard let pending = pendingCompletion else { return }
+        pendingCompletionAge += dt
+        guard !awaitsFinalDelivery
+                || pendingCompletionAge >= ArenaConfig.finalDeliveryWait else { return }
+        pendingCompletion = nil
+        startLevelCompletion(reduceMotion: pending.reduceMotion,
+                             started: pending.started,
+                             completion: pending.callback)
+    }
+
+    private func startLevelCompletion(reduceMotion: Bool,
+                                      started: () -> Void,
+                                      completion: @escaping () -> Void) {
         isLive = false
         crabs.removeAll()
         carriers.removeAll()
@@ -1254,6 +1336,8 @@ final class KingCrabArena: ObservableObject {
         king.hasLeft = false
         king.sweepAge = nil
         if reduceMotion { placeKing(0) }
+        isCelebrating = true
+        started()
     }
 
     /// The finale is over as far as the session is concerned. He is deliberately
@@ -1261,6 +1345,8 @@ final class KingCrabArena: ObservableObject {
     func endLevelCompletion() {
         completionElapsed = nil
         completionCallback = nil
+        pendingCompletion = nil
+        isCelebrating = false
         celebration.removeAll()
         king.isCheering = false
         king.farewellAge = nil
@@ -1649,6 +1735,10 @@ final class KingCrabArena: ObservableObject {
         moveGrains(dt)
         moveShells(dt)
         moveKing(dt)
+
+        // Before anything else this frame: the board may have been won last
+        // frame, with the finale waiting on the last shell being handed over.
+        releasePendingCompletionIfDue(dt)
 
         if completionElapsed != nil {
             moveLevelCompletion(dt)
@@ -2076,9 +2166,11 @@ final class KingCrabArena: ObservableObject {
         onSweep?()
 
         // Wrong answers land first: they are what the King is being hit with,
-        // and the right answer is what he is left holding.
+        // and the right answer is what he is left holding. Two of them standing
+        // there are still one breach — what it costs is the session's to decide,
+        // and it charges for the sum rather than for the crab.
         var scored = false
-        for index in contenders where !crabs[index].isCorrect {
+        if contenders.contains(where: { !crabs[$0].isCorrect }) {
             onBreach?()
         }
         if let index = contenders.first(where: { crabs[$0].isCorrect }) {

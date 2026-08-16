@@ -34,6 +34,16 @@ nonisolated public struct MathQuestion: Equatable, Codable, Sendable {
         self.kind = kind
     }
 
+    /// The sum written out with its answer standing where the question mark
+    /// was: "7 × 8 = ?" reads back as "7 × 8 = 56". The blank is always exactly
+    /// where the answer belongs — including the equivalent-fraction prompts,
+    /// which ask for a numerator in the middle of the line — so this holds for
+    /// every kind of question the generator makes.
+    public var solved: String {
+        guard let blank = prompt.range(of: "?") else { return prompt }
+        return prompt.replacingCharacters(in: blank, with: correctAnswer)
+    }
+
     /// A question is only ever shown when this holds: a non-empty prompt, a
     /// non-empty answer, and distractors that are unique and all genuinely
     /// wrong. `QuestionGenerator` asserts this before handing a question out.

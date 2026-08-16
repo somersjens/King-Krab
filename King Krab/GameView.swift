@@ -86,6 +86,10 @@ struct GameView: View {
     /// A completed board gets one last moment in the arena before its result
     /// card appears. Other endings (no lives, or leaving) remain immediate.
     @State private var playsLevelCompletion = false
+    /// The King's celebration has actually begun. It trails `playsLevelCompletion`
+    /// by however long the crab carrying the winning answer still needs to walk
+    /// its shell in — the HUD belongs to that walk, not to the card after it.
+    @State private var showsFinale = false
     @State private var showsResult = false
     /// Whether pressing Start will run the walkthrough. Armed from the menu for
     /// a brand-new player, and toggled by the cap button on the start card.
@@ -133,6 +137,7 @@ struct GameView: View {
                            onPlayAgain: {
                                showsResult = false
                                playsLevelCompletion = false
+                               showsFinale = false
                                Task {
                                    await model.restart()
                                    // A won board ends with the King running off
@@ -198,6 +203,7 @@ struct GameView: View {
             guard isOver else {
                 showsResult = false
                 playsLevelCompletion = false
+                showsFinale = false
                 return
             }
             if model.result.reason == .roundsCompleted {
@@ -267,6 +273,7 @@ struct GameView: View {
 
         return ZStack(alignment: .top) {
             KingCrabPlayfield(round: model.round,
+                              missedSum: model.missedSum,
                               maximumRounds: model.maximumRounds,
                               character: character,
                               isPad: isPad,
@@ -291,6 +298,7 @@ struct GameView: View {
                               onBonusCrabCaught: model.catchBonusFish,
                               onLifeCrabArrived: model.catchLifeCrab,
                               onKingEntranceComplete: finishKingEntrance,
+                              onLevelCompletionStarted: { showsFinale = true },
                               onLevelCompletionFinished: finishLevelCompletion,
                               onTutorialEvent: tutorial.handle)
 
@@ -298,14 +306,16 @@ struct GameView: View {
                 .padding(.leading, max(isPad ? 28 : 16, screenInsets.leading + 12))
                 .padding(.trailing, max(isPad ? 28 : 16, screenInsets.trailing + 12))
                 .padding(.top, topInset + (isPad ? 12 : 6))
-                .opacity(playsLevelCompletion ? 0 : 1)
-                .animation(.easeOut(duration: 0.22), value: playsLevelCompletion)
+                // Stays for the last crab's walk: the shell it is carrying is
+                // still on its way up to this counter.
+                .opacity(showsFinale ? 0 : 1)
+                .animation(.easeOut(duration: 0.22), value: showsFinale)
                 .allowsHitTesting(!playsLevelCompletion)
 
             // The walkthrough speaks from just under the sum, in the water the
             // arena keeps free for it while a plan is running. It never takes a
             // touch: every crab stays tappable while a step is being read.
-            if let message = tutorial.message, !playsLevelCompletion {
+            if let message = tutorial.message, !showsFinale {
                 TutorialMessageCard(text: message, theme: character, isPad: isPad)
                     .padding(.horizontal, max(isPad ? 28 : 14, screenInsets.leading + 12))
                     .padding(.top, topInset + (isPad ? 66 : 50)
