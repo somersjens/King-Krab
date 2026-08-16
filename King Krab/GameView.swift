@@ -596,6 +596,9 @@ struct LevelWallpaper: View {
             }
         }
         .foregroundStyle(tint.opacity(0.10))
+        // Flatten ~100 Text tiles into one layer so the playfield does not
+        // composite them under every crab redraw.
+        .drawingGroup(opaque: false)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

@@ -937,7 +937,7 @@ private struct CompletionFern: View {
             // and then costs nothing — which matters because the menu can show
             // dozens of completed levels, each carrying two of these.
             if let revealStartedAt {
-                TimelineView(.animation) { context in
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
                     fern(at: max(0, context.date.timeIntervalSince(revealStartedAt)))
                 }
             } else {
@@ -1175,7 +1175,7 @@ struct CountingNumber: View {
             // change, so the settled value is rendered as a plain, static view
             // and the whole screen stops redrawing at 120 Hz while idle.
             if let startedAt {
-                TimelineView(.animation) { context in
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
                     numeral(at: context.date.timeIntervalSince(startedAt))
                 }
             } else {
@@ -1460,7 +1460,7 @@ struct CardFlightView: View {
     let flight: CardFlight
 
     var body: some View {
-        TimelineView(.animation) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
             let elapsed = max(0, context.date.timeIntervalSince(flight.startedAt))
             let t = min(1, elapsed / flight.duration)
             // Ease progress along the path; keep the arc keyed to raw `t` so the
@@ -1496,7 +1496,7 @@ struct LevelReturnFocusGlow: View {
     let glowColor: Color
 
     var body: some View {
-        TimelineView(.animation) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
             let elapsed = max(0, context.date.timeIntervalSince(startedAt))
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(strokeColor, lineWidth: lineWidth)

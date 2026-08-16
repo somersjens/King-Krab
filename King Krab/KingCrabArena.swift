@@ -62,18 +62,29 @@ struct ScreenSafeArea: Equatable {
 /// Gameplay, taps and arrivals always retain their full step; only effects that
 /// do not carry information become a little sparser.
 enum ArenaPerformanceBudget {
-    static let isConstrained: Bool = {
+    /// Re-checked each use so Low Power Mode and thermal pressure can tighten
+    /// the budget mid-session without waiting for a relaunch.
+    static var isConstrained: Bool {
         ProcessInfo.processInfo.physicalMemory < 4_000_000_000
             || ProcessInfo.processInfo.isLowPowerModeEnabled
-    }()
+            || ProcessInfo.processInfo.thermalState.rawValue
+                >= ProcessInfo.ThermalState.serious.rawValue
+    }
 
-    static let moteCount = isConstrained ? 10 : 16
-    static let maximumAmbientBubbles = isConstrained ? 10 : 18
-    static let grainsPerBurst = isConstrained ? 7 : 12
-    static let celebrationInterval = isConstrained ? 0.10 : 0.065
-    /// Scenery sway: 20 Hz normally, 12 Hz where the frame budget is tightest.
-    static let swayInterval = isConstrained ? 1.0 / 12.0 : 1.0 / 20.0
-    static let driftInterval = isConstrained ? 1.0 / 4.0 : 1.0 / 6.0
+    static var moteCount: Int { isConstrained ? 10 : 16 }
+    static var maximumAmbientBubbles: Int { isConstrained ? 10 : 18 }
+    static var grainsPerBurst: Int { isConstrained ? 5 : 10 }
+    /// Hard ceiling on live sand grains so a multi-crab burrow cannot flood the
+    /// effects canvas. Footfalls skip when the budget is already spent.
+    static var maximumLiveGrains: Int { isConstrained ? 36 : 56 }
+    static var celebrationInterval: Double { isConstrained ? 0.10 : 0.065 }
+    static var celebrationSpeckCap: Int { isConstrained ? 48 : 90 }
+    /// Cap the display link itself. ProMotion 120 Hz doubles SwiftUI crab
+    /// rebuilds for almost no visual gain on this scene.
+    static var preferredFramesPerSecond: Int { isConstrained ? 45 : 60 }
+    /// Scenery sway: 16 Hz normally, 10 Hz where the frame budget is tightest.
+    static var swayInterval: Double { isConstrained ? 1.0 / 10.0 : 1.0 / 16.0 }
+    static var driftInterval: Double { isConstrained ? 1.0 / 4.0 : 1.0 / 6.0 }
 }
 
 /// Every tunable number of the arena, kept together the way `GameConfig` keeps
@@ -320,21 +331,21 @@ enum ArenaConfig {
     static let ambientBubbleGap: ClosedRange<Double> = 0.32...0.72
     static let ambientBubbleSpeed: ClosedRange<CGFloat> = 28...54
     static let ambientBubbleRadius: ClosedRange<CGFloat> = 3.5...9
-    static let maximumAmbientBubbles = ArenaPerformanceBudget.maximumAmbientBubbles
+    static var maximumAmbientBubbles: Int { ArenaPerformanceBudget.maximumAmbientBubbles }
     static let ambientBubblePopDuration = 0.24
 
-    static let moteCount = ArenaPerformanceBudget.moteCount
+    static var moteCount: Int { ArenaPerformanceBudget.moteCount }
     static let moteSpeed: ClosedRange<CGFloat> = 8...22
     static let moteRadius: ClosedRange<CGFloat> = 1.5...4.5
 
     /// How often the swaying scenery is re-sampled. Coral and plants breathe at
-    /// well under 1.2 Hz, so a fresh position 20 times a second is already
+    /// well under 1.2 Hz, so a fresh position ~16 times a second is already
     /// smoother than the eye can follow — while a full 60 Hz rebuild of that
     /// whole sea floor is by far the most expensive thing in the frame.
-    static let swayInterval = ArenaPerformanceBudget.swayInterval
+    static var swayInterval: Double { ArenaPerformanceBudget.swayInterval }
     /// The sun shafts drift on a 35-second cycle and are the one full-screen
-    /// blur in the scene, so they are re-sampled far more sparingly still.
-    static let driftInterval = ArenaPerformanceBudget.driftInterval
+    /// soft layer in the scene, so they are re-sampled far more sparingly still.
+    static var driftInterval: Double { ArenaPerformanceBudget.driftInterval }
 
     /// Simulation step used where no display link is available.
     static let tick = 1.0 / 60.0
@@ -1010,9 +1021,9 @@ final class KingCrabArena: ObservableObject {
             // Small upper bounds, reserving capacity only; they do not create
             // or draw a single additional object.
             crabs.reserveCapacity(GameConfig.answerBubbleCount)
-            grains.reserveCapacity(ArenaPerformanceBudget.grainsPerBurst * 4)
+            grains.reserveCapacity(ArenaPerformanceBudget.maximumLiveGrains)
             ambientBubbles.reserveCapacity(ArenaConfig.maximumAmbientBubbles)
-            celebration.reserveCapacity(ArenaPerformanceBudget.isConstrained ? 60 : 110)
+            celebration.reserveCapacity(ArenaPerformanceBudget.celebrationSpeckCap)
         }
         seedMotes()
     }
@@ -1154,16 +1165,14 @@ final class KingCrabArena: ObservableObject {
             lastFrameTargetTimestamp = nil
             let link = CADisplayLink(target: displayLinkTarget,
                                      selector: #selector(DisplayLinkTarget.advance(_:)))
-            let currentScreen = UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .first?.screen
-            let maximumFPS = ArenaPerformanceBudget.isConstrained
-                ? 60
-                : max(60, currentScreen?.maximumFramesPerSecond ?? 60)
+            // Never chase ProMotion 120 Hz: every tick publishes `clock` and
+            // rebuilds every crab. 60 FPS (45 under pressure) is smooth enough
+            // and halves the SwiftUI cost on modern phones.
+            let fps = Float(ArenaPerformanceBudget.preferredFramesPerSecond)
             link.preferredFrameRateRange = CAFrameRateRange(
-                minimum: 60,
-                maximum: Float(maximumFPS),
-                preferred: Float(maximumFPS)
+                minimum: max(30, fps - 15),
+                maximum: fps,
+                preferred: fps
             )
             link.add(to: .main, forMode: .common)
             displayLink = link
@@ -2142,7 +2151,9 @@ final class KingCrabArena: ObservableObject {
         let dy = target.y - origin.y
         let span = max(kingSize * 0.5, hypot(dx, dy))
         let heading = atan2(Double(dy), Double(dx))
-        let count = max(16, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 3.8))
+        let room = ArenaPerformanceBudget.maximumLiveGrains - grains.count
+        guard room > 0 else { return }
+        let count = min(room, max(12, Int(Double(ArenaPerformanceBudget.grainsPerBurst) * 3.2)))
         for _ in 0..<count {
             let angle = heading + Double.random(in: -0.26...0.26)
             let speed = span / CGFloat(ArenaConfig.sandFlightDuration)
@@ -2170,13 +2181,18 @@ final class KingCrabArena: ObservableObject {
     /// consequences are applied afterwards, one by one.
     private func resolveSweepIfDue(_ dt: Double) {
         guard var remaining = sweepGather else { return }
-        // Hold the gather while any unanswered crab is still on its way. Early
-        // arrivals wait at the ring; the blow only lands once the rest of the
-        // live wave has joined them — so one sweep clears them all.
-        let stillApproaching = crabs.contains {
-            !$0.hasAnswered && ($0.phase == .waiting || $0.phase == .walking)
+        // Hold the gather while careful crabs of this wave are still en route,
+        // so early arrivals share one sweep. A rushing crab — the lone right
+        // answer running in after the rest were cleared — answers on its own
+        // clock and must not wait for a later wave. Same for a crab the
+        // session has already credited: it is only there to hand the shell over.
+        let carefulStillComing = crabs.contains {
+            !$0.hasAnswered
+                && !$0.isRushing
+                && ($0.phase == .waiting || $0.phase == .walking)
         }
-        if stillApproaching { return }
+        let creditedAtRing = crabs.contains { $0.phase == .arrived && $0.hasAnswered }
+        if carefulStillComing && !creditedAtRing { return }
 
         remaining -= dt
         guard remaining <= 0 else {
@@ -2540,7 +2556,9 @@ final class KingCrabArena: ObservableObject {
     /// `drift` throws the whole puff one way, for sand that is being kicked
     /// backwards by something moving rather than knocked straight up.
     private func burst(at point: CGPoint, strength: CGFloat, drift: CGFloat = 0) {
-        let count = max(3, Int(CGFloat(ArenaPerformanceBudget.grainsPerBurst) * strength))
+        let room = ArenaPerformanceBudget.maximumLiveGrains - grains.count
+        guard room > 0 else { return }
+        let count = min(room, max(3, Int(CGFloat(ArenaPerformanceBudget.grainsPerBurst) * strength)))
         for _ in 0..<count {
             let angle = Double.random(in: -Double.pi ... 0)
             let speed = CGFloat.random(in: 60...190) * strength
@@ -2570,7 +2588,12 @@ final class KingCrabArena: ObservableObject {
     /// floor in the same alternating rhythm the legs step in.
     private func scuff(at point: CGPoint, bodyWidth: CGFloat,
                        facing: CGFloat, nearFoot: Bool) {
-        let count = ArenaPerformanceBudget.isConstrained ? 3 : 5
+        let room = ArenaPerformanceBudget.maximumLiveGrains - grains.count
+        // Footfall scuffs are the first thing to drop when the canvas is full:
+        // a walking wave without sand kicks is still readable; a flooded
+        // effects pass is not.
+        guard room > 0 else { return }
+        let count = min(room, ArenaPerformanceBudget.isConstrained ? 2 : 3)
         let heel = CGPoint(
             x: point.x - facing * bodyWidth * (nearFoot ? 0.34 : 0.24),
             y: point.y + bodyWidth
@@ -2670,8 +2693,8 @@ final class KingCrabArena: ObservableObject {
     private func moveAmbientBubbles(_ dt: Double) {
         for index in ambientBubbles.indices {
             ambientBubbles[index].age += dt
-            if ambientBubbles[index].popAge != nil {
-                ambientBubbles[index].popAge! += dt
+            if let popAge = ambientBubbles[index].popAge {
+                ambientBubbles[index].popAge = popAge + dt
                 continue
             }
             ambientBubbles[index].position.y -= ambientBubbles[index].speed * CGFloat(dt)
@@ -2720,7 +2743,8 @@ final class KingCrabArena: ObservableObject {
     }
 
     private func spawnCelebrationSpeck() {
-        guard size.width > 0 else { return }
+        guard size.width > 0,
+              celebration.count < ArenaPerformanceBudget.celebrationSpeckCap else { return }
         let x = CGFloat.random(in: 0...size.width)
         celebration.append(CelebrationSpeck(
             position: CGPoint(x: x, y: arena.maxY + 10),

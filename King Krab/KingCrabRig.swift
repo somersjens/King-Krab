@@ -466,13 +466,14 @@ struct RiggedCharacterView<Carried: View>: View {
     private func legs(_ limb: CharacterRigLimb, side: CGFloat, degrees: Double) -> some View {
         if let run = rig.legRun {
             // Back of the run first, which is the order the artwork lays the
-            // legs over each other in.
-            ForEach(Array(run.legs.enumerated()).reversed(), id: \.offset) { leg in
+            // legs over each other in. Indices only — no per-frame Array copy.
+            ForEach(0..<run.legs.count, id: \.self) { reverseIndex in
+                let index = run.legs.count - 1 - reverseIndex
                 self.limb(limb,
                           degrees: degrees * LegRun.hipShare
-                              + run.degrees(leg: leg.offset,
+                              + run.degrees(leg: index,
                                             stride: pose.stride, side: side),
-                          drawing: leg.element)
+                          drawing: run.legs[index])
             }
         } else {
             self.limb(limb, degrees: degrees)

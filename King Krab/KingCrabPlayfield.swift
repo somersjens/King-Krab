@@ -672,12 +672,22 @@ private struct KingCrabView: View {
             // A soft shadow welds him to the sand rather than leaving him
             // hovering over it. It stays on the floor while he hops, and
             // shrinks with the height, which is the whole of what makes a jump
-            // read as leaving the ground.
+            // read as leaving the ground. Radial fill — not `.blur` — so the
+            // King does not pay an offscreen pass every frame.
             Ellipse()
-                .fill(palette.sandDeep.opacity(0.34 * shadowFade))
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            palette.sandDeep.opacity(0.36 * Double(shadowFade)),
+                            palette.sandDeep.opacity(0)
+                        ],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: max(1, size * 0.42 * shadowFade)
+                    )
+                )
                 .frame(width: size * 0.82 * shadowFade, height: size * 0.19 * shadowFade)
                 .offset(y: size * groundDrop + king.lift)
-                .blur(radius: 5)
 
             if let sweep, sweep < 1 {
                 shockwave(progress: sweep)
@@ -703,7 +713,9 @@ private struct KingCrabView: View {
     private var figure: some View {
         if let rig = character.rig {
             RiggedCharacterView(rig: rig, pose: pose, size: size)
-                .shadow(color: palette.coralDeep.opacity(0.24), radius: 7, y: 5)
+                // Contact ellipse already grounds him; keep only a light rim
+                // shadow so the figure stays cheap to composite every frame.
+                .shadow(color: palette.coralDeep.opacity(0.16), radius: 2, y: 1)
         } else {
             character.artwork
                 .resizable()
@@ -712,7 +724,7 @@ private struct KingCrabView: View {
                 .overlay(alignment: .top) { crown }
                 .rotationEffect(.degrees(lean))
                 .scaleEffect(pulse)
-                .shadow(color: palette.coralDeep.opacity(0.24), radius: 7, y: 5)
+                .shadow(color: palette.coralDeep.opacity(0.16), radius: 2, y: 1)
         }
     }
 
@@ -1325,13 +1337,23 @@ private struct ContactShadow: View {
         // weaker. Anything more separates the two.
         let tight = max(0.62, 1 - lift / max(1, bodyWidth * 0.14))
         let strength = fade * tight
+        let width = bodyWidth * 1.26 * strength
+        let height = bodyWidth * 0.30 * strength
+        // Soft radial fill instead of `.blur`: blur forces an offscreen pass
+        // per walking crab every display frame, which was the main GPU tax.
         return Ellipse()
-            .fill(palette.sandDeep.opacity(0.38 * Double(strength)))
-            // Wider than the shell: what is standing on the sand is the spread
-            // of legs, not the body they are carrying.
-            .frame(width: bodyWidth * 1.26 * strength,
-                   height: bodyWidth * 0.30 * strength)
-            .blur(radius: 3.5)
+            .fill(
+                RadialGradient(
+                    colors: [
+                        palette.sandDeep.opacity(0.40 * Double(strength)),
+                        palette.sandDeep.opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: max(1, width * 0.52)
+                )
+            )
+            .frame(width: width, height: height)
             .offset(x: CGFloat(sin(roll * .pi / 180)) * bodyWidth * 0.16,
                     y: footLine)
     }
@@ -1374,7 +1396,7 @@ private struct AnswerShell: View {
                     AnswerShellShape()
                         .stroke(rim, lineWidth: isPad ? 3.5 : 2.6)
                 }
-                .shadow(color: .black.opacity(0.20), radius: 4, y: 3)
+                .shadow(color: .black.opacity(0.16), radius: 2, y: 1)
 
             Text(verbatim: text)
                 .font(.system(size: height * 0.46, weight: .black, design: .rounded))
@@ -1565,7 +1587,7 @@ private struct CarrierCrabView: View {
                 .opacity(carrier.isCarryingReward ? 1 : 0)
         }
         .scaleEffect(x: carrier.facing < 0 ? -1 : 1, y: 1)
-        .shadow(color: palette.coralDeep.opacity(0.22), radius: 5, y: 4)
+        .shadow(color: palette.coralDeep.opacity(0.14), radius: 2, y: 1)
 
         return ZStack {
             ContactShadow(bodyWidth: carrier.bodyWidth,
@@ -2501,19 +2523,25 @@ private struct CelebrationCanvas: View {
         let rect = CGRect(x: speck.position.x - radius, y: speck.position.y - radius,
                           width: radius * 2, height: radius * 2)
         let path = Path(ellipseIn: rect)
-        context.fill(
-            path,
-            with: .radialGradient(
-                Gradient(colors: [.white.opacity(0.42),
-                                  palette.waterTop.opacity(0.22),
-                                  .white.opacity(0.16)]),
-                // `.topLeading` of the bubble's own box, as the gradient was
-                // anchored when each speck had a frame to be relative to.
-                center: CGPoint(x: rect.minX, y: rect.minY),
-                startRadius: 1,
-                endRadius: radius * 1.4
+        // Radial gradients per speck dominate the finale pass; under pressure
+        // a flat fill keeps the shower readable without the GPU tax.
+        if ArenaPerformanceBudget.isConstrained {
+            context.fill(path, with: .color(.white.opacity(0.34)))
+        } else {
+            context.fill(
+                path,
+                with: .radialGradient(
+                    Gradient(colors: [.white.opacity(0.42),
+                                      palette.waterTop.opacity(0.22),
+                                      .white.opacity(0.16)]),
+                    // `.topLeading` of the bubble's own box, as the gradient was
+                    // anchored when each speck had a frame to be relative to.
+                    center: CGPoint(x: rect.minX, y: rect.minY),
+                    startRadius: 1,
+                    endRadius: radius * 1.4
+                )
             )
-        )
+        }
         context.stroke(path, with: .color(.white.opacity(0.48)),
                        lineWidth: max(1, speck.radius * 0.09))
     }

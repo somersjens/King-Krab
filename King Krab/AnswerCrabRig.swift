@@ -316,11 +316,14 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// puts it rather than being carried about by the shell over it.
     private func legs(_ limb: AnswerCrabRig.Limb, side: CGFloat) -> some View {
         let run = rig.legRun
+        // Fixed indices, back of the run first — avoids allocating
+        // `Array(...enumerated()).reversed()` on every body rebuild.
         return ZStack {
-            ForEach(Array(run.legs.enumerated()).reversed(), id: \.offset) { leg in
-                self.limb(limb, drawing: leg.element)
+            ForEach(0..<run.legs.count, id: \.self) { reverseIndex in
+                let index = run.legs.count - 1 - reverseIndex
+                self.limb(limb, drawing: run.legs[index])
                     .rotationEffect(
-                        .degrees(run.degrees(leg: leg.offset,
+                        .degrees(run.degrees(leg: index,
                                              stride: stepPhase, side: side)),
                         anchor: limb.joint
                     )

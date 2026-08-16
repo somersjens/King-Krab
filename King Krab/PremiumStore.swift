@@ -63,6 +63,7 @@ final class PremiumStore: ObservableObject {
     /// came from an App Store promotion that has just been approved by an adult.
     func purchase(_ promotedProduct: Product? = nil) async {
         guard !isPurchasing else { return }
+        lastError = nil
         if promotedProduct == nil, product == nil { await refresh() }
         guard let product = promotedProduct ?? product else {
             lastError = L("premium.storeUnavailable")
@@ -90,8 +91,13 @@ final class PremiumStore: ObservableObject {
     }
 
     func restorePurchases() async {
-        try? await AppStore.sync()
-        await updateEntitlement()
+        lastError = nil
+        do {
+            try await AppStore.sync()
+            await updateEntitlement()
+        } catch {
+            lastError = error.localizedDescription
+        }
     }
 
     private func updateEntitlement() async {

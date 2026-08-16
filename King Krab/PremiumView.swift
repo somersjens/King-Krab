@@ -407,6 +407,8 @@ struct PremiumView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(premium.isPurchasing)
+                .accessibilityIdentifier("premium-purchase")
+                .accessibilityLabel(Text(verbatim: purchaseButtonTitle))
 
                 Text("premium.oneTime")
                     .font(isPad ? .system(size: 20) : .subheadline)
