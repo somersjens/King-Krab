@@ -332,10 +332,15 @@ enum ArenaConfig {
 /// recognisably theirs while both read as an underwater sea floor.
 struct ReefPalette: Equatable {
     let character: AnimalCharacter
+    /// The sea floor's own colours and taste, before the character is mixed in.
+    /// One row per character — see `ReefTheme`, which is where an animal is
+    /// given its own reef.
+    let theme: ReefTheme
 
-    /// The character decides every colour in here, so it is the whole of the
-    /// comparison. This is what lets the scenery views be `Equatable` on their
-    /// palette and skip a rebuild they would only redraw identically.
+    /// The character decides every colour in here — the theme is looked up from
+    /// it — so it is the whole of the comparison. This is what lets the scenery
+    /// views be `Equatable` on their palette and skip a rebuild they would only
+    /// redraw identically.
     static func == (lhs: ReefPalette, rhs: ReefPalette) -> Bool {
         lhs.character == rhs.character
     }
@@ -389,14 +394,15 @@ struct ReefPalette: Equatable {
     private let accents: [Color]
     private let accentsDeep: [Color]
 
-    var plant: Color { Self.plantColor }
-    var plantLight: Color { Self.plantLightColor }
-
-    private static let plantColor = Color(red: 0.18, green: 0.56, blue: 0.34)
-    private static let plantLightColor = Color(red: 0.43, green: 0.72, blue: 0.30)
+    /// The greens the grass and the weed are drawn in. They come from the
+    /// theme, so a reef can be given its own planting alongside its own coral.
+    let plant: Color
+    let plantLight: Color
 
     init(character: AnimalCharacter) {
+        let theme = ReefTheme.theme(for: character.id)
         self.character = character
+        self.theme = theme
         waterTop = Self.mix(character.skyRGB, Self.surface, 0.72)
         waterDeep = Self.mix(character.primaryRGB, Self.depth, 0.85)
         sand = Self.mix(character.tintRGB, Self.sandTone, 0.72)
@@ -408,11 +414,17 @@ struct ReefPalette: Equatable {
         sandSunlit = Self.mix(character.tintRGB, Self.sandSunTone, 0.86)
         coral = character.color
         coralDeep = character.deepColor
-        rock = Self.mix((0.52, 0.57, 0.66), character.primaryRGB, 0.18)
-        rockDeep = Self.mix((0.31, 0.36, 0.46), character.deepRGB, 0.18)
-        accents = Self.reefHues.map { Self.mix($0, character.primaryRGB, 0.26) }
-        accentsDeep = Self.reefHues.map {
-            Self.mix(Self.mix3($0, 0.62), character.deepRGB, 0.24)
+        rock = Self.mix(theme.rock, character.primaryRGB, theme.rockPull)
+        rockDeep = Self.mix(theme.rockDeep, character.deepRGB, theme.rockPull)
+        plant = Color(red: theme.plant.0, green: theme.plant.1, blue: theme.plant.2)
+        plantLight = Color(red: theme.plantLight.0,
+                           green: theme.plantLight.1,
+                           blue: theme.plantLight.2)
+        accents = theme.accents.map {
+            Self.mix($0, character.primaryRGB, theme.accentPull)
+        }
+        accentsDeep = theme.accents.map {
+            Self.mix(Self.mix3($0, 0.62), character.deepRGB, theme.accentPull - 0.02)
         }
     }
 
@@ -431,23 +443,20 @@ struct ReefPalette: Equatable {
         return palette
     }
 
-    /// A real reef is not one colour. These are the garden's own hues, each
-    /// pulled a quarter of the way toward the character's, so a fox reef and a
-    /// penguin reef are still recognisably theirs while both stay a reef.
-    private static let reefHues: [(Double, Double, Double)] = [
-        (0.86, 0.30, 0.62),   // magenta fan
-        (0.98, 0.53, 0.18),   // orange branch
-        (0.56, 0.36, 0.86),   // violet finger
-        (0.20, 0.71, 0.73),   // teal cup
-        (0.97, 0.42, 0.47)    // rose bud
-    ]
-
     func reefAccent(_ index: Int) -> Color {
         accents[abs(index) % accents.count]
     }
 
     func reefAccentDeep(_ index: Int) -> Color {
         accentsDeep[abs(index) % accentsDeep.count]
+    }
+
+    /// Which growth a scenery slot actually draws. The layouts ask for a style
+    /// by index — 0 fan, 1 branch, 2 tubes, 3 cups — and the theme is allowed
+    /// to send it somewhere else, so a reef can be *the tube reef* without a
+    /// single coral being moved. The classic map is the identity.
+    func growth(_ style: Int) -> Int {
+        theme.growthMap[abs(style) % theme.growthMap.count]
     }
 
     /// Darkens a hue toward its own shadow.

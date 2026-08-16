@@ -2685,16 +2685,33 @@ private struct DepthVignette: View, Equatable {
 /// the way the sand under them already has.
 private struct DistanceHaze: View, Equatable {
     let palette: ReefPalette
+    /// How much of the frame is the water *above* the crest, as a share of it.
+    ///
+    /// The far bank grows up out of the crest into that water, and it is every
+    /// bit as far away as the sand it stands on — so the haze has to reach up
+    /// over it. Stopping at the crest instead drew a horizontal step in alpha
+    /// straight across the middle of the stones, which is the one line this
+    /// whole sea floor is built to not have.
+    let headroom: CGFloat
 
     var body: some View {
         LinearGradient(stops: [
-            .init(color: palette.waterFloor.opacity(0.34), location: 0),
-            .init(color: palette.waterFloor.opacity(0.22), location: 0.09),
-            .init(color: palette.waterFloor.opacity(0.07), location: 0.18),
-            .init(color: palette.waterFloor.opacity(0), location: 0.28)
+            // Up in open water there is nothing to lose contrast to, so the
+            // haze fades out rather than ending on an edge of its own.
+            .init(color: palette.waterFloor.opacity(0), location: 0),
+            .init(color: palette.waterFloor.opacity(0.30), location: headroom * 0.62),
+            .init(color: palette.waterFloor.opacity(0.34), location: headroom),
+            .init(color: palette.waterFloor.opacity(0.22), location: bed(0.09)),
+            .init(color: palette.waterFloor.opacity(0.07), location: bed(0.18)),
+            .init(color: palette.waterFloor.opacity(0), location: bed(0.28))
         ], startPoint: .top, endPoint: .bottom)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
+    }
+
+    /// A depth into the sand bed, as a location in this frame.
+    private func bed(_ depth: CGFloat) -> CGFloat {
+        headroom + (1 - headroom) * depth
     }
 }
 
@@ -2750,8 +2767,7 @@ private struct DistantWeeds: View, Equatable {
                 // screen, which is where the sea floor has fallen furthest
                 // away from its middle — root them all at the crest and they
                 // hang in open water.
-                let fromMiddle = pow(abs(blade.0 - 0.5) * 2, 1.4)
-                let root = crest + bed * sandCrestDrop * fromMiddle + bed * 0.008
+                let root = crest + bed * sandCrestShare(atX: blade.0) + bed * 0.008
                 let top = root - reach * blade.1
                 let x = size.width * blade.0
                 let width = max(2, size.width * 0.010 * blade.5)
@@ -2908,6 +2924,9 @@ private struct ArenaFloor: View, Equatable {
         GeometryReader { proxy in
             let size = proxy.size
             let sandHeight = max(140, size.height - crest)
+            // The water above the crest that the side banks climb into, and
+            // that the haze therefore has to reach over.
+            let bankRise = ReefBanks.rise(crest: crest, width: size.width, isPad: isPad)
             // The whole floor leans with the water, by a hand's width at most,
             // and each layer by less than the one in front of it. There is no
             // camera to move, so this is where the scene's depth comes from:
@@ -2936,6 +2955,17 @@ private struct ArenaFloor: View, Equatable {
                     .frame(height: sandHeight)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
+                // The two banks the reef climbs at the sides. They go in before
+                // the nearer scenery and well before the haze, so the whole
+                // wedge sits back in the water the way the sand behind it does.
+                // Its frame reaches well past the crest, because most of a
+                // bank is above the sand it stands on.
+                ReefBanks(palette: palette, isPad: isPad,
+                          rise: bankRise, clock: clock)
+                    .frame(height: sandHeight + bankRise)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .offset(x: drift * 0.8)
+
                 // Stones with their own planting growing out from between them.
                 SeaGardens(palette: palette, isPad: isPad, clock: clock)
                     .frame(height: sandHeight)
@@ -2949,10 +2979,12 @@ private struct ArenaFloor: View, Equatable {
                     .offset(x: drift * 2.5)
 
                 // Everything above this line is far away, and the water it is
-                // seen through takes its edge off — the far reef included.
-                DistanceHaze(palette: palette)
+                // seen through takes its edge off — the far reef included, and
+                // the part of the far bank that stands up above the crest.
+                DistanceHaze(palette: palette,
+                             headroom: bankRise / (sandHeight + bankRise))
                     .equatable()
-                    .frame(height: sandHeight)
+                    .frame(height: sandHeight + bankRise)
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
                 // The light comes last of the far layers, so it falls across
@@ -2962,6 +2994,25 @@ private struct ArenaFloor: View, Equatable {
                 SandLight(palette: palette, isPad: isPad,
                           sunShare: sunShare, clock: clock)
                     .frame(height: sandHeight)
+                    // The sun's pool is far wider than the band it is drawn
+                    // in, so a canvas the height of the sand cuts the top of
+                    // it off square: a straight line of light lying across the
+                    // floor at the crest, which the boulders on the banks run
+                    // straight through. Fading the first tenth of the band
+                    // takes the cut away, and costs nothing — the far sand up
+                    // there is under the haze anyway.
+                    //
+                    // The mask goes on *here*, while the view is still the
+                    // band. Put it after the full-height frame below and the
+                    // gradient spans the whole screen, which fades the HUD's
+                    // worth of empty water and leaves the cut exactly where it
+                    // was.
+                    .mask {
+                        LinearGradient(stops: [
+                            .init(color: .clear, location: 0),
+                            .init(color: .white, location: 0.10)
+                        ], startPoint: .top, endPoint: .bottom)
+                    }
                     .frame(maxHeight: .infinity, alignment: .bottom)
 
                 // The near corners are *not* here: they are the closest thing
@@ -3078,6 +3129,23 @@ private let sandBedTop: CGFloat = sandCrestDrop + 0.012
 /// agrees about where the sand is.
 private let sandCrestDrop: CGFloat = 0.055
 
+/// How far below the top of the sand bed the crest actually lies at one x, as
+/// a share of the bed's height.
+///
+/// The single most useful number on this floor. The crest is a curve, so the
+/// sand starts lower at the edges than it does in the middle — by the better
+/// part of a rock's height at the very corners. Anything rooted at a flat
+/// distance from the top of the bed is therefore *in the sand* in the middle
+/// of the screen and *hanging in open water* at the sides, which is the one
+/// mistake on this floor the eye catches instantly. Every plant, stone and
+/// coral that has to stand on the sea floor roots itself through here.
+private func sandCrestShare(atX x: CGFloat) -> CGFloat {
+    // Matches `addSandCrest`: flat-topped through the middle, falling away
+    // toward both corners, with the right-hand one a hair higher than the left.
+    let fromMiddle = pow(abs(x - 0.5) * 2, 1.4)
+    return sandCrestDrop * fromMiddle * (x > 0.5 ? 0.88 : 1)
+}
+
 /// Traces the crest from the left corner to the right one.
 private func addSandCrest(to path: inout Path, in rect: CGRect) {
     let w = rect.width
@@ -3166,12 +3234,10 @@ private struct SandRelief: View, Equatable {
         (0, 0, 1.00), (0.85, 0.34, 0.62), (-0.62, 0.42, 0.48), (0.30, -0.55, 0.40)
     ]
 
-    /// Shells lying half in the sand: x, y, scale.
-    private static let shells: [(CGFloat, CGFloat, CGFloat)] = [
-        (0.145, 0.62, 0.80), (0.330, 0.86, 0.66), (0.545, 0.36, 0.72),
-        (0.700, 0.68, 0.62), (0.845, 0.16, 0.78), (0.905, 0.72, 0.68),
-        (0.430, 0.12, 0.60)
-    ]
+    // No shells lie on this sand. The shell is the game's *currency* — it is
+    // the thing that flies to the counter when an answer is right — and the
+    // same glyph scattered across the floor reads as money nobody is allowed
+    // to pick up. Everything decorative down here is stone, star or growth.
 
     /// Loose starfish, away from the ones lying against the garden stones.
     private static let starfish: [(CGFloat, CGFloat, CGFloat)] = [
@@ -3322,17 +3388,6 @@ private struct SandRelief: View, Equatable {
             }
         }
 
-        for shell in Self.shells {
-            let side = base * shell.2
-            let rect = CGRect(x: size.width * shell.0 - side / 2,
-                              y: size.height * shell.1 - side / 2,
-                              width: side, height: side)
-            context.fill(ShellShape().path(in: rect),
-                         with: .color(palette.sandDeep.opacity(0.62)))
-            context.stroke(ShellShape().path(in: rect),
-                           with: .color(.white.opacity(0.35)), lineWidth: 1)
-        }
-
         for star in Self.starfish {
             let side = base * star.2 * 1.25
             let rect = CGRect(x: size.width * star.0 - side / 2,
@@ -3478,6 +3533,406 @@ private struct SandLight: View {
     }
 }
 
+// MARK: - The banks
+
+/// The two banks the reef climbs at the sides of the arena.
+///
+/// A reef does not lie flat. It builds up where the water works hardest, and
+/// what that looks like from inside it is a wall of rock and coral rising at
+/// both hands with open water down the middle. That is also exactly the
+/// composition this game needs: the middle has to stay the clear channel the
+/// sum, the King and every answer being carried in are read against.
+///
+/// So this is a wedge, not a row. It is heaviest at the two outer corners of
+/// the sand, thins as it comes inward, and *climbs the sides of the screen*
+/// as it goes, until it is a thin fringe against the frame. Nothing is placed
+/// in the middle half of the screen at all.
+///
+/// What it is built out of is **outcrops**, not clumps. An outcrop is one big
+/// boulder with a second and a third leaning on it and five or six growths
+/// arranged *around* the pile — some rooted behind it so they only show over
+/// its shoulder, some at its foot in front of it, one wedged in the crevice
+/// between two stones. That last part is the whole difference between a reef
+/// and a pile of props: coral in nature grows on the flanks of a rock and out
+/// of the gaps between rocks, and a coral centred on top of every stone reads
+/// as a hat, however carefully it is drawn.
+///
+/// Three rules hold it together:
+///
+/// * **Few and big.** Four outcrops a side, each a good fraction of the width.
+///   The old version had thirteen small ones and read as gravel: at that size
+///   nothing can grow *around* anything, so every piece stays a separate piece.
+/// * **Overlap.** Outcrops are spaced far closer than one is tall, so each new
+///   one is bedded into the mass below rather than standing on top of it. An
+///   outcrop that does not touch its neighbour is this layer's one real
+///   mistake, and it is what makes a bank read as stacking.
+/// * **Back to front.** The table runs from the top of the bank down, and each
+///   outcrop draws its own back growth, then its stones, then its front growth.
+///   That ordering is why this is one canvas pass and not a stone layer with a
+///   growth layer over it.
+///
+/// The whole run is immediate-mode. As views it would be a dozen rock gardens
+/// rebuilt on every sway step, on the layer of the scene that can least afford
+/// it; as paths it costs about what two of them did.
+private struct ReefBanks: View {
+    let palette: ReefPalette
+    let isPad: Bool
+    /// The water above the crest the banks climb into.
+    let rise: CGFloat
+    let clock: Double
+
+    /// The width of the biggest boulder in the run.
+    static func unit(width: CGFloat, isPad: Bool) -> CGFloat {
+        min(width * 0.27, isPad ? 215 : 134)
+    }
+
+    /// How far up the water the banks reach. Read from the outside, because
+    /// the headroom has to be in the frame before the canvas sees a size.
+    ///
+    /// Measured off the water column rather than off the stones: the banks are
+    /// the frame around the open middle, and a frame that stops where the sand
+    /// does is not one. The top of it goes behind the sum, which is where a
+    /// reef climbing out of shot should go.
+    static func rise(crest: CGFloat, width: CGFloat, isPad: Bool) -> CGFloat {
+        max(unit(width: width, isPad: isPad) * 0.75, crest * 0.50)
+    }
+
+    /// One growth around a boulder pile: where it is rooted and how big it is,
+    /// all measured in the pile's own boulder-widths; which growth to draw and
+    /// which of the reef's accents to take it in; and whether it goes in behind
+    /// the stones or in front of them.
+    ///
+    /// `dy` is positive downhill. A negative one roots the growth part-way up
+    /// the pile, which is how the ones behind end up showing only their heads.
+    private struct Sprig {
+        let dx: CGFloat
+        let dy: CGFloat
+        let size: CGFloat
+        let style: Int
+        let hue: Int
+        let behind: Bool
+    }
+
+    /// Three arrangements of growth around a pile. Two full ones, used
+    /// alternately so no two outcrops on a bank are the same picture, and a
+    /// sparse one for where the wedge runs out.
+    ///
+    /// Read each as a planting plan. Something tall behind the main stone and
+    /// something short behind the shoulder; then, in front, one at each foot,
+    /// one down in the crevice where two stones meet, and one part-way up the
+    /// rock face itself.
+    ///
+    /// All three jobs matter. The backs stop the pile having a clean outline.
+    /// The feet tie it to the floor. And the one on the face is what actually
+    /// says *grown over* rather than *stood next to*: a boulder whose flank is
+    /// bare is a boulder someone put there this morning.
+    private static let arrangements: [[Sprig]] = [
+        [
+            Sprig(dx: -0.26, dy: -0.30, size: 0.58, style: 0, hue: 0, behind: true),
+            Sprig(dx: 0.40, dy: -0.20, size: 0.44, style: 2, hue: 2, behind: true),
+            Sprig(dx: -0.52, dy: 0.05, size: 0.48, style: 1, hue: 1, behind: false),
+            Sprig(dx: -0.30, dy: -0.26, size: 0.30, style: 3, hue: 2, behind: false),
+            Sprig(dx: 0.10, dy: 0.03, size: 0.36, style: 3, hue: 3, behind: false),
+            Sprig(dx: 0.58, dy: 0.07, size: 0.34, style: 2, hue: 4, behind: false)
+        ],
+        [
+            Sprig(dx: 0.22, dy: -0.34, size: 0.54, style: 1, hue: 1, behind: true),
+            Sprig(dx: -0.38, dy: -0.16, size: 0.40, style: 3, hue: 3, behind: true),
+            Sprig(dx: 0.50, dy: 0.06, size: 0.46, style: 0, hue: 2, behind: false),
+            Sprig(dx: 0.26, dy: -0.28, size: 0.28, style: 3, hue: 4, behind: false),
+            Sprig(dx: -0.16, dy: 0.02, size: 0.36, style: 2, hue: 4, behind: false),
+            Sprig(dx: -0.56, dy: 0.07, size: 0.32, style: 1, hue: 0, behind: false)
+        ],
+        [
+            Sprig(dx: 0.18, dy: -0.22, size: 0.38, style: 2, hue: 2, behind: true),
+            Sprig(dx: -0.30, dy: 0.04, size: 0.32, style: 3, hue: 0, behind: false)
+        ],
+        // A crown: growth with no stone of its own, for the top of the bank.
+        // Two courses of boulder is as high as this reef stacks — past that it
+        // stops being an outcrop and becomes a cairn — so what tops it off is
+        // coral, rooted low enough into the course below to be coming out of
+        // it rather than sitting on it.
+        [
+            Sprig(dx: -0.32, dy: -0.06, size: 0.66, style: 0, hue: 0, behind: true),
+            Sprig(dx: 0.30, dy: -0.02, size: 0.56, style: 2, hue: 2, behind: true),
+            Sprig(dx: -0.02, dy: 0.08, size: 0.62, style: 1, hue: 1, behind: false),
+            Sprig(dx: 0.52, dy: 0.10, size: 0.42, style: 3, hue: 3, behind: false),
+            Sprig(dx: -0.58, dy: 0.10, size: 0.40, style: 2, hue: 4, behind: false)
+        ]
+    ]
+
+    /// The arrangement that brings its own stones. The crown does not.
+    private static let crownPlan = 3
+
+    /// out (from the nearer edge), up (share of the climb), scale, arrangement,
+    /// phase — mirrored onto the other side.
+    ///
+    /// Read it as the bank's profile, written from the top of the pile down.
+    ///
+    /// It is a **low, wide** wedge, and both halves of that are deliberate. It
+    /// stacks two courses of boulder and no more, and everything above the
+    /// second course is coral rather than a third and fourth stone: four rocks
+    /// on top of each other is a cairn, which is a thing a person builds. And
+    /// it reaches a third of the way in along the sand, because the length it
+    /// runs is what a reef has instead of height — a bank that goes up rather
+    /// than along is a tower.
+    private static let bank: [(CGFloat, CGFloat, CGFloat, Int, Double)] = [
+        (0.030, 0.44, 0.60, crownPlan, 4.7),
+        (0.098, 0.39, 0.52, crownPlan, 2.6),
+        (0.038, 0.25, 0.86, 0, 5.0),
+        (0.132, 0.21, 0.58, 1, 3.1),
+        (0.330, 0.00, 0.30, 2, 5.2),
+        (0.246, 0.00, 0.46, 1, 4.4),
+        (0.152, 0.01, 0.74, 1, 1.9),
+        (0.040, 0.00, 1.00, 0, 0.3)
+    ]
+
+    /// Two thirds of the bank where the frame budget is tightest. The corner
+    /// outcrop and the crown over it are kept whatever happens: one is the mass
+    /// the composition rests on and the other is its silhouette.
+    private var bank: [(CGFloat, CGFloat, CGFloat, Int, Double)] {
+        ArenaPerformanceBudget.isConstrained
+            ? Self.bank.enumerated()
+                .filter { $0.offset != 1 && $0.offset != 3 && $0.offset != 5 }
+                .map(\.element)
+            : Self.bank
+    }
+
+    var body: some View {
+        Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+            let base = Self.unit(width: size.width, isPad: isPad)
+            // The sand's own share of the frame, under the headroom.
+            let band = max(1, size.height - rise)
+
+            func place(x: CGFloat, up: CGFloat, scale: CGFloat, plan: Int,
+                       phase: Double, flipped: Bool, accent: Int) {
+                let root = CGPoint(
+                    x: size.width * x,
+                    y: rise + band * (sandCrestShare(atX: x) + 0.012) - up * rise
+                )
+                draw(at: root, unit: base * scale, up: up, plan: plan,
+                     phase: phase, flipped: flipped, accent: accent,
+                     bedded: up < 0.05, in: &context)
+            }
+
+            for (index, outcrop) in bank.enumerated() {
+                // The two sides share a profile and nothing else: their stones
+                // are flipped, their colours walk the accents at a different
+                // offset and their sway is half a period apart, so the arena is
+                // symmetrical in weight without being symmetrical to look at.
+                place(x: outcrop.0, up: outcrop.1, scale: outcrop.2, plan: outcrop.3,
+                      phase: outcrop.4, flipped: false, accent: index % 5)
+                place(x: 1 - outcrop.0, up: outcrop.1, scale: outcrop.2, plan: outcrop.3,
+                      phase: outcrop.4 + 2.9, flipped: true, accent: (index + 2) % 5)
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    /// One outcrop: the growth behind it, three stones, the growth in front.
+    private func draw(at root: CGPoint,
+                      unit: CGFloat,
+                      up: CGFloat,
+                      plan: Int,
+                      phase: Double,
+                      flipped: Bool,
+                      accent: Int,
+                      bedded: Bool,
+                      in context: inout GraphicsContext) {
+        let sway = sin(clock * 0.44 + phase)
+        let sprigs = Self.arrangements[plan % Self.arrangements.count]
+        // Every offset inside an outcrop is mirrored along with its stones, so
+        // the left bank's planting is not the right bank's read backwards.
+        let hand: CGFloat = flipped ? -1 : 1
+
+        // Further up the bank is further out into the water, and the water
+        // takes its share. Without this the fringe at the top of the climb is
+        // as solid as the corner it stands on, and the bank stops receding.
+        var layer = context
+        layer.opacity = 1 - 0.28 * Double(up)
+
+        func plant(_ sprig: Sprig) {
+            let side = unit * sprig.size
+            let rect = CGRect(x: root.x + hand * unit * sprig.dx - side / 2,
+                              y: root.y + unit * sprig.dy - side * 1.15,
+                              width: side, height: side * 1.15)
+            let hue = accent + sprig.hue
+            drawGrowth(palette.growth(sprig.style), in: rect,
+                       bend: CGFloat(sway) * 0.12 * hand,
+                       colour: palette.reefAccent(hue),
+                       shade: palette.reefAccentDeep(hue),
+                       context: &layer)
+        }
+
+        // Weed first of all, rooted wide of the pile on both sides: it is the
+        // softest thing here and everything else is drawn over it.
+        for blade in 0..<3 {
+            let out = CGFloat(blade) * 0.42 - 0.42
+            let lean = CGFloat(sway) * 0.26 + out * 0.5
+            let length = unit * (0.42 + CGFloat(blade % 2) * 0.20)
+            let x = root.x + unit * out
+            var path = Path()
+            path.move(to: CGPoint(x: x, y: root.y))
+            path.addQuadCurve(to: CGPoint(x: x + length * lean, y: root.y - length),
+                              control: CGPoint(x: x + length * lean * 0.2,
+                                               y: root.y - length * 0.55))
+            layer.stroke(path,
+                         with: .color(palette.plant.opacity(0.72)),
+                         style: StrokeStyle(lineWidth: max(1.5, unit * 0.04),
+                                            lineCap: .round))
+        }
+
+        for sprig in sprigs where sprig.behind { plant(sprig) }
+
+        // The three stones. `RockShape` is asymmetric, so the two of them that
+        // lean on the main boulder are drawn from it flipped and squashed by
+        // different amounts — one silhouette, three stones, no repetition the
+        // eye can name. A crown skips this: its growth is coming out of the
+        // course underneath, which already has stones of its own.
+        if plan != Self.crownPlan {
+            stone(CGRect(x: root.x - hand * unit * 0.44 - unit * 0.31,
+                         y: root.y - unit * 0.30, width: unit * 0.62, height: unit * 0.32),
+                  flipped: !flipped, accent: accent, bedded: bedded,
+                  lit: false, in: &layer)
+            stone(CGRect(x: root.x + hand * unit * 0.40 - unit * 0.36,
+                         y: root.y - unit * 0.36, width: unit * 0.72, height: unit * 0.40),
+                  flipped: flipped, accent: accent + 1, bedded: bedded,
+                  lit: false, in: &layer)
+            stone(CGRect(x: root.x - unit * 0.50, y: root.y - unit * 0.58,
+                         width: unit, height: unit * 0.60),
+                  flipped: flipped, accent: accent, bedded: bedded,
+                  lit: true, in: &layer)
+        }
+
+        for sprig in sprigs where !sprig.behind { plant(sprig) }
+    }
+
+    /// One boulder, with its dimple in the sand, its lit crown and the wash of
+    /// colour the reef has left on it.
+    private func stone(_ rect: CGRect,
+                       flipped: Bool,
+                       accent: Int,
+                       bedded: Bool,
+                       lit: Bool,
+                       in context: inout GraphicsContext) {
+        let unit = rect.width
+        // Only stones actually lying on the sand get a dimple in it. The ones
+        // up the bank are standing on the bank.
+        if bedded {
+            context.fill(
+                Path(ellipseIn: CGRect(x: rect.minX - unit * 0.05, y: rect.maxY - unit * 0.09,
+                                       width: rect.width + unit * 0.10, height: unit * 0.16)),
+                with: .color(palette.sandDeep.opacity(0.30))
+            )
+        }
+
+        var path = placed(RockShape(), in: rect)
+        if flipped {
+            path = path.applying(
+                CGAffineTransform(translationX: rect.midX, y: 0)
+                    .scaledBy(x: -1, y: 1)
+                    .translatedBy(x: -rect.midX, y: 0)
+            )
+        }
+        context.fill(
+            path,
+            with: .linearGradient(Gradient(colors: [palette.rock, palette.rockDeep]),
+                                  startPoint: CGPoint(x: rect.midX, y: rect.minY),
+                                  endPoint: CGPoint(x: rect.midX, y: rect.maxY))
+        )
+        if lit {
+            context.fill(
+                Path(ellipseIn: CGRect(x: rect.minX + unit * 0.18, y: rect.minY + unit * 0.05,
+                                       width: unit * 0.42, height: unit * 0.12)),
+                with: .color(.white.opacity(0.20))
+            )
+        }
+        // A wash of the reef's colour over the stone. A bank of grey boulders
+        // is a quarry; the same boulders each carrying a little of what grows
+        // on them is a reef.
+        context.fill(path, with: .color(palette.reefAccent(accent).opacity(0.13)))
+    }
+
+    /// The four growths the banks use, drawn straight into the canvas. They
+    /// are the same silhouettes `CoralCluster` builds as views, minus the
+    /// detail that could not survive being drawn this small anyway.
+    private func drawGrowth(_ style: Int,
+                            in rect: CGRect,
+                            bend: CGFloat,
+                            colour: Color,
+                            shade: Color,
+                            context: inout GraphicsContext) {
+        let fill = GraphicsContext.Shading.linearGradient(
+            Gradient(colors: [colour, shade]),
+            startPoint: CGPoint(x: rect.midX, y: rect.minY),
+            endPoint: CGPoint(x: rect.midX, y: rect.maxY)
+        )
+
+        switch style {
+        case 0:
+            let blade = rect.insetBy(dx: rect.width * 0.06, dy: 0)
+            context.fill(placed(FanCoralShape(), in: blade), with: fill)
+            // The veins go on even out here. Without them a fan this small is
+            // a plain silhouette on a stalk, which the eye files as a mushroom
+            // and not as coral — the one growth on the floor that cannot
+            // afford to lose its detail.
+            context.stroke(
+                placed(FanCoralRibs(), in: blade),
+                with: .color(.white.opacity(0.34)),
+                style: StrokeStyle(lineWidth: max(0.8, blade.width * 0.045),
+                                   lineCap: .round)
+            )
+        case 1:
+            context.stroke(
+                placed(BranchingCoralShape(bend: bend), in: rect),
+                with: fill,
+                style: StrokeStyle(lineWidth: max(2, rect.width * 0.18),
+                                   lineCap: .round, lineJoin: .round)
+            )
+        case 2:
+            let stand = rect.insetBy(dx: rect.width * 0.08, dy: 0)
+            context.stroke(
+                placed(FingerCoralShape(bend: bend), in: stand),
+                with: fill,
+                style: StrokeStyle(lineWidth: max(2, stand.width * 0.15), lineCap: .round)
+            )
+            context.fill(
+                placed(TubeMouths(mouths: FingerCoralShape.tips(bend: bend),
+                                  radius: 0.058), in: stand),
+                with: .color(shade)
+            )
+        default:
+            // A knot of bowls, low and wide. This is the growth that fills the
+            // gap where two boulders meet: the other three all stand up, and a
+            // crevice with something standing up in it is a crevice with a
+            // plant in it rather than a crevice something has grown over.
+            let w = rect.width
+            for cup in [(0.28, 0.66, 0.46), (0.58, 0.52, 0.58), (0.78, 0.78, 0.40)] {
+                let side = w * cup.2
+                let bowl = CGRect(x: rect.minX + w * cup.0 - side / 2,
+                                  y: rect.minY + rect.height * cup.1 - side / 2,
+                                  width: side, height: side)
+                context.fill(Path(ellipseIn: bowl), with: fill)
+                context.fill(Path(ellipseIn: bowl.insetBy(dx: side * 0.26, dy: side * 0.26)),
+                             with: .color(shade))
+            }
+        }
+    }
+}
+
+/// Lays a shape into a canvas at a rect.
+///
+/// Every growth on this floor is written in unit space from its own origin —
+/// `w * 0.5`, not `rect.midX` — which is exactly what a `Shape` in a view
+/// hierarchy wants and exactly what a `Canvas` does not: ask one for its path
+/// in a rect halfway down the screen and it hands back the same drawing at the
+/// top-left corner. So it is built at zero and moved.
+private func placed<S: Shape>(_ shape: S, in rect: CGRect) -> Path {
+    shape.path(in: CGRect(origin: .zero, size: rect.size))
+        .offsetBy(dx: rect.minX, dy: rect.minY)
+}
+
 // MARK: - Rock gardens
 
 /// Stones with their own planting. Nothing on the sea floor grows on bare sand:
@@ -3488,14 +3943,24 @@ private struct SeaGardens: View {
     let isPad: Bool
     let clock: Double
 
-    /// x, y (shares of the band), scale, variant, mirrored. All of them keep to
+    /// x, depth into the bed, scale, variant, mirrored. All of them keep to
     /// the outer fifth or to the very bottom, where nothing walks.
+    ///
+    /// `depth` is measured from the sand's own edge at that x — see
+    /// `sandRoot(_:atX:)`. A garden at the sides sits several rock-heights
+    /// further down the screen than the same number would put it in the middle,
+    /// because that is where the sand actually is out there.
     private static let gardens: [(CGFloat, CGFloat, CGFloat, Int, Bool)] = [
-        (0.055, 0.30, 0.68, 0, false), (0.035, 0.58, 0.88, 1, false),
-        (0.085, 0.99, 0.82, 2, false), (0.945, 0.24, 0.64, 2, true),
-        (0.975, 0.54, 0.84, 0, true),  (0.905, 0.99, 0.90, 1, true),
+        (0.055, 0.28, 0.68, 0, false), (0.035, 0.56, 0.88, 1, false),
+        (0.085, 0.99, 0.82, 2, false), (0.945, 0.22, 0.64, 2, true),
+        (0.975, 0.52, 0.84, 0, true),  (0.905, 0.99, 0.90, 1, true),
         (0.245, 1.05, 0.72, 2, false), (0.400, 1.10, 0.58, 0, true),
-        (0.615, 1.06, 0.66, 1, false), (0.765, 1.09, 0.62, 2, true)
+        (0.615, 1.06, 0.66, 1, false), (0.765, 1.09, 0.62, 2, true),
+        // Further in from both edges, and higher up the bed: the middle of the
+        // floor was open sand from the crest all the way down to the near
+        // corners, and open sand at that size reads as a beach.
+        (0.155, 0.44, 0.52, 1, true),  (0.845, 0.40, 0.50, 0, false),
+        (0.195, 0.86, 0.60, 0, false), (0.805, 0.90, 0.58, 2, true)
     ]
 
     /// Half the gardens where the frame budget is tightest. Each one is a small
@@ -3521,7 +3986,8 @@ private struct SeaGardens: View {
                     .scaleEffect(x: garden.4 ? -1 : 1, y: 1)
                     // Rooted where it is placed, not centred on it.
                     .position(x: width * garden.0,
-                              y: height * garden.1 - unit * garden.2 * 0.28)
+                              y: height * sandRoot(garden.1, atX: garden.0)
+                                  - unit * garden.2 * 0.28)
             }
         }
         .accessibilityHidden(true)
@@ -3597,15 +4063,21 @@ private struct RockGarden: View {
         }
     }
 
-    /// A small growth of coral wedged between the stones.
+    /// A small growth of tube coral wedged between the stones, its mouths open
+    /// at the top the way the bigger stands along the edges have them.
     private func coralTuft(width w: CGFloat, height h: CGFloat) -> some View {
         let sway = sin(clock * 0.5 + phase)
-        return FingerCoralShape(bend: CGFloat(sway) * 0.10)
+        let bend = CGFloat(sway) * 0.10
+        return FingerCoralShape(bend: bend)
             .stroke(
                 LinearGradient(colors: [palette.reefAccent(3), palette.reefAccentDeep(3)],
                                startPoint: .top, endPoint: .bottom),
                 style: StrokeStyle(lineWidth: max(3, w * 0.075), lineCap: .round)
             )
+            .overlay {
+                TubeMouths(mouths: FingerCoralShape.tips(bend: bend), radius: 0.062)
+                    .fill(palette.reefAccentDeep(3))
+            }
             .frame(width: w * 0.34, height: h * 0.52)
             .position(x: w * 0.68, y: h * 0.52)
     }
@@ -3737,47 +4209,56 @@ private struct ReefBorder: View {
     let isPad: Bool
     let clock: Double
 
-    /// y (share of the band), scale, style, colour index, phase. Mirrored onto
-    /// the right-hand edge with its own offsets, so the two sides never look
-    /// like a stamped pair.
+    /// x, depth into the bed, scale, style, colour index, phase.
+    ///
+    /// `depth` is measured from the sand's *own* edge at that x rather than
+    /// from the top of the band — 0 is the crest, 1 is the front of the bed.
+    /// The crest is a curve, so at these x's it lies a good deal lower than it
+    /// does in the middle of the screen; a coral placed a flat distance down
+    /// the band ends up hanging in open water at the sides, which is exactly
+    /// what these used to do.
     ///
     /// They grow as they come forward. A coral high up the band is far away and
     /// stays small and sparse; the ones near the bottom are close, larger and
     /// packed together, which is what turns two edges into a frame.
-    /// The first two of each side sit right on the crest and grow up out of it
-    /// into the blue. That is what closes the picture at the top: without them
-    /// the sand's far edge runs off both sides of the screen into nothing, and
-    /// the eye reads the whole floor as a band laid across the water rather
-    /// than as ground with a reef standing on it.
-    private static let leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.02, 0.46, 2, 2, 1.1), (0.07, 0.38, 3, 4, 4.4),
-        (0.16, 0.44, 0, 0, 0.5), (0.31, 0.56, 2, 2, 3.6),
-        (0.48, 0.66, 1, 3, 2.4), (0.64, 0.76, 3, 4, 5.3),
-        (0.80, 0.98, 1, 1, 4.1), (0.95, 0.88, 3, 3, 1.2)
+    ///
+    /// The band starts a little below the crest rather than on it. The top of
+    /// each side belongs to `ReefBanks`, which carries the reef up out of the
+    /// sand and into the water; these carry it the rest of the way down to the
+    /// near corners, so the two together are one bank seen from bottom to top.
+    ///
+    /// The x of each is written out rather than alternated by index, because
+    /// the rock gardens keep to these same two edges: what a cluster has to
+    /// avoid is not its neighbour up the band but the stone beside it.
+    private static let leftClusters: [(CGFloat, CGFloat, CGFloat, Int, Int, Double)] = [
+        (0.030, 0.130, 0.44, 2, 0, 0.5), (0.125, 0.200, 0.50, 0, 3, 2.9),
+        (0.045, 0.420, 0.58, 2, 2, 3.6), (0.150, 0.480, 0.54, 1, 3, 2.4),
+        (0.060, 0.700, 0.78, 3, 4, 5.3), (0.155, 0.760, 0.70, 0, 1, 1.8),
+        (0.055, 0.900, 0.96, 1, 1, 4.1), (0.145, 0.975, 0.86, 0, 3, 1.2)
     ]
-    private static let rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] = [
-        (0.03, 0.42, 0, 3, 2.6), (0.09, 0.36, 1, 1, 5.5),
-        (0.19, 0.48, 2, 4, 3.3), (0.34, 0.52, 3, 0, 1.5),
-        (0.51, 0.68, 1, 0, 0.8), (0.67, 0.74, 0, 2, 4.7),
-        (0.83, 0.86, 3, 2, 5.0), (0.97, 0.98, 0, 1, 2.0)
+    private static let rightClusters: [(CGFloat, CGFloat, CGFloat, Int, Int, Double)] = [
+        (0.972, 0.135, 0.44, 3, 4, 3.3), (0.878, 0.360, 0.52, 0, 0, 1.5),
+        (0.955, 0.410, 0.48, 1, 2, 0.8), (0.868, 0.660, 0.70, 0, 2, 4.7),
+        (0.962, 0.735, 0.74, 2, 0, 5.0), (0.882, 0.900, 0.84, 3, 2, 2.0),
+        (0.968, 0.975, 0.92, 0, 1, 3.7)
     ]
 
-    /// Five per side where the frame budget is tightest. The two on the crest
-    /// are kept whatever happens — they are doing composition work, not
-    /// decoration — and the thinning is taken out of the middle of the band.
-    private var leftClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
+    /// Roughly half per side where the frame budget is tightest. The last of
+    /// each side is kept whatever happens: it is the largest, it is nearest,
+    /// and it is the one holding the bottom corner together.
+    private var leftClusters: [(CGFloat, CGFloat, CGFloat, Int, Int, Double)] {
         Self.thinned(Self.leftClusters)
     }
-    private var rightClusters: [(CGFloat, CGFloat, Int, Int, Double)] {
+    private var rightClusters: [(CGFloat, CGFloat, CGFloat, Int, Int, Double)] {
         Self.thinned(Self.rightClusters)
     }
 
     private static func thinned(
-        _ clusters: [(CGFloat, CGFloat, Int, Int, Double)]
-    ) -> [(CGFloat, CGFloat, Int, Int, Double)] {
+        _ clusters: [(CGFloat, CGFloat, CGFloat, Int, Int, Double)]
+    ) -> [(CGFloat, CGFloat, CGFloat, Int, Int, Double)] {
         guard ArenaPerformanceBudget.isConstrained else { return clusters }
         return clusters.enumerated()
-            .filter { $0.offset < 2 || $0.offset.isMultiple(of: 2) }
+            .filter { $0.offset.isMultiple(of: 2) || $0.offset == clusters.count - 1 }
             .map(\.element)
     }
 
@@ -3799,16 +4280,16 @@ private struct ReefBorder: View {
                     .scaleEffect(x: -1, y: 1)
                     .position(x: width * 0.97, y: height * 0.86)
 
-                ForEach(Array(leftClusters.enumerated()), id: \.offset) { index, cluster in
+                ForEach(Array(leftClusters.enumerated()), id: \.offset) { _, cluster in
                     coral(cluster, unit: unit)
-                        .position(x: width * (index.isMultiple(of: 2) ? 0.085 : 0.15),
-                                  y: height * cluster.0)
+                        .position(x: width * cluster.0,
+                                  y: height * sandRoot(cluster.1, atX: cluster.0))
                 }
-                ForEach(Array(rightClusters.enumerated()), id: \.offset) { index, cluster in
+                ForEach(Array(rightClusters.enumerated()), id: \.offset) { _, cluster in
                     coral(cluster, unit: unit)
                         .scaleEffect(x: -1, y: 1)
-                        .position(x: width * (index.isMultiple(of: 2) ? 0.915 : 0.85),
-                                  y: height * cluster.0)
+                        .position(x: width * cluster.0,
+                                  y: height * sandRoot(cluster.1, atX: cluster.0))
                 }
             }
             .frame(width: width, height: height)
@@ -3816,19 +4297,85 @@ private struct ReefBorder: View {
         .accessibilityHidden(true)
     }
 
-    private func coral(_ cluster: (CGFloat, CGFloat, Int, Int, Double),
+    /// One growth on the open floor, with whatever stone that particular
+    /// growth actually needs — which is not the same stone for all of them,
+    /// and for two of them is none at all.
+    ///
+    /// The two colonies — the tubes and the branching one — are the growths
+    /// here that cannot start in bare sand: both are cemented to something
+    /// hard. So both get a stone, and in both cases the stone stands *in front
+    /// of their feet* while the colony comes up from behind it. That is the
+    /// whole trick: a stone behind a coral is just a stone behind a coral, and
+    /// it is the one in front — with the foot of the growth disappearing under
+    /// it — that says the coral started on the rock.
+    ///
+    /// A shell gets a stone for the opposite reason: it is not growing at all,
+    /// it is *lying* there, so it leans over and half disappears behind a low
+    /// stone the way one that has been on the floor a while ends up.
+    ///
+    /// A knot of cups gets none. It already sits on a mound of its own, and a
+    /// stone tucked in with every single growth turns a sea floor into a row
+    /// of paperweights.
+    private func coral(_ cluster: (CGFloat, CGFloat, CGFloat, Int, Int, Double),
                        unit: CGFloat) -> some View {
-        let sway = sin(clock * 0.52 + cluster.4)
-        let side = unit * cluster.1
-        return CoralCluster(style: cluster.2,
-                            colour: palette.reefAccent(cluster.3),
-                            shade: palette.reefAccentDeep(cluster.3),
-                            bend: CGFloat(sway) * 0.14)
-            .frame(width: side, height: side * 1.2)
-            .rotationEffect(.degrees(3.4 * sway), anchor: .bottom)
-            // Rooted at the point it is placed on, rather than centred on it.
-            .offset(y: -side * 0.6)
+        let sway = sin(clock * 0.52 + cluster.5)
+        let side = unit * cluster.2
+        let style = palette.growth(cluster.3)
+        // Branching and tube coral, the two that grow on rock.
+        let onRock = style == 1 || style == 2
+        // Which way a shell has come to rest, and which side of a colony its
+        // stone sits on. Taken off its colour, so neither the leans nor the
+        // stones line up down the length of the band.
+        let hand: CGFloat = cluster.4.isMultiple(of: 2) ? 1 : -1
+
+        return ZStack(alignment: .bottom) {
+            CoralCluster(style: style,
+                         colour: palette.reefAccent(cluster.4),
+                         shade: palette.reefAccentDeep(cluster.4),
+                         bend: CGFloat(sway) * 0.14)
+                // A shell is wider than it is tall once it is off its hinge.
+                .frame(width: side, height: side * (style == 0 ? 0.94 : 1.2))
+                .rotationEffect(
+                    // The living growths only sway. The shell has a lean of
+                    // its own that the water does not undo.
+                    .degrees(style == 0 ? Double(hand) * 13 + 1.6 * sway : 3.4 * sway),
+                    anchor: .bottom
+                )
+                // Lifted a hair, not pushed down. The stone in front covers
+                // the bottom third of this frame, so a colony sitting level
+                // with it already has its foot hidden — push it *down* and the
+                // base plate slides out from under the stone as a dark rim,
+                // which is worse than no stone at all.
+                .offset(y: onRock ? -side * 0.04 : 0)
+
+            if onRock {
+                Boulder(palette: palette, width: side * 0.80, height: side * 0.36)
+                    .equatable()
+                    .offset(x: -hand * side * 0.08, y: side * 0.02)
+            }
+
+            if style == 0 {
+                Boulder(palette: palette, width: side * 0.56, height: side * 0.25)
+                    .equatable()
+                    .offset(x: hand * side * 0.24, y: side * 0.03)
+            }
+        }
+        .frame(width: side, height: side * 1.2, alignment: .bottom)
+        // Rooted at the point it is placed on, rather than centred on it.
+        .offset(y: -side * 0.6)
     }
+}
+
+/// Where something bedded `depth` of the way into the sea floor sits, as a
+/// share of the sand band's height, at one x across the screen.
+///
+/// `depth` 0 is the sand's own edge at that x — not the top of the band, which
+/// is only the crest at the very middle — and 1 is the front of the bed. The
+/// small constant added on top is the margin that keeps a base from being
+/// drawn exactly on the crest line, where the haze eats it.
+private func sandRoot(_ depth: CGFloat, atX x: CGFloat) -> CGFloat {
+    let crest = sandCrestShare(atX: x) + 0.016
+    return crest + (1 - crest) * depth
 }
 
 /// The closest thing in the scene: the reef piling up in the two bottom
@@ -3930,7 +4477,7 @@ private struct ForegroundReef: View {
                     let sway = sin(clock * (0.44 + Double(index) * 0.04) + coral.5)
                     let side = unit * coral.2
 
-                    CoralCluster(style: coral.3,
+                    CoralCluster(style: palette.growth(coral.3),
                                  colour: palette.reefAccent(coral.4),
                                  shade: palette.reefAccentDeep(coral.4),
                                  bend: CGFloat(sway) * 0.20)
@@ -4101,6 +4648,9 @@ private struct CoralCluster: View {
             Group {
                 switch style {
                 case 0:
+                    // No holdfast under this one. A shell is not fixed to the
+                    // floor by anything — it is lying on it — and a pad of
+                    // growth under the hinge is the same mistake as a stalk.
                     FanCoralShape()
                         .fill(gradient)
                         .overlay {
@@ -4122,6 +4672,17 @@ private struct CoralCluster: View {
                         .stroke(gradient,
                                 style: StrokeStyle(lineWidth: max(4, unit * 0.21),
                                                    lineCap: .round, lineJoin: .round))
+                        .overlay {
+                            TubeMouths(mouths: BranchingCoralShape.tips(bend: bend),
+                                       radius: 0.082)
+                                .fill(shade)
+                        }
+                        .overlay {
+                            TubeMouths(mouths: BranchingCoralShape.tips(bend: bend),
+                                       radius: 0.082)
+                                .stroke(.white.opacity(0.34),
+                                        lineWidth: max(0.8, unit * 0.022))
+                        }
                 case 2:
                     ZStack(alignment: .bottom) {
                         // A rooted stand rather than bars floating on the sand.
@@ -4132,6 +4693,17 @@ private struct CoralCluster: View {
                             .stroke(gradient,
                                     style: StrokeStyle(lineWidth: max(3, unit * 0.15),
                                                        lineCap: .round))
+                            .overlay {
+                                TubeMouths(mouths: FingerCoralShape.tips(bend: bend),
+                                           radius: 0.062)
+                                    .fill(shade)
+                            }
+                            .overlay {
+                                TubeMouths(mouths: FingerCoralShape.tips(bend: bend),
+                                           radius: 0.062)
+                                    .stroke(.white.opacity(0.42),
+                                            lineWidth: max(0.8, unit * 0.018))
+                            }
                     }
                 default:
                     CupCoral(colour: colour, shade: shade)
@@ -4143,29 +4715,65 @@ private struct CoralCluster: View {
     }
 }
 
-/// A sea fan: a broad, scalloped blade on a short stem.
+/// A scallop shell: a broad, softly lobed fan opening straight out of a small
+/// rounded hinge.
+///
+/// The bottom of this shape has been wrong twice, in opposite directions, and
+/// both are worth remembering. Run to a *point* it reads as a shell balanced
+/// on its tip, and in a scene with no other sharp corner the eye goes straight
+/// there. Give it a *waist* — two near-parallel sides between the blade and the
+/// ground — and it stops being a shell at all: a fan on a stalk is a plant, or
+/// a mushroom, and the thing plainly grew there.
+///
+/// A shell has neither. It flares from the hinge immediately: the sides leave
+/// the bottom already heading outward and never run parallel to each other, so
+/// the whole silhouette is one open fan with a rounded corner at the bottom of
+/// it. That is also what lets it lie in the sand rather than stand in it.
+///
+/// The lobes are rounded the same way: their control points are pushed out
+/// along the line each lobe already runs on, which swells the bump instead of
+/// tugging it sideways into a scallop with a pinch in it.
 private struct FanCoralShape: Shape {
+    /// The rim of the fan, left corner to right corner.
+    static let rim: [(CGFloat, CGFloat)] = [
+        (0.03, 0.52), (0.09, 0.27), (0.29, 0.08), (0.52, 0.03),
+        (0.75, 0.09), (0.93, 0.29), (0.97, 0.54)
+    ]
+
     func path(in rect: CGRect) -> Path {
         let w = rect.width
         let h = rect.height
-        var path = Path()
-        path.move(to: CGPoint(x: w * 0.50, y: h))
-        path.addLine(to: CGPoint(x: w * 0.42, y: h * 0.72))
-        var previous = CGPoint(x: w * 0.06, y: h * 0.58)
-        path.addLine(to: previous)
-        // Five lobes around the top of the blade.
-        let lobes: [(CGFloat, CGFloat)] = [
-            (0.10, 0.22), (0.30, 0.04), (0.52, 0.00), (0.74, 0.06), (0.94, 0.26)
-        ]
-        for lobe in lobes {
-            let next = CGPoint(x: w * lobe.0, y: h * lobe.1)
-            path.addQuadCurve(to: next,
-                              control: CGPoint(x: (previous.x + next.x) / 2 - w * 0.04,
-                                               y: (previous.y + next.y) / 2 - h * 0.14))
-            previous = next
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: w * x, y: h * y)
         }
-        path.addQuadCurve(to: CGPoint(x: w * 0.58, y: h * 0.72),
-                          control: CGPoint(x: w * 0.92, y: h * 0.58))
+
+        var path = Path()
+        // Out of the hinge and straight up the flaring left side to the rim.
+        // One curve, no straight section: the moment there are two parallel
+        // sides down here the shell has a foot.
+        path.move(to: point(0.43, 0.94))
+        path.addQuadCurve(to: point(Self.rim[0].0, Self.rim[0].1),
+                          control: point(0.13, 0.84))
+
+        // Round the top. Each control point is the midpoint of the span pushed
+        // straight out from the middle of the fan, so every lobe bulges the
+        // same way whichever side it is on.
+        let centre = CGPoint(x: w * 0.5, y: h * 0.62)
+        for index in 1..<Self.rim.count {
+            let previous = point(Self.rim[index - 1].0, Self.rim[index - 1].1)
+            let next = point(Self.rim[index].0, Self.rim[index].1)
+            let mid = CGPoint(x: (previous.x + next.x) / 2, y: (previous.y + next.y) / 2)
+            let dx = mid.x - centre.x
+            let dy = mid.y - centre.y
+            let length = max(0.001, (dx * dx + dy * dy).squareRoot())
+            path.addQuadCurve(to: next,
+                              control: CGPoint(x: mid.x + dx / length * w * 0.085,
+                                               y: mid.y + dy / length * h * 0.085))
+        }
+
+        // Down the right side, and the small rounded hinge across the bottom.
+        path.addQuadCurve(to: point(0.57, 0.94), control: point(0.87, 0.84))
+        path.addQuadCurve(to: point(0.43, 0.94), control: point(0.50, 1.03))
         path.closeSubpath()
         return path
     }
@@ -4177,12 +4785,42 @@ private struct FanCoralRibs: Shape {
         let w = rect.width
         let h = rect.height
         var path = Path()
-        let root = CGPoint(x: w * 0.50, y: h * 0.80)
-        for tip in [(0.16, 0.32), (0.32, 0.16), (0.52, 0.12), (0.72, 0.18), (0.86, 0.34)] {
+        let root = CGPoint(x: w * 0.50, y: h * 0.90)
+        // One vein to every lobe of the rim, stopping just short of it.
+        for tip in FanCoralShape.rim.dropFirst().dropLast() {
+            let end = CGPoint(x: w * (0.50 + (tip.0 - 0.50) * 0.84),
+                              y: h * (tip.1 + 0.10))
             path.move(to: root)
-            path.addQuadCurve(to: CGPoint(x: w * tip.0, y: h * tip.1),
-                              control: CGPoint(x: w * (0.50 + (tip.0 - 0.50) * 0.4),
-                                               y: h * 0.48))
+            path.addQuadCurve(to: end,
+                              control: CGPoint(x: w * (0.50 + (tip.0 - 0.50) * 0.34),
+                                               y: h * 0.52))
+        }
+        return path
+    }
+}
+
+/// The open mouths at the top of a tube coral, in unit coordinates.
+///
+/// A tube coral is a bundle of *pipes*, and the small dark ring at the top of
+/// each pipe is the whole of what says so. Without them the same stroke reads
+/// as fingers, or as a plant — closed, solid, and a good deal less alive.
+///
+/// They are drawn as flattened ellipses rather than circles because the floor
+/// is seen from slightly above: a mouth pointing up at the surface is a circle
+/// foreshortened, and a true circle up there reads as a bead stuck on the end.
+private struct TubeMouths: Shape {
+    /// Tip centres, as shares of the frame.
+    let mouths: [CGPoint]
+    /// Mouth radius, as a share of the frame's width.
+    let radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let r = rect.width * radius
+        for mouth in mouths {
+            path.addEllipse(in: CGRect(x: rect.width * mouth.x - r,
+                                       y: rect.height * mouth.y - r * 0.62,
+                                       width: r * 2, height: r * 1.24))
         }
         return path
     }
@@ -4193,16 +4831,23 @@ private struct FanCoralRibs: Shape {
 private struct FingerCoralShape: Shape {
     var bend: CGFloat = 0
 
+    /// root x, tip height, how far it leans out.
+    static let fingers: [(CGFloat, CGFloat, CGFloat)] = [
+        (0.24, 0.42, -0.10), (0.42, 0.16, -0.03),
+        (0.60, 0.06, 0.05), (0.78, 0.34, 0.12)
+    ]
+
+    /// Where each tube ends, for the mouths drawn over it. Same arithmetic as
+    /// the path below, so a mouth can never drift off the tube it belongs to.
+    static func tips(bend: CGFloat) -> [CGPoint] {
+        fingers.map { CGPoint(x: $0.0 + $0.2 + bend * 0.6, y: $0.1) }
+    }
+
     func path(in rect: CGRect) -> Path {
         let w = rect.width
         let h = rect.height
         var path = Path()
-        /// root x, tip height, how far it leans out.
-        let fingers: [(CGFloat, CGFloat, CGFloat)] = [
-            (0.24, 0.42, -0.10), (0.42, 0.16, -0.03),
-            (0.60, 0.06, 0.05), (0.78, 0.34, 0.12)
-        ]
-        for finger in fingers {
+        for finger in Self.fingers {
             let lean = finger.2 + bend * 0.6
             path.move(to: CGPoint(x: w * finger.0, y: h * 0.92))
             path.addQuadCurve(
@@ -4214,13 +4859,20 @@ private struct FingerCoralShape: Shape {
     }
 }
 
-/// Cup coral: a knot of open bowls, drawn as rings on a low mound.
+/// Cup coral: a knot of open bowls on a low mound.
+///
+/// The opening is the point of this growth, so each bowl is drawn as three
+/// things rather than one: the wall, the dark inside it, and a bright lip
+/// where the light catches the rim. Two flat discs of colour make a button;
+/// the lip is what turns it into something with a hole in it.
 private struct CupCoral: View {
     let colour: Color
     let shade: Color
 
+    /// x, y, diameter — all shares of the frame's width.
     private static let cups: [(CGFloat, CGFloat, CGFloat)] = [
-        (0.28, 0.66, 0.46), (0.56, 0.50, 0.60), (0.78, 0.72, 0.40), (0.44, 0.84, 0.34)
+        (0.28, 0.64, 0.48), (0.57, 0.46, 0.62), (0.79, 0.70, 0.42),
+        (0.43, 0.84, 0.36), (0.68, 0.90, 0.28), (0.16, 0.88, 0.24)
     ]
 
     var body: some View {
@@ -4228,15 +4880,34 @@ private struct CupCoral: View {
             let w = proxy.size.width
             let h = proxy.size.height
             ZStack {
+                // The mound the bowls have grown up out of.
+                Ellipse()
+                    .fill(shade)
+                    .frame(width: w * 0.92, height: h * 0.22)
+                    .position(x: w * 0.50, y: h * 0.90)
+
                 ForEach(Array(Self.cups.enumerated()), id: \.offset) { _, cup in
                     let side = w * cup.2
                     Circle()
                         .fill(LinearGradient(colors: [colour, shade],
                                              startPoint: .top, endPoint: .bottom))
                         .overlay {
+                            // Down the inside of the bowl: darkest at the far
+                            // wall, opening up toward the near one.
                             Circle()
-                                .fill(shade.opacity(0.85))
-                                .padding(side * 0.26)
+                                .fill(
+                                    LinearGradient(colors: [shade.opacity(0.95),
+                                                            shade.opacity(0.62)],
+                                                   startPoint: .top,
+                                                   endPoint: .bottom)
+                                )
+                                .padding(side * 0.24)
+                        }
+                        .overlay {
+                            Circle()
+                                .strokeBorder(.white.opacity(0.34),
+                                              lineWidth: max(0.8, side * 0.06))
+                                .padding(side * 0.20)
                         }
                         .frame(width: side, height: side)
                         .position(x: w * cup.0, y: h * cup.1)
@@ -4331,6 +5002,20 @@ private struct CoralClump: View {
 
 private struct BranchingCoralShape: Shape {
     var bend: CGFloat = 0
+
+    /// The end of every branch, for the open mouths drawn over them. These are
+    /// the same points the curves below finish on; a branch whose tip is not
+    /// listed here simply goes without a mouth, which is what the two short
+    /// growths off the trunk want anyway — they are new wood, not open pipe.
+    static func tips(bend: CGFloat) -> [CGPoint] {
+        [
+            CGPoint(x: 0.43 + bend, y: 0.08),
+            CGPoint(x: 0.16 + bend * 0.68, y: 0.29),
+            CGPoint(x: 0.74 + bend * 1.12, y: 0.17),
+            CGPoint(x: 0.10 + bend * 0.54, y: 0.10),
+            CGPoint(x: 0.61 + bend * 0.9, y: 0.06)
+        ]
+    }
 
     func path(in rect: CGRect) -> Path {
         let w = rect.width
