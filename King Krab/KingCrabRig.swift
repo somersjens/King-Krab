@@ -28,6 +28,13 @@
 //  The parts are also moved as a set until the assembled animal sits in the
 //  middle of its square, so all ten stand in the same place inside their frame.
 //
+//  A run of legs may also be rebuilt out of copies of a single leg cut from it,
+//  so that the legs step one at a time instead of the whole run swinging as a
+//  board — see `LegRun` in CrabLegWalk.swift, and Tools/build_crab_leg.py for
+//  the cut. The life crab walks that way. The ten characters are seen from the
+//  far end of the arena and keep the plain swing; so does the 2x crab, whose
+//  three legs are three bands of a rainbow and so cannot be one another.
+//
 
 import SwiftUI
 
@@ -82,6 +89,16 @@ struct CharacterRig {
     /// the two pincers and clear of the crown. Only the two helper crabs carry
     /// anything, and only they are drawn with something here.
     var hold: UnitPoint = UnitPoint(x: 0.5, y: 0.2)
+    /// The legs a rebuilt run is laid out of, for a character whose legs walk
+    /// one at a time rather than swinging as a set. See `LegRun`.
+    ///
+    /// The helper crabs cross the near lane in full view of the player, which
+    /// is where a run turning as one board shows. Only the life crab can have
+    /// it: the 2x crab's three legs are three bands of a rainbow, so a leg of
+    /// its own copied into the other two places would repaint the animal. The
+    /// ten characters the player unlocks are seen at the far end of the arena,
+    /// and keep the plain swing they have always had.
+    var legRun: LegRun? = nil
 
     var bodyImage: Image { Image(body) }
 
@@ -146,7 +163,8 @@ struct CharacterRig {
         rightClawTip: UnitPoint(x: 0.7959, y: 0.1295),
         groundLine: 0.8923,
         clawFrontRadius: 0.0517,
-        hold: UnitPoint(x: 0.5, y: 0.175))
+        hold: UnitPoint(x: 0.5, y: 0.175),
+        legRun: LegRun(legs: ["life_leg1", "life_leg2", "life_leg3"]))
 
     private static let all: [String: CharacterRig] = [
         "crab": CharacterRig(
@@ -346,6 +364,11 @@ struct KingRigPose {
     var rightClaw: Double = 0
     var leftLegs: Double = 0
     var rightLegs: Double = 0
+    /// The walk cycle itself, in radians. The two angles above are the whole
+    /// run swinging as one; a character whose run is cut into its own legs —
+    /// see `CharacterRig.legRun` — needs the cycle rather than the angle, so
+    /// each leg can take its turn in it.
+    var stride: Double = 0
 
     /// The resting pose: a slow breath and legs that shift their weight.
     /// `effort` lifts the same gait into a scuttle without ever changing its
@@ -364,7 +387,8 @@ struct KingRigPose {
             // Opposite sides carry the weight in turn: that alternation is the
             // whole of what makes a row of legs read as walking.
             leftLegs: swing * amount,
-            rightLegs: -swing * amount
+            rightLegs: -swing * amount,
+            stride: stride
         )
     }
 
@@ -383,7 +407,8 @@ struct KingRigPose {
             leftClaw: sin(clock * 1.3) * 1.2,
             rightClaw: -sin(clock * 1.3) * 1.2,
             leftLegs: swing * 15,
-            rightLegs: -swing * 15
+            rightLegs: -swing * 15,
+            stride: stride
         )
     }
 }
@@ -406,8 +431,8 @@ struct RiggedCharacterView<Carried: View>: View {
 
     var body: some View {
         ZStack {
-            limb(rig.leftLegs, degrees: pose.leftLegs)
-            limb(rig.rightLegs, degrees: pose.rightLegs)
+            legs(rig.leftLegs, side: 1, degrees: pose.leftLegs)
+            legs(rig.rightLegs, side: -1, degrees: pose.rightLegs)
             limb(rig.leftClaw, degrees: pose.leftClaw)
             limb(rig.rightClaw, degrees: pose.rightClaw)
             rig.bodyImage
@@ -432,14 +457,39 @@ struct RiggedCharacterView<Carried: View>: View {
     /// The line his feet come down on, which is what all of him pivots around.
     private var ground: UnitPoint { UnitPoint(x: 0.5, y: rig.groundLine) }
 
+    /// A run of legs. Where one has been cut out of the artwork, the run is
+    /// laid out of copies of it and each takes its own turn in the stride — see
+    /// `LegRun` — with a little of the whole run's swing left under them, which
+    /// is the hip itself rocking with the body. A character without that cut
+    /// swings its run as one, as before.
+    @ViewBuilder
+    private func legs(_ limb: CharacterRigLimb, side: CGFloat, degrees: Double) -> some View {
+        if let run = rig.legRun {
+            // Back of the run first, which is the order the artwork lays the
+            // legs over each other in.
+            ForEach(Array(run.legs.enumerated()).reversed(), id: \.offset) { leg in
+                self.limb(limb,
+                          degrees: degrees * LegRun.hipShare
+                              + run.degrees(leg: leg.offset,
+                                            stride: pose.stride, side: side),
+                          drawing: leg.element)
+            }
+        } else {
+            self.limb(limb, degrees: degrees)
+        }
+    }
+
     @ViewBuilder
     private func limb(_ limb: CharacterRigLimb,
                       degrees: Double,
-                      cutAtJoint: Bool = false) -> some View {
-        // Mirroring and nudging come first and leave the layout square alone,
-        // so the joint below still means the same point on screen for a limb
-        // drawn from its own artwork and for one drawn from the other side's.
-        let laid = limb.image
+                      cutAtJoint: Bool = false,
+                      drawing: String? = nil) -> some View {
+        // A run of legs is laid down one leg at a time — the drawing to use is
+        // the run's, not the limb's own. Mirroring and nudging leave the layout
+        // square alone, so the joint below still means the same point on screen
+        // for a limb drawn from its own artwork and for one drawn from the
+        // other side's.
+        let laid = Image(drawing ?? limb.imageName)
             .resizable()
             .scaledToFit()
             .frame(width: size, height: size)

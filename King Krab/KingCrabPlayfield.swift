@@ -1165,6 +1165,7 @@ private struct AnswerCrabView: View {
             bodyWidth: bodyWidth,
             roll: bodyRoll,
             bob: bodyBob,
+            stepPhase: gait,
             // The drawing is made for a crab on the King's left; one that came
             // in from his right is the whole thing flipped.
             mirrored: isMirrored,
@@ -2827,11 +2828,13 @@ private struct DistantWeeds: View, Equatable {
         (0.012, 0.62, 0.10, 0.28, 0.0, 1.00), (0.040, 0.44, -0.08, 0.34, 1.9, 0.72),
         (0.068, 0.52, 0.06, 0.25, 2.6, 0.84), (0.096, 0.30, 0.13, 0.31, 3.4, 0.58),
         (0.026, 0.24, -0.14, 0.39, 5.1, 0.46), (0.054, 0.35, 0.11, 0.33, 0.6, 0.62),
-        (0.124, 0.21, -0.10, 0.37, 4.7, 0.44),
+        (0.124, 0.21, -0.10, 0.37, 4.7, 0.44), (0.148, 0.28, 0.08, 0.29, 1.2, 0.50),
+        (0.168, 0.18, -0.12, 0.40, 3.0, 0.38),
         (0.988, 0.58, -0.11, 0.26, 0.8, 0.94), (0.960, 0.40, 0.09, 0.36, 2.7, 0.68),
         (0.932, 0.50, -0.07, 0.24, 3.9, 0.80), (0.904, 0.27, -0.12, 0.30, 4.3, 0.54),
         (0.974, 0.20, 0.15, 0.41, 5.8, 0.42), (0.946, 0.33, -0.13, 0.35, 1.4, 0.60),
-        (0.876, 0.19, 0.12, 0.38, 5.3, 0.40)
+        (0.876, 0.19, 0.12, 0.38, 5.3, 0.40), (0.852, 0.26, -0.09, 0.32, 2.1, 0.48),
+        (0.832, 0.17, 0.11, 0.42, 4.0, 0.36)
     ]
 
     private var blades: [(CGFloat, CGFloat, CGFloat, Double, Double, CGFloat)] {
@@ -3647,17 +3650,18 @@ private struct SandLight: View {
 ///
 /// Three rules hold it together:
 ///
-/// * **Few and big.** Four outcrops a side, each a good fraction of the width.
-///   The old version had thirteen small ones and read as gravel: at that size
+/// * **Few and big.** A handful of outcrops a side, each a good fraction of the
+///   width, topped by a coral fringe rather than a third course of stone. The
+///   old version had thirteen small ones and read as gravel: at that size
 ///   nothing can grow *around* anything, so every piece stays a separate piece.
 /// * **Overlap.** Outcrops are spaced far closer than one is tall, so each new
 ///   one is bedded into the mass below rather than standing on top of it. An
 ///   outcrop that does not touch its neighbour is this layer's one real
 ///   mistake, and it is what makes a bank read as stacking.
 /// * **Back to front.** The table runs from the top of the bank down, and each
-///   outcrop draws its own back growth, then its stones, then its front growth.
-///   That ordering is why this is one canvas pass and not a stone layer with a
-///   growth layer over it.
+///   outcrop draws weed behind, back growth, then its stones, then front
+///   growth, then weed at the feet. That ordering is why this is one canvas
+///   pass and not a stone layer with a growth layer over it.
 ///
 /// The whole run is immediate-mode. As views it would be a dozen rock gardens
 /// rebuilt on every sway step, on the layer of the scene that can least afford
@@ -3718,34 +3722,45 @@ private struct ReefBanks: View {
         [
             Sprig(dx: -0.26, dy: -0.30, size: 0.58, style: 0, hue: 0, behind: true),
             Sprig(dx: 0.40, dy: -0.20, size: 0.44, style: 2, hue: 2, behind: true),
+            Sprig(dx: 0.08, dy: -0.38, size: 0.34, style: 1, hue: 3, behind: true),
             Sprig(dx: -0.52, dy: 0.05, size: 0.48, style: 1, hue: 1, behind: false),
             Sprig(dx: -0.30, dy: -0.26, size: 0.30, style: 3, hue: 2, behind: false),
             Sprig(dx: 0.10, dy: 0.03, size: 0.36, style: 3, hue: 3, behind: false),
-            Sprig(dx: 0.58, dy: 0.07, size: 0.34, style: 2, hue: 4, behind: false)
+            Sprig(dx: 0.58, dy: 0.07, size: 0.34, style: 2, hue: 4, behind: false),
+            Sprig(dx: 0.34, dy: -0.12, size: 0.26, style: 3, hue: 0, behind: false)
         ],
         [
             Sprig(dx: 0.22, dy: -0.34, size: 0.54, style: 1, hue: 1, behind: true),
             Sprig(dx: -0.38, dy: -0.16, size: 0.40, style: 3, hue: 3, behind: true),
+            Sprig(dx: -0.06, dy: -0.36, size: 0.32, style: 0, hue: 4, behind: true),
             Sprig(dx: 0.50, dy: 0.06, size: 0.46, style: 0, hue: 2, behind: false),
             Sprig(dx: 0.26, dy: -0.28, size: 0.28, style: 3, hue: 4, behind: false),
             Sprig(dx: -0.16, dy: 0.02, size: 0.36, style: 2, hue: 4, behind: false),
-            Sprig(dx: -0.56, dy: 0.07, size: 0.32, style: 1, hue: 0, behind: false)
+            Sprig(dx: -0.56, dy: 0.07, size: 0.32, style: 1, hue: 0, behind: false),
+            Sprig(dx: -0.42, dy: -0.14, size: 0.24, style: 3, hue: 1, behind: false)
         ],
         [
             Sprig(dx: 0.18, dy: -0.22, size: 0.38, style: 2, hue: 2, behind: true),
-            Sprig(dx: -0.30, dy: 0.04, size: 0.32, style: 3, hue: 0, behind: false)
+            Sprig(dx: -0.12, dy: -0.28, size: 0.28, style: 0, hue: 1, behind: true),
+            Sprig(dx: -0.30, dy: 0.04, size: 0.32, style: 3, hue: 0, behind: false),
+            Sprig(dx: 0.36, dy: 0.06, size: 0.26, style: 3, hue: 3, behind: false)
         ],
         // A crown: growth with no stone of its own, for the top of the bank.
         // Two courses of boulder is as high as this reef stacks — past that it
         // stops being an outcrop and becomes a cairn — so what tops it off is
-        // coral, rooted low enough into the course below to be coming out of
-        // it rather than sitting on it.
+        // coral and weed, rooted low enough into the course below to be coming
+        // out of it rather than sitting on it. Denser than a mid-bank outcrop:
+        // the silhouette against open water is most of what this fringe does.
         [
-            Sprig(dx: -0.32, dy: -0.06, size: 0.66, style: 0, hue: 0, behind: true),
-            Sprig(dx: 0.30, dy: -0.02, size: 0.56, style: 2, hue: 2, behind: true),
-            Sprig(dx: -0.02, dy: 0.08, size: 0.62, style: 1, hue: 1, behind: false),
-            Sprig(dx: 0.52, dy: 0.10, size: 0.42, style: 3, hue: 3, behind: false),
-            Sprig(dx: -0.58, dy: 0.10, size: 0.40, style: 2, hue: 4, behind: false)
+            Sprig(dx: -0.38, dy: -0.10, size: 0.70, style: 0, hue: 0, behind: true),
+            Sprig(dx: 0.34, dy: -0.06, size: 0.58, style: 2, hue: 2, behind: true),
+            Sprig(dx: -0.06, dy: -0.18, size: 0.48, style: 1, hue: 3, behind: true),
+            Sprig(dx: 0.56, dy: -0.02, size: 0.36, style: 3, hue: 4, behind: true),
+            Sprig(dx: -0.02, dy: 0.08, size: 0.64, style: 1, hue: 1, behind: false),
+            Sprig(dx: 0.48, dy: 0.10, size: 0.44, style: 3, hue: 3, behind: false),
+            Sprig(dx: -0.54, dy: 0.10, size: 0.42, style: 2, hue: 4, behind: false),
+            Sprig(dx: 0.18, dy: 0.04, size: 0.34, style: 0, hue: 2, behind: false),
+            Sprig(dx: -0.22, dy: 0.06, size: 0.30, style: 3, hue: 0, behind: false)
         ]
     ]
 
@@ -3765,8 +3780,11 @@ private struct ReefBanks: View {
     /// runs is what a reef has instead of height — a bank that goes up rather
     /// than along is a tower.
     private static let bank: [(CGFloat, CGFloat, CGFloat, Int, Double)] = [
-        (0.030, 0.44, 0.60, crownPlan, 4.7),
-        (0.098, 0.39, 0.52, crownPlan, 2.6),
+        // Crowns first in the table so they paint furthest back: open-water
+        // fringe, then the stone courses below them, then the bedded base.
+        (0.030, 0.48, 0.64, crownPlan, 4.7),
+        (0.092, 0.42, 0.54, crownPlan, 2.6),
+        (0.058, 0.34, 0.42, crownPlan, 1.1),
         (0.038, 0.25, 0.86, 0, 5.0),
         (0.132, 0.21, 0.58, 1, 3.1),
         (0.330, 0.00, 0.30, 2, 5.2),
@@ -3776,12 +3794,12 @@ private struct ReefBanks: View {
     ]
 
     /// Two thirds of the bank where the frame budget is tightest. The corner
-    /// outcrop and the crown over it are kept whatever happens: one is the mass
-    /// the composition rests on and the other is its silhouette.
+    /// outcrop and the outer crowns over it are kept whatever happens: one is
+    /// the mass the composition rests on and the other is its silhouette.
     private var bank: [(CGFloat, CGFloat, CGFloat, Int, Double)] {
         ArenaPerformanceBudget.isConstrained
             ? Self.bank.enumerated()
-                .filter { $0.offset != 1 && $0.offset != 3 && $0.offset != 5 }
+                .filter { $0.offset != 2 && $0.offset != 4 && $0.offset != 6 }
                 .map(\.element)
             : Self.bank
     }
@@ -3818,7 +3836,9 @@ private struct ReefBanks: View {
         .accessibilityHidden(true)
     }
 
-    /// One outcrop: the growth behind it, three stones, the growth in front.
+    /// One outcrop: soft weed behind, coral behind the pile, three stones,
+    /// coral in front, then weed at the feet. That order is the whole difference
+    /// between growth around a rock and growth pasted on top of one.
     private func draw(at root: CGPoint,
                       unit: CGFloat,
                       up: CGFloat,
@@ -3828,11 +3848,15 @@ private struct ReefBanks: View {
                       accent: Int,
                       bedded: Bool,
                       in context: inout GraphicsContext) {
-        let sway = sin(clock * 0.44 + phase)
+        // Crowns sit further into open water, so they take a little more of the
+        // current than the bedded courses below.
+        let swayRate = plan == Self.crownPlan ? 0.56 : 0.44
+        let sway = sin(clock * swayRate + phase)
         let sprigs = Self.arrangements[plan % Self.arrangements.count]
         // Every offset inside an outcrop is mirrored along with its stones, so
         // the left bank's planting is not the right bank's read backwards.
         let hand: CGFloat = flipped ? -1 : 1
+        let isCrown = plan == Self.crownPlan
 
         // Further up the bank is further out into the water, and the water
         // takes its share. Without this the fringe at the top of the climb is
@@ -3846,30 +3870,37 @@ private struct ReefBanks: View {
                               y: root.y + unit * sprig.dy - side * 1.15,
                               width: side, height: side * 1.15)
             let hue = accent + sprig.hue
+            let bend = CGFloat(sway) * (isCrown ? 0.18 : 0.12) * hand
             drawGrowth(palette.growth(sprig.style), in: rect,
-                       bend: CGFloat(sway) * 0.12 * hand,
+                       bend: bend,
                        colour: palette.reefAccent(hue),
                        shade: palette.reefAccentDeep(hue),
                        context: &layer)
         }
 
-        // Weed first of all, rooted wide of the pile on both sides: it is the
-        // softest thing here and everything else is drawn over it.
-        for blade in 0..<3 {
-            let out = CGFloat(blade) * 0.42 - 0.42
-            let lean = CGFloat(sway) * 0.26 + out * 0.5
-            let length = unit * (0.42 + CGFloat(blade % 2) * 0.20)
-            let x = root.x + unit * out
-            var path = Path()
-            path.move(to: CGPoint(x: x, y: root.y))
-            path.addQuadCurve(to: CGPoint(x: x + length * lean, y: root.y - length),
-                              control: CGPoint(x: x + length * lean * 0.2,
-                                               y: root.y - length * 0.55))
-            layer.stroke(path,
-                         with: .color(palette.plant.opacity(0.72)),
-                         style: StrokeStyle(lineWidth: max(1.5, unit * 0.04),
-                                            lineCap: .round))
+        func weed(offsets: [CGFloat], lengthScale: CGFloat, inFront: Bool) {
+            for (index, out) in offsets.enumerated() {
+                let lean = CGFloat(sway) * (inFront ? 0.34 : 0.26) + out * 0.5
+                let length = unit * lengthScale * (0.78 + CGFloat(index % 2) * 0.28)
+                let x = root.x + hand * unit * out
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: root.y + (inFront ? unit * 0.02 : 0)))
+                path.addQuadCurve(to: CGPoint(x: x + length * lean, y: root.y - length),
+                                  control: CGPoint(x: x + length * lean * 0.2,
+                                                   y: root.y - length * 0.55))
+                layer.stroke(path,
+                             with: .color(palette.plant.opacity(inFront ? 0.78 : 0.62)),
+                             style: StrokeStyle(lineWidth: max(1.4, unit * (inFront ? 0.038 : 0.034)),
+                                                lineCap: .round))
+            }
         }
+
+        // Soft weed first, wide of the pile: everything else is drawn over it.
+        weed(offsets: isCrown
+                ? [-0.72, -0.38, -0.04, 0.32, 0.66]
+                : [-0.58, -0.16, 0.28],
+             lengthScale: isCrown ? 0.58 : 0.46,
+             inFront: false)
 
         for sprig in sprigs where sprig.behind { plant(sprig) }
 
@@ -3878,7 +3909,7 @@ private struct ReefBanks: View {
         // different amounts — one silhouette, three stones, no repetition the
         // eye can name. A crown skips this: its growth is coming out of the
         // course underneath, which already has stones of its own.
-        if plan != Self.crownPlan {
+        if !isCrown {
             stone(CGRect(x: root.x - hand * unit * 0.44 - unit * 0.31,
                          y: root.y - unit * 0.30, width: unit * 0.62, height: unit * 0.32),
                   flipped: !flipped, accent: accent, bedded: bedded,
@@ -3894,6 +3925,14 @@ private struct ReefBanks: View {
         }
 
         for sprig in sprigs where !sprig.behind { plant(sprig) }
+
+        // Short blades at the feet last, so the pile is planted rather than
+        // outlined. Crowns get a few more — they are the open-water fringe.
+        weed(offsets: isCrown
+                ? [-0.48, -0.18, 0.14, 0.44]
+                : [-0.42, 0.06, 0.48],
+             lengthScale: isCrown ? 0.40 : 0.32,
+             inFront: true)
     }
 
     /// One boulder, with its dimple in the sand, its lit crown and the wash of
@@ -4048,7 +4087,10 @@ private struct SeaGardens: View {
         // floor was open sand from the crest all the way down to the near
         // corners, and open sand at that size reads as a beach.
         (0.155, 0.44, 0.52, 1, true),  (0.845, 0.40, 0.50, 0, false),
-        (0.195, 0.86, 0.60, 0, false), (0.805, 0.90, 0.58, 2, true)
+        (0.195, 0.86, 0.60, 0, false), (0.805, 0.90, 0.58, 2, true),
+        // Just under the crest at both hands — planted stones so the far bed
+        // is not bare sand between the banks and the nearer gardens.
+        (0.118, 0.16, 0.46, 1, false), (0.882, 0.14, 0.44, 0, true)
     ]
 
     /// Half the gardens where the frame budget is tightest. Each one is a small
@@ -4083,8 +4125,8 @@ private struct SeaGardens: View {
 }
 
 /// One garden: a boulder with two smaller stones, grass coming up from behind
-/// them, and — depending on the variant — a coral tuft or a starfish resting
-/// against the rock.
+/// them and short blades at their feet, and — depending on the variant — a
+/// coral tuft or a starfish resting against the rock.
 private struct RockGarden: View {
     let palette: ReefPalette
     let clock: Double
@@ -4097,17 +4139,17 @@ private struct RockGarden: View {
             let h = proxy.size.height
 
             ZStack {
-                // The planting first: it grows up from behind the stones, which
-                // is what welds the two together.
-                grass(width: w, height: h)
+                // Back planting first: tall blades and optional coral rise from
+                // behind the stones, which is what welds growth to rock.
+                grass(behind: true, width: w, height: h)
 
                 if variant == 1 {
                     coralTuft(width: w, height: h)
                 }
 
-                // Stones and starfish are the still half of a garden. Only the
-                // grass and the coral tuft above take the clock, so these say
-                // they are unchanged and the sway step steps straight over them.
+                // Stones are the still half of a garden. Only the grass and the
+                // coral tuft take the clock, so these say they are unchanged and
+                // the sway step steps straight over them.
                 Boulder(palette: palette, width: w * 0.52, height: h * 0.52)
                     .equatable()
                     .position(x: w * 0.42, y: h * 0.70)
@@ -4117,6 +4159,10 @@ private struct RockGarden: View {
                 Boulder(palette: palette, width: w * 0.22, height: h * 0.22)
                     .equatable()
                     .position(x: w * 0.20, y: h * 0.87)
+
+                // Short blades at the feet last — before any starfish — so the
+                // pile is planted around rather than outlined from behind.
+                grass(behind: false, width: w, height: h)
 
                 if variant == 2 {
                     StarfishView(colour: palette.reefAccent(1),
@@ -4130,23 +4176,29 @@ private struct RockGarden: View {
         }
     }
 
-    /// Blades rooted behind the boulder, leaning away from it.
-    private func grass(width w: CGFloat, height h: CGFloat) -> some View {
-        let blades: [(CGFloat, CGFloat, Double)] = [
-            (0.24, 0.78, 0.0), (0.36, 1.00, 1.1), (0.48, 0.88, 2.3),
-            (0.58, 1.12, 3.4), (0.70, 0.74, 4.6), (0.80, 0.92, 5.2)
-        ]
+    /// Blades rooted behind the boulder, or shorter ones tucked at its feet.
+    private func grass(behind: Bool, width w: CGFloat, height h: CGFloat) -> some View {
+        // x, height factor, phase. Behind blades are tall and sit mid-pile;
+        // front blades are short and nestle at the stone feet.
+        let blades: [(CGFloat, CGFloat, Double)] = behind
+            ? [(0.18, 0.86, 0.0), (0.30, 1.04, 1.1), (0.44, 0.94, 2.3),
+               (0.56, 1.14, 3.4), (0.68, 0.82, 4.6), (0.80, 0.98, 5.2)]
+            : [(0.12, 0.42, 0.7), (0.34, 0.50, 2.0), (0.52, 0.38, 3.5),
+               (0.66, 0.46, 4.8), (0.84, 0.40, 5.9)]
+        let rootY: CGFloat = behind ? 0.78 : 0.90
         return ZStack(alignment: .bottom) {
             ForEach(Array(blades.enumerated()), id: \.offset) { _, blade in
                 let sway = sin(clock * (0.62 + Double(blade.0) * 0.3) + phase + blade.2)
-                PlantBladeShape(bend: CGFloat(sway) * 0.30 + (blade.0 - 0.5) * 0.5)
+                let bendScale: CGFloat = behind ? 0.30 : 0.38
+                PlantBladeShape(bend: CGFloat(sway) * bendScale + (blade.0 - 0.5) * 0.5)
                     .stroke(
                         LinearGradient(colors: [palette.plantLight, palette.plant],
                                        startPoint: .top, endPoint: .bottom),
-                        style: StrokeStyle(lineWidth: max(2.5, w * 0.045), lineCap: .round)
+                        style: StrokeStyle(lineWidth: max(behind ? 2.5 : 2.0, w * (behind ? 0.045 : 0.036)),
+                                           lineCap: .round)
                     )
-                    .frame(width: w * 0.30, height: h * blade.1)
-                    .position(x: w * blade.0, y: h * 0.82 - h * blade.1 / 2)
+                    .frame(width: w * (behind ? 0.30 : 0.22), height: h * blade.1)
+                    .position(x: w * blade.0, y: h * rootY - h * blade.1 / 2)
             }
         }
     }

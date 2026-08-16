@@ -560,7 +560,9 @@ struct AnswerCrab: Identifiable {
     var nextFootfall: CGFloat = 0
     let cardLean: Double
     /// A crab does not glide: it scuttles a few steps, hesitates, and goes
-    /// again. This is the rhythm of that, per crab.
+    /// again. This is the rhythm of that visual surge along the path — it no
+    /// longer changes how fast the crab covers ground, so a wave still shares
+    /// one arrival.
     let scuttleRate: Double
     let scuttlePhase: Double
     /// Which way it is travelling across the screen, so it leads with the
@@ -1583,22 +1585,31 @@ final class KingCrabArena: ObservableObject {
         let entries = Array(entryPoints.shuffled().prefix(options.count))
         let ring = kingSize * ArenaConfig.arrivalRingFactor
 
-        for (index, option) in options.enumerated() {
-            let entry = entries[index]
+        // One shared entry split for the whole wave. Per-lane readable points
+        // differ slightly left-to-right; using the furthest keeps every shell
+        // readable in time and, more importantly, keeps every crab on the same
+        // arrival clock so the King answers them in one sweep.
+        var sharedEntryProgress = 0.0
+        var starts: [CGPoint] = []
+        var targets: [CGPoint] = []
+        for entry in entries {
             let angle = atan2(Double(entry.y - king.anchor.y),
                               Double(entry.x - king.anchor.x))
             let target = CGPoint(x: king.anchor.x + ring * CGFloat(cos(angle)),
                                  y: king.anchor.y + ring * CGFloat(sin(angle)))
             let start = offscreenStart(for: entry)
-            // Where along the walk the answer can be read: the number sits in
-            // the middle of the shell, so that happens well before the crab is
-            // all the way in. Up to there it hurries; from there it walks, so
-            // the time the player has to read an answer is the time they have
-            // always had — they just get it sooner.
             let span = target.x - start.x
             let entryProgress = abs(span) < 1
                 ? 0
                 : min(0.6, max(0, Double((readablePoint(for: entry) - start.x) / span)))
+            sharedEntryProgress = max(sharedEntryProgress, entryProgress)
+            starts.append(start)
+            targets.append(target)
+        }
+
+        for (index, option) in options.enumerated() {
+            let start = starts[index]
+            let target = targets[index]
             crabs.append(AnswerCrab(
                 optionID: option.id,
                 text: option.text,
@@ -1607,7 +1618,7 @@ final class KingCrabArena: ObservableObject {
                 start: start,
                 target: target,
                 position: start,
-                entryProgress: entryProgress,
+                entryProgress: sharedEntryProgress,
                 // Every crab in a wave shares the same duration and start time
                 // so all four reach the King's ring together — the King can
                 // then answer the whole wave at once rather than crabs
@@ -1801,19 +1812,21 @@ final class KingCrabArena: ObservableObject {
 
             case .walking:
                 // The walk is a straight line from off screen to the King; the
-                // waddle and the scuttle only make it look like walking, never
-                // like drifting. The scuttle averages out over its own cycle,
-                // so the six seconds still hold.
-                // A crab that has broken into a run stops hesitating: the
-                // scuttle's stop-start is what a *careful* crab does.
+                // waddle only makes it look like walking, never like drifting.
+                // Progress itself stays free of per-crab scuttle so every
+                // careful crab in the wave still shares one arrival — a single
+                // King sweep, not a trickle of blows.
                 var run = 0.0
                 if crab.isRushing {
                     crab.rushAge += dt
                     let ramp = min(1, crab.rushAge / ArenaConfig.rushRamp)
                     run = ramp * ramp
                 }
-                let scuttle = 1 + 0.32 * (1 - 0.8 * run)
-                    * sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
+                // A careful crab still hesitates in place along its path: the
+                // surge is visual only and averages out, so arrival time does
+                // not drift crab-to-crab the way a rate multiplier would.
+                let scuttle = sin(crab.age * crab.scuttleRate + crab.scuttlePhase)
+                    * (1 - 0.8 * run)
                 // The on-screen stretch is the one the duration is about; the
                 // rush over the last of the off-screen stretch eases out of
                 // itself, so the crab arrives in view already walking.
@@ -1824,7 +1837,7 @@ final class KingCrabArena: ObservableObject {
                     rate *= 1 + (ArenaConfig.approachRush - 1) * left * left
                 }
                 rate *= 1 + (ArenaConfig.rushSpeed - 1) * run
-                crab.progress = min(1, crab.progress + dt * speedMultiplier * scuttle * rate)
+                crab.progress = min(1, crab.progress + dt * speedMultiplier * rate)
                 let eased = crab.progress
                 let base = CGPoint(
                     x: crab.start.x + (crab.target.x - crab.start.x) * CGFloat(eased),
@@ -1836,8 +1849,14 @@ final class KingCrabArena: ObservableObject {
                 // Sideways sway across the line of travel, one lean per pair of
                 // steps, which is how a crab actually crosses open ground.
                 let sway = CGFloat(sin(crab.age * crab.waddleRate)) * crab.waddleAmplitude
-                let stepped = CGPoint(x: base.x - along.dy / length * sway,
-                                      y: base.y + along.dx / length * sway)
+                // A little surge along the path — stop-start feel without
+                // changing when the crab reaches the ring.
+                let surge = CGFloat(scuttle) * crab.waddleAmplitude * 0.55
+                    * CGFloat(eased * (1 - eased) * 4)
+                let stepped = CGPoint(
+                    x: base.x - along.dy / length * sway + along.dx / length * surge,
+                    y: base.y + along.dx / length * sway + along.dy / length * surge
+                )
                 crab.walked += hypot(stepped.x - crab.position.x,
                                      stepped.y - crab.position.y)
                 crab.position = stepped
@@ -2151,6 +2170,14 @@ final class KingCrabArena: ObservableObject {
     /// consequences are applied afterwards, one by one.
     private func resolveSweepIfDue(_ dt: Double) {
         guard var remaining = sweepGather else { return }
+        // Hold the gather while any unanswered crab is still on its way. Early
+        // arrivals wait at the ring; the blow only lands once the rest of the
+        // live wave has joined them — so one sweep clears them all.
+        let stillApproaching = crabs.contains {
+            !$0.hasAnswered && ($0.phase == .waiting || $0.phase == .walking)
+        }
+        if stillApproaching { return }
+
         remaining -= dt
         guard remaining <= 0 else {
             sweepGather = remaining
@@ -2529,29 +2556,39 @@ final class KingCrabArena: ObservableObject {
         }
     }
 
-    /// The small kick of sand a walking crab leaves under itself, one footfall
-    /// at a time.
+    /// The kick of sand a walking crab leaves under itself, one footfall at a
+    /// time.
     ///
-    /// Deliberately nothing like a `burst`: two grains, barely off the floor,
-    /// thrown back the way the crab came. What it says is that there is sand
-    /// under the animal and that its feet are in it — the difference between a
-    /// crab walking on the sea floor and one sliding over a picture of one.
-    private func scuff(at point: CGPoint, bodyWidth: CGFloat, drift: CGFloat) {
-        let count = ArenaPerformanceBudget.isConstrained ? 1 : 2
+    /// Deliberately nothing like a `burst`: a handful of grains, barely off the
+    /// floor, thrown back the way the crab came. What it says is that there is
+    /// sand under the animal and that its feet are in it — the difference
+    /// between a crab walking on the sea floor and one sliding over a picture
+    /// of one.
+    ///
+    /// It leaves from under the trailing foot rather than from the middle of
+    /// the animal, and from the two sides in turn, so the puffs come off the
+    /// floor in the same alternating rhythm the legs step in.
+    private func scuff(at point: CGPoint, bodyWidth: CGFloat,
+                       facing: CGFloat, nearFoot: Bool) {
+        let count = ArenaPerformanceBudget.isConstrained ? 3 : 5
+        let heel = CGPoint(
+            x: point.x - facing * bodyWidth * (nearFoot ? 0.34 : 0.24),
+            y: point.y + bodyWidth
+                * (ArenaConfig.footLine + (nearFoot ? 0.06 : -0.03))
+        )
         for _ in 0..<count {
             grains.append(SandGrain(
-                position: CGPoint(x: point.x + CGFloat.random(in: -3...3),
-                                  y: point.y + bodyWidth * ArenaConfig.footLine
-                                      + CGFloat.random(in: -2...2)),
-                velocity: CGPoint(x: drift * CGFloat.random(in: 0.5...1.2),
-                                  y: -CGFloat.random(in: 18...44)),
-                radius: CGFloat.random(in: 1.1...2.5),
+                position: CGPoint(x: heel.x + CGFloat.random(in: -4...4),
+                                  y: heel.y + CGFloat.random(in: -2...2)),
+                velocity: CGPoint(x: -facing * CGFloat.random(in: 22...84),
+                                  y: -CGFloat.random(in: 30...78)),
+                radius: CGFloat.random(in: 1.2...3.1),
                 tone: Double.random(in: 0.35...1),
-                lifetime: Double.random(in: 0.28...0.46),
+                lifetime: Double.random(in: 0.30...0.54),
                 // It is pushed off the floor rather than thrown up off it, so
                 // it settles back almost at once and hardly travels.
                 gravity: 170,
-                drag: 0.04
+                drag: 0.05
             ))
         }
     }
@@ -2573,7 +2610,12 @@ final class KingCrabArena: ObservableObject {
         // Two footfalls to the cycle: the two sides carry the weight in turn.
         next = walked + stride / 2
         guard onScreen else { return }
-        scuff(at: point, bodyWidth: bodyWidth, drift: -facing * 34)
+        // Which side has just come down. It is the same stride the legs
+        // themselves are stepped off, so the sand leaves the floor on the beat
+        // the feet do rather than on one of its own.
+        let footfall = Int(walked / (stride / 2))
+        scuff(at: point, bodyWidth: bodyWidth, facing: facing,
+              nearFoot: footfall.isMultiple(of: 2))
     }
 
     private func moveGrains(_ dt: Double) {

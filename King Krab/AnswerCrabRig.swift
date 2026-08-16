@@ -24,6 +24,12 @@
 //  the hips, the line the feet stand on, and the two eye whites the pupils have
 //  to stay inside.
 //
+//  The run of legs ships as one drawing of three, which cannot step. So one
+//  whole leg is cut out of it and the run is rebuilt from copies of that leg,
+//  one where each of the three stood — see `LegRun` in CrabLegWalk.swift, and
+//  Tools/build_crab_leg.py for the cut. The run's own drawing is still what the
+//  hips were measured from; it is no longer what gets drawn.
+//
 
 import SwiftUI
 
@@ -65,8 +71,14 @@ struct AnswerCrabRig {
     let body: String
     let leftClaw: Limb
     let rightClaw: Limb
+    /// The two runs of legs. Only the hip, the mirroring and the nudge are used
+    /// from them now: the picture that gets drawn is `legRun`'s, one leg at a
+    /// time, hung on this same hip.
     let leftLegs: Limb
     let rightLegs: Limb
+    /// The three legs the run is rebuilt from, cut out of that drawing by
+    /// Tools/build_crab_leg.py. See `LegRun`.
+    let legRun: LegRun
     /// The mouth of each claw: where the rim of the answer shell is held. It is
     /// the *back* of the cavity rather than its middle, so the shell is seated
     /// right down between the jaws instead of resting on their tips.
@@ -114,6 +126,8 @@ struct AnswerCrabRig {
                         joint: UnitPoint(x: 0.5909, y: 0.5719),
                         flipped: true,
                         nudge: CGSize(width: 0.0056, height: -0.0045)),
+        legRun: LegRun(legs: ["answer_gold_leg1", "answer_gold_leg2",
+                              "answer_gold_leg3"]),
         leftPincer: UnitPoint(x: 0.3806, y: 0.3268),
         rightPincer: UnitPoint(x: 0.648, y: 0.3268),
         groundLine: 0.7298,
@@ -141,6 +155,8 @@ struct AnswerCrabRig {
                         joint: UnitPoint(x: 0.5905, y: 0.5705),
                         flipped: true,
                         nudge: CGSize(width: 0.0078, height: -0.0062)),
+        legRun: LegRun(legs: ["answer_red_leg1", "answer_red_leg2",
+                              "answer_red_leg3"]),
         leftPincer: UnitPoint(x: 0.3802, y: 0.3277),
         rightPincer: UnitPoint(x: 0.6467, y: 0.3277),
         groundLine: 0.727,
@@ -175,6 +191,11 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// planted foot has to stay where it was put.
     let roll: Double
     let bob: CGFloat
+    /// The walk cycle in radians, which the roll and the bob are taken from as
+    /// well. The legs of a run step off it one at a time — see `LegRun` — so a
+    /// crab that stops covering ground stops its feet where they stand rather
+    /// than snapping them back to the drawing.
+    let stepPhase: Double
     /// True for a crab on the King's right, whose whole drawing is flipped.
     let mirrored: Bool
     /// Where it is headed, as a unit vector: it is what its eyes follow.
@@ -191,8 +212,8 @@ struct AnswerCrabSprite<Carried: View>: View {
         ZStack {
             oneSide {
                 claw(rig.rightClaw, pincer: rig.rightPincer, grip: designGrip?.right)
-                limb(rig.leftLegs)
-                limb(rig.rightLegs)
+                legs(rig.leftLegs, side: 1)
+                legs(rig.rightLegs, side: -1)
                 ZStack {
                     image(rig.body)
                     pupil(rig.leftEye)
@@ -259,8 +280,13 @@ struct AnswerCrabSprite<Carried: View>: View {
     /// the layout square alone, so the joint still means the same point on
     /// screen whichever side's drawing it came from.
     @ViewBuilder
-    private func limb(_ limb: AnswerCrabRig.Limb, bigJawOnly: Bool = false) -> some View {
-        let picture = image(limb.imageName)
+    private func limb(_ limb: AnswerCrabRig.Limb,
+                      bigJawOnly: Bool = false,
+                      drawing: String? = nil) -> some View {
+        // A run of legs is laid down one leg at a time — the drawing to use is
+        // the run's, not the limb's own — and everything else about where it
+        // goes stays the limb's.
+        let picture = image(drawing ?? limb.imageName)
         Group {
             if bigJawOnly {
                 // The cut is made on the picture as it was drawn, before the
@@ -279,6 +305,27 @@ struct AnswerCrabSprite<Carried: View>: View {
         }
         .scaleEffect(x: limb.flipped ? -1 : 1, y: 1)
         .offset(x: square * limb.nudge.width, y: square * limb.nudge.height)
+    }
+
+    /// One run of legs, rebuilt out of copies of a single leg and stepped a leg
+    /// at a time. They go down back of the run first, which is the order the
+    /// artwork lays them over each other in.
+    ///
+    /// The legs stay out of the body's roll and bob, as they always have: the
+    /// hip they turn on is the drawing's own, so a foot goes where the walk
+    /// puts it rather than being carried about by the shell over it.
+    private func legs(_ limb: AnswerCrabRig.Limb, side: CGFloat) -> some View {
+        let run = rig.legRun
+        return ZStack {
+            ForEach(Array(run.legs.enumerated()).reversed(), id: \.offset) { leg in
+                self.limb(limb, drawing: leg.element)
+                    .rotationEffect(
+                        .degrees(run.degrees(leg: leg.offset,
+                                             stride: stepPhase, side: side)),
+                        anchor: limb.joint
+                    )
+            }
+        }
     }
 
     /// A claw turns around its own buried end until its mouth is on the edge it
