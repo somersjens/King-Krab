@@ -120,6 +120,14 @@ struct KingCrabPlayfield: View {
             let sunShare = (rect.minY + rect.height * ArenaConfig.kingAnchorShare - crest)
                 / max(1, size.height - crest)
 
+            // Whether the doubling coin has risen past his silhouette — computed
+            // once so the behind/in-front branches do not remeasure him twice.
+            let coinClearsKing: Bool = {
+                guard let coin = arena.doublingCoin else { return false }
+                return coin.isClear(ofKingAt: arena.king.position.y,
+                                    kingSize: ArenaConfig.kingSize(isPad: isPad))
+            }()
+
             // Seven layers, back to front: open water and its surface; the weed
             // silhouetted against it; the sea floor with its own reef; the
             // depth down both edges; the light coming through all of it; the
@@ -156,6 +164,19 @@ struct KingCrabPlayfield: View {
                                    palette: palette)
                     .allowsHitTesting(false)
 
+                // The doubling coin rests under the King, and while it is still
+                // rising past him it stays behind his body — never drawn over
+                // his face on the way up to the score.
+                if let coin = arena.doublingCoin, !coinClearsKing {
+                    DoublingCoinView(coin: coin,
+                                     pulseClock: arena.swayClock,
+                                     palette: palette,
+                                     isPad: isPad)
+                        .position(coin.position)
+                        .transaction { $0.animation = nil }
+                        .allowsHitTesting(false)
+                }
+
                 // Animals must never inherit a parent animation: even a spring
                 // on the missed-sum note would interpolate `.position` between
                 // sim ticks and make every walk look laggy.
@@ -163,8 +184,7 @@ struct KingCrabPlayfield: View {
                              character: character,
                              palette: palette,
                              isPad: isPad,
-                             clock: arena.clock,
-                             hasBonusPower: arena.hasBonusAura)
+                             clock: arena.clock)
                     .position(arena.king.position)
                     .transaction { $0.animation = nil }
                     .allowsHitTesting(false)
@@ -209,6 +229,18 @@ struct KingCrabPlayfield: View {
                 ForEach(arena.shells) { shell in
                     ShellRewardView(shell: shell, palette: palette, isPad: isPad)
                         .position(shell.position)
+                        .transaction { $0.animation = nil }
+                        .allowsHitTesting(false)
+                }
+
+                // Once clear of the King, the coin joins the shells in front so
+                // it stays readable all the way into the score.
+                if let coin = arena.doublingCoin, coinClearsKing {
+                    DoublingCoinView(coin: coin,
+                                     pulseClock: arena.swayClock,
+                                     palette: palette,
+                                     isPad: isPad)
+                        .position(coin.position)
                         .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                 }
@@ -532,7 +564,6 @@ private struct KingCrabView: View {
     let palette: ReefPalette
     let isPad: Bool
     let clock: Double
-    let hasBonusPower: Bool
 
     private var size: CGFloat { ArenaConfig.kingSize(isPad: isPad) }
 
@@ -719,10 +750,6 @@ private struct KingCrabView: View {
             }
 
             figure
-
-            if hasBonusPower {
-                bonusBadge
-            }
         }
         .frame(width: size * RiggedCharacterView<EmptyView>.canvasScale,
                height: size * RiggedCharacterView<EmptyView>.canvasScale)
@@ -816,18 +843,6 @@ private struct KingCrabView: View {
                 .offset(y: -size * (0.52 + 0.34 * CGFloat(progress)))
                 .opacity(1 - progress)
         }
-    }
-
-    private var bonusBadge: some View {
-        Text(verbatim: "2×")
-            .font(.system(size: isPad ? 24 : 18, weight: .black, design: .rounded))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 3)
-            .background(palette.coralDeep, in: Capsule())
-            .overlay(Capsule().stroke(.white.opacity(0.9), lineWidth: 2))
-            .offset(y: -size * 0.62)
-            .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
     }
 }
 
@@ -1639,33 +1654,84 @@ private struct CarrierCrabView: View {
     /// The coin or the heart, sized to the hold the artwork's two pincers make.
     @ViewBuilder
     private var token: some View {
-        let side = carrier.size * ArenaConfig.helperTokenShare
         switch carrier.kind {
         case .bonus:
+            let side = carrier.size * ArenaConfig.helperTokenShare
+            BonusCoinGlyph(side: side, palette: palette, isPad: isPad)
+        case .life:
+            // Bare heart between the claws — no disc behind it. The crab itself
+            // is drawn a little larger so the glyph still reads at a glance.
+            let side = carrier.size * ArenaConfig.lifeTokenShare
+            Image(systemName: "heart.fill")
+                .font(.system(size: side * 0.92, weight: .bold))
+                .foregroundStyle(Color(red: 0.94, green: 0.24, blue: 0.36))
+                .shadow(color: .black.opacity(0.35), radius: 1.5, y: 1)
+                .frame(width: side, height: side)
+        }
+    }
+}
+
+/// The same gold 2× disc the helper crab carries — reused under the King and
+/// on the flight up to the score so the hand-over reads as one object.
+private struct BonusCoinGlyph: View {
+    let side: CGFloat
+    let palette: ReefPalette
+    let isPad: Bool
+
+    private var rim: CGFloat { isPad ? 3 : 2 }
+
+    var body: some View {
+        // Drawn as a ZStack rather than Text + `.background`: a stroked circle
+        // as background gets clipped to the text frame, which reads as a
+        // faceted disc — and `.yellow.opacity` let the sand show through.
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 1.00, green: 0.98, blue: 0.86),
+                            Color(red: 1.00, green: 0.82, blue: 0.22)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            Circle()
+                .strokeBorder(Color.orange, lineWidth: rim)
             Text(verbatim: "2×")
                 .font(.system(size: side * 0.52, weight: .black, design: .rounded))
                 .foregroundStyle(palette.waterDeep)
-                .frame(width: side, height: side)
-                .background {
-                    Circle()
-                        .fill(LinearGradient(colors: [.white, .yellow.opacity(0.92)],
-                                             startPoint: .topLeading,
-                                             endPoint: .bottomTrailing))
-                        .overlay { Circle().stroke(.orange, lineWidth: isPad ? 3 : 2) }
-                }
-                .shadow(color: .orange.opacity(0.55), radius: 4, y: 2)
-        case .life:
-            Image(systemName: "heart.fill")
-                .font(.system(size: side * 0.62, weight: .bold))
-                .foregroundStyle(palette.coralDeep)
-                .frame(width: side, height: side)
-                .background {
-                    Circle()
-                        .fill(.white)
-                        .overlay { Circle().stroke(palette.coralDeep, lineWidth: isPad ? 3 : 2) }
-                }
-                .shadow(color: .white.opacity(0.9), radius: 5)
         }
+        .frame(width: side, height: side)
+        .shadow(color: .orange.opacity(0.45), radius: 2, y: 1)
+    }
+}
+
+/// The doubling coin under the King or rising with a scored shell.
+private struct DoublingCoinView: View {
+    let coin: DoublingCoin
+    /// Scenery-rate clock for the resting throb — keeps the pulse cheap while
+    /// the disc is just sitting under him.
+    let pulseClock: Double
+    let palette: ReefPalette
+    let isPad: Bool
+
+    private var progress: Double {
+        guard coin.isFlying else { return 0 }
+        return min(1, coin.age / ArenaConfig.shellFlightDuration)
+    }
+
+    private var restingPulse: CGFloat {
+        1 + 0.06 * sin(pulseClock * 3.2)
+    }
+
+    var body: some View {
+        BonusCoinGlyph(side: coin.diameter, palette: palette, isPad: isPad)
+            .scaleEffect(coin.isFlying
+                         ? 0.72 + (1 - pow(1 - min(1, progress / 0.28), 3)) * 0.28
+                         : restingPulse)
+            .opacity(coin.isFlying ? 1 - pow(progress, 2.4) * 0.15 : 1)
+            .accessibilityHidden(true)
     }
 }
 
@@ -2492,7 +2558,9 @@ private struct ShellRewardView: View {
             .foregroundStyle(palette.character.deepColor)
             .frame(width: shell.diameter, height: shell.diameter)
             .scaleEffect(0.52 + (1 - pow(1 - min(1, progress / 0.28), 3)) * 0.48)
-            .shadow(color: .white.opacity(0.82), radius: isPad ? 8 : 6)
+            // Tight glow — wide white shadows were a per-shell offscreen tax
+            // on every scoring flight.
+            .shadow(color: .white.opacity(0.70), radius: isPad ? 3 : 2)
             .accessibilityHidden(true)
     }
 }

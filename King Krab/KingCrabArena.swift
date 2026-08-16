@@ -289,19 +289,35 @@ enum ArenaConfig {
     /// The artwork square a helper crab is drawn on. Its body is a little over
     /// half of this — see `CharacterRig.bonusHelper` — so it stands a shade
     /// larger than an answer crab, which is what a crab walking the very front
-    /// of the floor should do.
-    static func helperCrabSize(isPad: Bool) -> CGFloat { isPad ? 112 : 82 }
-    /// How wide the coin or heart it holds is, on that same square.
+    /// of the floor should do. The life crab is a touch larger still: the heart
+    /// between its claws needs room to read without a plate behind it.
+    static func helperCrabSize(isPad: Bool, kind: CarrierCrab.Kind = .bonus) -> CGFloat {
+        switch kind {
+        case .bonus: return isPad ? 112 : 82
+        case .life:  return isPad ? 128 : 94
+        }
+    }
+    /// How wide the 2× coin is, on that same square.
     static let helperTokenShare: CGFloat = 0.35
+    /// How wide the bare heart is between the life crab's claws. Larger than
+    /// the coin share: without a disc behind it, the glyph itself has to carry
+    /// the read.
+    static let lifeTokenShare: CGFloat = 0.50
     /// How far above the bottom of the walking area the helper crabs cross. It
     /// is the lane the lower answer crabs used to come in at, which is now the
     /// near edge of the floor: they walk in front of the reef and of everything
     /// else, because they are the nearest thing in the scene.
     static func helperLane(isPad: Bool) -> CGFloat { isPad ? 40 : 29 }
-    static let helperCrabSpeed: ClosedRange<CGFloat> = 130...160
-    /// How fast one walks once the player has sent it to the King. Brisk: it
-    /// has been asked for, and a child who taps wants to see it go.
+    /// Wall-clock time for a helper to cross the near lane, end to end. Tuned
+    /// on the phone; kept as a duration (not a points/sec speed) so a wider
+    /// iPad arena does not quietly hand the player more time to tap.
+    static let helperCrabCrossingDuration: ClosedRange<Double> = 3.5...4.3
+    /// How fast one walks once the player has sent it to the King, in points
+    /// per second on a phone-width arena. On a wider board the speed scales
+    /// with `arena.width` so the trip in still takes the same time.
     static let helperFetchSpeed: CGFloat = 210
+    /// Arena width the fetch speed above was tuned for (~iPhone portrait).
+    static let helperSpeedReferenceWidth: CGFloat = 390
     /// After one of the preselected questions appears, this little extra delay
     /// keeps the exact arrival surprising and independent of the wave.
     static let bonusCrabQuestionDelay: ClosedRange<Double> = 2.0...5.0
@@ -756,6 +772,29 @@ struct ShellReward: Identifiable {
     var age: Double = 0
 }
 
+/// The 2× coin after the bonus crab has handed it over. It rests under the
+/// King until the doubled answer's shell goes up, then flies the same route
+/// behind him — never crossing in front of his body.
+struct DoublingCoin: Identifiable {
+    let id = UUID()
+    let diameter: CGFloat
+    var position: CGPoint
+    /// Nil while it is sitting at his feet; set the moment it leaves with a shell.
+    var start: CGPoint?
+    var firstControl: CGPoint?
+    var secondControl: CGPoint?
+    var target: CGPoint?
+    var age: Double = 0
+
+    var isFlying: Bool { start != nil }
+
+    /// True once it has risen clear of his silhouette and can sit with the
+    /// shells in front of the scene again.
+    func isClear(ofKingAt kingY: CGFloat, kingSize: CGFloat) -> Bool {
+        position.y < kingY - kingSize * 0.52
+    }
+}
+
 /// One grain of the sand kicked up by an emerging, smashed or burrowing crab —
 /// or thrown by the King.
 struct SandGrain: Identifiable {
@@ -881,12 +920,17 @@ final class KingCrabArena: ObservableObject {
     private(set) var crabs: [AnswerCrab] = []
     private(set) var carriers: [CarrierCrab] = []
     private(set) var shells: [ShellReward] = []
+    /// The doubling coin under the King, or on its way up with a scored shell.
+    private(set) var doublingCoin: DoublingCoin?
     private(set) var grains: [SandGrain] = []
     private(set) var motes: [ReefMote] = []
     private(set) var ambientBubbles: [ReefAmbientBubble] = []
     private(set) var celebration: [CelebrationSpeck] = []
     private(set) var king = KingState()
     private(set) var hasBonusAura = false
+    /// Set once the power is spent: the resting coin waits for the next shell
+    /// and then leaves with it.
+    private var launchDoublingCoinWithShell = false
 
     /// True from the frame the King actually starts celebrating. Everything
     /// drawn over the arena hangs on this rather than on the session being
@@ -1063,6 +1107,10 @@ final class KingCrabArena: ObservableObject {
             if delta.x != 0 || delta.y != 0 {
                 for index in crabs.indices { crabs[index].shift(by: delta) }
                 for index in carriers.indices { carriers[index].shift(by: delta) }
+                if var coin = doublingCoin, !coin.isFlying {
+                    coin.position = restingDoublingCoinPoint()
+                    doublingCoin = coin
+                }
             }
         }
         if isFirst {
@@ -1119,6 +1167,7 @@ final class KingCrabArena: ObservableObject {
         if round.number == 1, previousRoundNumber != nil {
             shells.removeAll()
             carriers.removeAll()
+            clearDoublingCoin()
             bonusTriggerRounds.removeAll()
             nextBonusTrigger = 0
             pendingBonusDelays.removeAll()
@@ -1175,6 +1224,14 @@ final class KingCrabArena: ObservableObject {
     func setBonusAura(_ active: Bool) {
         guard hasBonusAura != active else { return }
         hasBonusAura = active
+        if active {
+            placeRestingDoublingCoin()
+        } else if let coin = doublingCoin, !coin.isFlying {
+            // Spent on an answer: leave it under him until that shell goes up.
+            launchDoublingCoinWithShell = true
+        } else if doublingCoin == nil {
+            launchDoublingCoinWithShell = false
+        }
         // This can change while the simulation is paused, so it cannot wait for
         // the next clock update to be drawn.
         objectWillChange.send()
@@ -1250,6 +1307,7 @@ final class KingCrabArena: ObservableObject {
         crabs.removeAll()
         carriers.removeAll()
         shells.removeAll()
+        clearDoublingCoin()
         grains.removeAll()
         celebration.removeAll()
         round = nil
@@ -1389,6 +1447,13 @@ final class KingCrabArena: ObservableObject {
         carriers.removeAll()
         celebration.removeAll()
         shellHandOver = nil
+        // A spent coin should already be flying with the last shell; anything
+        // still resting here never got a shell and must not linger under him.
+        if launchDoublingCoinWithShell {
+            launchDoublingCoinFlight(with: nil)
+        } else if doublingCoin?.isFlying != true {
+            clearDoublingCoin()
+        }
         completionElapsed = 0
         completionCallback = completion
         completionSpeckCountdown = 0
@@ -1485,7 +1550,7 @@ final class KingCrabArena: ObservableObject {
             // that crab keeps walking rather than making a trip for nothing.
             guard carriers[index].kind != .bonus || !hasBonusAura else { return }
             carriers[index].fetch(to: helperTarget(for: carriers[index]),
-                                  speed: ArenaConfig.helperFetchSpeed)
+                                  speed: scaledHelperFetchSpeed)
             burst(at: carriers[index].position, strength: 0.45)
             return
         }
@@ -1807,6 +1872,7 @@ final class KingCrabArena: ObservableObject {
         moveMotes(dt)
         moveGrains(dt)
         moveShells(dt)
+        moveDoublingCoin(dt)
         moveKing(dt)
 
         // Before anything else this frame: the board may have been won last
@@ -2400,12 +2466,16 @@ final class KingCrabArena: ObservableObject {
                                    y: start.y - kingSize * 0.42)
         let secondControl = CGPoint(x: target.x + (start.x - target.x) * 0.24,
                                     y: start.y + (target.y - start.y) * 0.72)
-        shells.append(ShellReward(diameter: diameter,
-                                  start: start,
-                                  firstControl: firstControl,
-                                  secondControl: secondControl,
-                                  target: target,
-                                  position: start))
+        let shell = ShellReward(diameter: diameter,
+                                start: start,
+                                firstControl: firstControl,
+                                secondControl: secondControl,
+                                target: target,
+                                position: start)
+        shells.append(shell)
+        if launchDoublingCoinWithShell {
+            launchDoublingCoinFlight(with: shell)
+        }
     }
 
     private func moveShells(_ dt: Double) {
@@ -2425,6 +2495,92 @@ final class KingCrabArena: ObservableObject {
         }
         shells.removeAll { $0.age >= ArenaConfig.shellFlightDuration }
         for _ in 0..<arrived { onShellArrived?() }
+    }
+
+    /// Keeps the doubling coin under his feet while it waits, then flies it on
+    /// the same curve as the shell once the doubled answer is paid.
+    private func moveDoublingCoin(_ dt: Double) {
+        guard var coin = doublingCoin else { return }
+        if let start = coin.start,
+           let first = coin.firstControl,
+           let second = coin.secondControl,
+           let target = coin.target {
+            coin.age += dt
+            let raw = min(1, coin.age / ArenaConfig.shellFlightDuration)
+            let t = CGFloat(raw * raw * (3 - 2 * raw))
+            coin.position = cubicPoint(from: start,
+                                       control1: first,
+                                       control2: second,
+                                       to: target,
+                                       t: t)
+            if coin.age >= ArenaConfig.shellFlightDuration {
+                doublingCoin = nil
+                return
+            }
+            doublingCoin = coin
+            return
+        }
+        // Resting: only rewrite when his feet moved. The idle pulse is driven
+        // from `swayClock` in the view, so age is unused while it waits.
+        let point = restingDoublingCoinPoint()
+        guard coin.position != point else { return }
+        coin.position = point
+        doublingCoin = coin
+    }
+
+    /// Where the coin sits while the power is held: under him, on the sand,
+    /// drawn behind his body so only the near edge peeks out.
+    private func restingDoublingCoinPoint() -> CGPoint {
+        CGPoint(x: king.position.x,
+                y: king.position.y + kingSize * 0.34)
+    }
+
+    private func placeRestingDoublingCoin() {
+        launchDoublingCoinWithShell = false
+        let diameter = ArenaConfig.helperCrabSize(isPad: isPad) * ArenaConfig.helperTokenShare
+        let point = restingDoublingCoinPoint()
+        if var coin = doublingCoin, !coin.isFlying {
+            coin.position = point
+            doublingCoin = coin
+            return
+        }
+        doublingCoin = DoublingCoin(diameter: diameter, position: point)
+    }
+
+    private func clearDoublingCoin() {
+        doublingCoin = nil
+        launchDoublingCoinWithShell = false
+    }
+
+    /// Sends the resting coin up with the shell — starting from his feet and
+    /// arcing slightly aside so the rise reads as behind him, not over him.
+    private func launchDoublingCoinFlight(with shell: ShellReward?) {
+        guard var coin = doublingCoin, !coin.isFlying else {
+            launchDoublingCoinWithShell = false
+            return
+        }
+        launchDoublingCoinWithShell = false
+        let start = coin.position
+        let target = shell?.target
+            ?? scoreTarget
+            ?? CGPoint(x: size.width / 2, y: max(coin.diameter / 2, arena.minY - 30))
+        // Nudge the first lift off-centre so it clears past his flank rather
+        // than climbing straight through the middle of the silhouette.
+        let side: CGFloat = king.position.x >= size.width / 2 ? -1 : 1
+        let firstControl = CGPoint(x: start.x + side * kingSize * 0.18,
+                                   y: start.y - kingSize * 0.55)
+        let secondControl = shell.map {
+            CGPoint(x: $0.secondControl.x + side * kingSize * 0.06,
+                    y: $0.secondControl.y)
+        } ?? CGPoint(x: target.x + side * kingSize * 0.08,
+                     y: start.y + (target.y - start.y) * 0.72)
+        coin.start = start
+        coin.firstControl = firstControl
+        coin.secondControl = secondControl
+        coin.target = target
+        coin.age = 0
+        coin.position = start
+        doublingCoin = coin
     }
 
     private func cubicPoint(from start: CGPoint, control1: CGPoint,
@@ -2482,24 +2638,33 @@ final class KingCrabArena: ObservableObject {
     /// the player has to see and take, not a thing walking past behind the
     /// scenery.
     private func spawnHelperCrab(kind: CarrierCrab.Kind) {
-        let size = ArenaConfig.helperCrabSize(isPad: isPad)
+        let size = ArenaConfig.helperCrabSize(isPad: isPad, kind: kind)
         let direction: CGFloat = Bool.random() ? 1 : -1
         let lane = arena.maxY - ArenaConfig.helperLane(isPad: isPad)
         let start = CGPoint(x: direction > 0 ? -size : arena.maxX + size, y: lane)
         let target = CGPoint(x: direction > 0 ? arena.maxX + size : -size, y: lane)
-        let travel = Double(abs(target.x - start.x))
         carriers.append(CarrierCrab(
             kind: kind,
             size: size,
             start: start,
             target: target,
             position: start,
-            duration: travel / Double(CGFloat.random(in: ArenaConfig.helperCrabSpeed)),
+            // Same crossing time on every device: a wider board just means a
+            // faster scuttle, not a longer window to catch the reward.
+            duration: Double.random(in: ArenaConfig.helperCrabCrossingDuration),
             waddleRate: Double.random(in: 3.6...4.8),
             strideFactor: CGFloat.random(in: 0.92...1.08),
             gaitOffset: Double.random(in: 0..<(2 * .pi)),
             facing: direction
         ))
+    }
+
+    /// Points/sec for a tapped helper walking in to the King. Scales with the
+    /// arena so a long diagonal on iPad does not linger the way a phone trip
+    /// would if the old fixed speed were kept.
+    private var scaledHelperFetchSpeed: CGFloat {
+        let scale = max(1, arena.width / ArenaConfig.helperSpeedReferenceWidth)
+        return ArenaConfig.helperFetchSpeed * scale
     }
 
     /// Where a tapped helper crab is sent: the same ring around the King the
@@ -2617,6 +2782,7 @@ final class KingCrabArena: ObservableObject {
         switch carrier.kind {
         case .bonus:
             hasBonusAura = true
+            placeRestingDoublingCoin()
             onBonusCrabCaught?()
             onTutorialEvent?(.caughtBonusCrab)
         case .life:
