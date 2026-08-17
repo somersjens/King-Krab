@@ -489,7 +489,7 @@ struct GameView: View {
     }
 }
 
-private struct ScoreIconCenterPreferenceKey: PreferenceKey {
+struct ScoreIconCenterPreferenceKey: PreferenceKey {
     static var defaultValue: CGPoint? = nil
 
     static func reduce(value: inout CGPoint?, nextValue: () -> CGPoint?) {
@@ -497,7 +497,7 @@ private struct ScoreIconCenterPreferenceKey: PreferenceKey {
     }
 }
 
-private struct StreakBoostBanner: View {
+struct StreakBoostBanner: View {
     let character: AnimalCharacter
     let isPad: Bool
     @Environment(\.layoutDirection) private var layoutDirection

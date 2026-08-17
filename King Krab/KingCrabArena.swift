@@ -1021,6 +1021,21 @@ final class KingCrabArena: ObservableObject {
     private var nextBonusTrigger = 0
     private var pendingBonusDelays: [Double] = []
 
+#if DEBUG
+    /// Trailer-only: answer text → entry-point index (0 top-left, 1 top-right,
+    /// 2 bottom-left, 3 bottom-right). Nil uses the ordinary shuffle.
+    var promoEntryAssignment: [String: Int]?
+    /// When true, a lone correct crab still runs in, but the session is not
+    /// told until it actually reaches the King. The trailer needs that arrival
+    /// on screen before the next beat (character swap, streak banner) starts.
+    var promoDefersRushScoring = false
+    /// When true, the hidden 2× plan is not rolled and crabs only appear when
+    /// the director asks for one.
+    var promoSuppressesBonusPlan = false
+    /// When true, an empty board does not send the same answers around again.
+    var promoSuppressesRefill = false
+#endif
+
     // The comeback crab is scheduled by the rules engine once it is earned.
     // This scene only owns the short randomized arrival delay.
     private var isLifeCrabAvailable = false
@@ -1175,7 +1190,13 @@ final class KingCrabArena: ObservableObject {
             lifeCrabDelay = nil
         }
         if bonusTriggerRounds.isEmpty {
+#if DEBUG
+            if !promoSuppressesBonusPlan {
+                makeBonusCrabPlan(startingAt: round.number)
+            }
+#else
             makeBonusCrabPlan(startingAt: round.number)
+#endif
         }
         while nextBonusTrigger < bonusTriggerRounds.count,
               round.number >= bonusTriggerRounds[nextBonusTrigger] {
@@ -1585,6 +1606,57 @@ final class KingCrabArena: ObservableObject {
         }
     }
 
+#if DEBUG
+    /// Trailer director: smash the walking crab carrying this answer, using
+    /// the ordinary tap path so the throw, sand and hit are production.
+    @discardableResult
+    func promoTapAnswer(_ text: String) -> Bool {
+        guard let crab = crabs.first(where: { $0.text == text && $0.isTappable }) else {
+            return false
+        }
+        tap(at: hitCentre(of: crab))
+        return true
+    }
+
+    /// Trailer director: send the crossing 2× crab in to the King.
+    @discardableResult
+    func promoTapBonusCarrier() -> Bool {
+        guard let carrier = carriers.first(where: { $0.kind == .bonus && $0.isTappable }) else {
+            return false
+        }
+        tap(at: helperCentre(of: carrier))
+        return true
+    }
+
+    /// Trailer director: walk a 2× crab along the near lane using the same
+    /// helper motion as a live game, with a duration chosen so it stays on
+    /// screen through the later beats.
+    func promoSpawnBonusCrab(duration: Double, fromLeading: Bool) {
+        guard arena.height > 0 else { return }
+        pendingBonusDelays.removeAll()
+        let size = ArenaConfig.helperCrabSize(isPad: isPad, kind: .bonus)
+        let direction: CGFloat = fromLeading ? 1 : -1
+        let lane = arena.maxY - ArenaConfig.helperLane(isPad: isPad)
+        let lead = size + 36
+        let start = CGPoint(x: direction > 0 ? -lead : arena.maxX + lead, y: lane)
+        let target = CGPoint(x: direction > 0 ? arena.maxX + lead : -lead, y: lane)
+        carriers.removeAll { $0.kind == .bonus && $0.isCarryingReward }
+        carriers.append(CarrierCrab(
+            kind: .bonus,
+            size: size,
+            start: start,
+            target: target,
+            position: start,
+            duration: max(2.5, duration),
+            waddleRate: 4.1,
+            strideFactor: 1.0,
+            gaitOffset: 0.6,
+            facing: direction
+        ))
+        objectWillChange.send()
+    }
+#endif
+
     /// The shell is carried well above the body, so the middle of what a child
     /// actually aims at sits between the two — a radius measured from the feet
     /// would miss the answer they were pointing at.
@@ -1669,7 +1741,15 @@ final class KingCrabArena: ObservableObject {
         // If the session cannot take the answer yet — feedback still playing,
         // the round already settled — the crab simply runs it up to the King
         // and it is counted on arrival, exactly as it always was.
-        crabs[index].hasAnswered = onGuardedArrival?(crabs[index].optionID) == true
+        let defersScoring: Bool
+#if DEBUG
+        defersScoring = promoDefersRushScoring
+#else
+        defersScoring = false
+#endif
+        if !defersScoring {
+            crabs[index].hasAnswered = onGuardedArrival?(crabs[index].optionID) == true
+        }
 
         // One still waiting its turn off screen has nothing left to wait for.
         if crabs[index].phase == .waiting {
@@ -1700,7 +1780,36 @@ final class KingCrabArena: ObservableObject {
 
         let options = waveOptions(from: round)
         guard !options.isEmpty else { return }
-        let entries = Array(entryPoints.shuffled().prefix(options.count))
+        let points = entryPoints
+        let pairs: [(AnswerOption, CGPoint)]
+#if DEBUG
+        if let assignment = promoEntryAssignment {
+            var used = Set<Int>()
+            var assigned: [(AnswerOption, CGPoint)] = []
+            for option in options {
+                if let index = assignment[option.text],
+                   points.indices.contains(index),
+                   !used.contains(index) {
+                    assigned.append((option, points[index]))
+                    used.insert(index)
+                }
+            }
+            let leftoverEntries = points.enumerated()
+                .filter { !used.contains($0.offset) }
+                .map(\.element)
+            let leftoverOptions = options.filter { option in
+                !assigned.contains(where: { $0.0.id == option.id })
+            }
+            for (option, entry) in zip(leftoverOptions, leftoverEntries) {
+                assigned.append((option, entry))
+            }
+            pairs = assigned
+        } else {
+            pairs = Array(zip(options, points.shuffled().prefix(options.count)))
+        }
+#else
+        pairs = Array(zip(options, points.shuffled().prefix(options.count)))
+#endif
         let ring = kingSize * ArenaConfig.arrivalRingFactor
 
         // One shared entry split for the whole wave. Per-lane readable points
@@ -1710,7 +1819,8 @@ final class KingCrabArena: ObservableObject {
         var sharedEntryProgress = 0.0
         var starts: [CGPoint] = []
         var targets: [CGPoint] = []
-        for entry in entries {
+        for pair in pairs {
+            let entry = pair.1
             let angle = atan2(Double(entry.y - king.anchor.y),
                               Double(entry.x - king.anchor.x))
             let target = CGPoint(x: king.anchor.x + ring * CGFloat(cos(angle)),
@@ -1725,7 +1835,8 @@ final class KingCrabArena: ObservableObject {
             targets.append(target)
         }
 
-        for (index, option) in options.enumerated() {
+        for (index, pair) in pairs.enumerated() {
+            let option = pair.0
             let start = starts[index]
             let target = targets[index]
             crabs.append(AnswerCrab(
@@ -1832,11 +1943,16 @@ final class KingCrabArena: ObservableObject {
     /// smashed or swept, and the right answer still unanswered — is followed by
     /// a fresh one after a short breather rather than by an empty arena.
     private func refillWaveIfEmpty(_ dt: Double) {
+        var suppressesRefill = false
+#if DEBUG
+        suppressesRefill = promoSuppressesRefill
+#endif
         guard isLive,
               round != nil,
               !pendingWaveRestart,
               sweepGather == nil,
               !tutorialPlan.suppressesAnswers,
+              !suppressesRefill,
               !crabs.contains(where: { $0.isLive || $0.phase == .arrived })
         else {
             refillDelay = nil
@@ -2373,6 +2489,26 @@ final class KingCrabArena: ObservableObject {
         }
         let contenders = arrived.filter { !crabs[$0].hasAnswered }
         guard !contenders.isEmpty else { return }
+
+#if DEBUG
+        // Trailer: a lone correct crab that already ran in is handing its
+        // shell over, not an attacker. A sweep ring here would look like the
+        // King is shoving it away.
+        if promoDefersRushScoring,
+           contenders.count == 1,
+           let index = contenders.first,
+           crabs[index].isCorrect,
+           crabs[index].isRushing {
+            let scored = onGuardedArrival?(crabs[index].optionID) == true
+            if scored {
+                deliver(index: index)
+                burrowLiveCrabs()
+            } else {
+                deliver(index: index)
+            }
+            return
+        }
+#endif
 
         king.sweepAge = 0
         king.sweepDirection = Bool.random() ? 1 : -1

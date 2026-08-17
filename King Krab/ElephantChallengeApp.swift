@@ -58,6 +58,20 @@ struct ElephantChallengeApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
+#if DEBUG
+                if PromoMode.isActive {
+                    PromoTrailerRoot()
+                } else if onboardingComplete && !onboardingReplayRequested {
+                    HomeView()
+                        // Both screens fade through each other rather than one
+                        // replacing the other, so the hand-over reads as a
+                        // single settling motion instead of a cut.
+                        .transition(.opacity.combined(with: .scale(scale: 1.015)))
+                } else {
+                    OnboardingView()
+                        .transition(.opacity.combined(with: .scale(scale: 0.99)))
+                }
+#else
                 if onboardingComplete && !onboardingReplayRequested {
                     HomeView()
                         // Both screens fade through each other rather than one
@@ -68,6 +82,7 @@ struct ElephantChallengeApp: App {
                     OnboardingView()
                         .transition(.opacity.combined(with: .scale(scale: 0.99)))
                 }
+#endif
             }
             .animation(.easeInOut(duration: 0.42),
                        value: onboardingComplete && !onboardingReplayRequested)
@@ -102,11 +117,20 @@ struct ElephantChallengeApp: App {
 /// Shared layout helper, used to give iPad more breathing room without
 /// changing the visual hierarchy.
 enum AppLayout {
+#if DEBUG
+    /// Trailer captures force phone or pad layout independently of the
+    /// simulator they happen to be running on.
+    static var promoForcePad: Bool?
+#endif
+
     static var isPad: Bool {
+#if DEBUG
+        if let promoForcePad { return promoForcePad }
+#endif
 #if os(iOS)
-        UIDevice.current.userInterfaceIdiom == .pad
+        return UIDevice.current.userInterfaceIdiom == .pad
 #else
-        false
+        return false
 #endif
     }
 }

@@ -686,6 +686,11 @@ final class AppAudio: NSObject, ObservableObject {
     func playSwitch(on: Bool)   { playEffect(on ? "switchOn" : "switchOff") }
 
     private func playEffect(_ key: String) {
+#if DEBUG
+        if PromoMode.isActive {
+            PromoAudioLog.record(key)
+        }
+#endif
         guard gameSoundsEnabled else { return }
         // Once the graph is genuinely up, triggering a sound must do nothing but
         // trigger it. `activateSession()` on an already-active session still

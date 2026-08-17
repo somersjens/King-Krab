@@ -78,6 +78,11 @@ struct KingCrabPlayfield: View {
     /// Everything the walkthrough waits on that only the arena can see.
     var onTutorialEvent: (CrabTutorialEvent) -> Void = { _ in }
 
+#if DEBUG
+    /// Hands the live arena to the trailer director once it exists.
+    var onPromoArenaReady: ((KingCrabArena) -> Void)? = nil
+#endif
+
     @StateObject private var arena = KingCrabArena()
 
     private var palette: ReefPalette { ReefPalette.palette(for: character) }
@@ -336,6 +341,11 @@ struct KingCrabPlayfield: View {
                 arena.layout(size: size, arena: rect, isPad: isPad)
                 arena.configureBonusCrab(maximumRounds: maximumRounds)
                 arena.applyTutorial(tutorialPlan)
+#if DEBUG
+                // Assignment and bonus suppression must be in place before the
+                // first wave is laid out, or Q1 would shuffle like a live game.
+                onPromoArenaReady?(arena)
+#endif
                 // Before the round: a session resumed mid-streak has to lay its
                 // first wave out gold rather than red.
                 arena.setGolden(isStreakBoostActive)
@@ -422,6 +432,9 @@ struct KingCrabPlayfield: View {
             } else {
                 arena.endLevelCompletion()
             }
+        }
+        .onChange(of: character) { newCharacter in
+            arena.setClawTip(newCharacter.rig?.clawReach ?? ArenaConfig.clawTip)
         }
         .onDisappear {
             arena.stop()

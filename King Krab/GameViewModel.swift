@@ -81,6 +81,10 @@ final class GameViewModel: ObservableObject {
     private var generation = 0
     private var hasRecordedResult = false
     private var isPaused = false
+#if DEBUG
+    /// Trailer sessions must not write to the player's save.
+    var skipsPersistence = false
+#endif
     /// A round-resolution callback that became due while the pause card was
     /// covering the arena. It runs once on continue instead of behind the card.
     private var pendingScheduledWork: (() -> Void)?
@@ -146,6 +150,21 @@ final class GameViewModel: ObservableObject {
         announceRound()
         sync()
     }
+
+#if DEBUG
+    /// Starts a scripted trailer session already on the first sum, with no
+    /// intro, no persistence and no spoken prompt.
+    func beginPromo(cards: Int, streak: Int, rounds: [GameRound]) {
+        skipsPersistence = true
+        engine.installPromoSession(cards: cards, streak: streak, rounds: rounds)
+        isPaused = false
+        prepareHaptics()
+        AppAudio.shared.prepare()
+        AppAudio.shared.setGameplayActive(true, questionText: nil)
+        openRound()
+        sync()
+    }
+#endif
 
     /// Opens a round for play. There is nothing to memorise here: the sum
     /// stands at the top of the screen from the first frame, so the round goes
@@ -216,6 +235,9 @@ final class GameViewModel: ObservableObject {
     /// storing it would only put a pause marker on the menu for a level the
     /// player would restart from zero anyway.
     private func savePausedSessionIfNeeded() {
+#if DEBUG
+        if skipsPersistence { return }
+#endif
         guard !hasRecordedResult,
               let paused = engine.pausedSession(hasBonusFishPower: hasBonusFishPower)
         else { return }
@@ -460,6 +482,15 @@ final class GameViewModel: ObservableObject {
     /// Writes the session to disk exactly once, whichever way the screen is
     /// left: game over, the close button, or a swipe away.
     private func recordResultIfNeeded() {
+#if DEBUG
+        if skipsPersistence {
+            if engine.state == .gameOver, engine.gameOverReason != .quit {
+                AppAudio.shared.playSessionComplete()
+                result = engine.result
+            }
+            return
+        }
+#endif
         guard engine.state == .gameOver, !hasRecordedResult else { return }
         hasRecordedResult = true
         // A level that reached its end is finished, not paused.

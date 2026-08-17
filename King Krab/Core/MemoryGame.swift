@@ -185,6 +185,33 @@ nonisolated public final class MemoryGame {
                                     seed: seed)
     }
 
+#if DEBUG
+    /// Predetermined rounds for the App Store teaser. Production play never
+    /// installs these; `advance` finishes the board after the last one rather
+    /// than asking the factory for another sum.
+    private var promoRounds: [GameRound] = []
+    private var promoRoundIndex = 0
+    private var promoFinishesAfterLast = false
+
+    /// Opens a scripted session already on the first sum, with the score and
+    /// streak the trailer needs, then plays by the ordinary rules.
+    public func installPromoSession(cards: Int,
+                                    streak: Int,
+                                    rounds: [GameRound]) {
+        guard !rounds.isEmpty else { return }
+        promoRounds = rounds
+        promoRoundIndex = 0
+        promoFinishesAfterLast = true
+        self.cards = max(0, cards)
+        correctStreak = max(0, streak)
+        result.cardsEarned = self.cards
+        roundNumber = 1
+        round = rounds[0]
+        preparedRound = rounds.count > 1 ? rounds[1] : nil
+        state = .memorising
+    }
+#endif
+
     // MARK: - Session lifecycle
 
     /// Starts the session and deals the first round's answer cards face up.
@@ -452,7 +479,27 @@ nonisolated public final class MemoryGame {
             return state
         }
 
+#if DEBUG
+        if promoFinishesAfterLast, promoRoundIndex + 1 >= promoRounds.count {
+            finish(reason: .roundsCompleted)
+            return state
+        }
+#endif
+
         roundNumber += 1
+#if DEBUG
+        if promoFinishesAfterLast, !promoRounds.isEmpty {
+            promoRoundIndex += 1
+            round = promoRounds[promoRoundIndex]
+            preparedRound = promoRoundIndex + 1 < promoRounds.count
+                ? promoRounds[promoRoundIndex + 1]
+                : nil
+            selectedOptionID = nil
+            lastOutcome = nil
+            state = .memorising
+            return state
+        }
+#endif
         round = preparedRound ?? factory.makeRound(number: roundNumber)
         // Build the round after next while the player is looking at this one.
         preparedRound = factory.makeRound(number: roundNumber + 1)
