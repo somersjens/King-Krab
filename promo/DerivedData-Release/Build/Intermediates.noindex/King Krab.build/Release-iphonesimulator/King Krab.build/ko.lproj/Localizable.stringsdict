@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기 %lld개를 모았어요</string>
+			<key>other</key>
+			<string>조개껍데기 %lld개를 모았어요</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%2$@ 잠금 해제까지 조개껍데기 %1$lld개 남았어요</string>
+			<key>other</key>
+			<string>%2$@ 잠금 해제까지 조개껍데기 %1$lld개 남았어요</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>일시 정지 중: 조개껍데기 %lld개</string>
+			<key>other</key>
+			<string>일시 정지 중: 조개껍데기 %lld개</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>이 레벨에서는 최대 **조개껍데기 %lld개**를 모을 수 있어요.</string>
+			<key>other</key>
+			<string>이 레벨에서는 최대 **조개껍데기 %lld개**를 모을 수 있어요.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>최대치에 %lld번 도달</string>
+			<key>other</key>
+			<string>최대치에 %lld번 도달</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기 %lld개만 더! 🐚</string>
+			<key>other</key>
+			<string>조개껍데기 %lld개만 더! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>오늘 %lld분 플레이하고 몇 개 더 모아 보세요.</string>
+			<key>other</key>
+			<string>오늘 %lld분 플레이하고 몇 개 더 모아 보세요.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기 %lld개를 모았어요! 🐚</string>
+			<key>other</key>
+			<string>조개껍데기 %lld개를 모았어요! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld분 플레이 세션을 시작하고 일일 연속 플레이를 연장하세요.</string>
+			<key>other</key>
+			<string>%lld분 플레이 세션을 시작하고 일일 연속 플레이를 연장하세요.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>프리미엄에는 모든 주제와 10가지 동물에 대한 %lld개의 레벨이 포함되어 있습니다. 모험은 계속됩니다!</string>
+			<key>other</key>
+			<string>프리미엄에는 모든 주제와 10가지 동물에 대한 %lld개의 레벨이 포함되어 있습니다. 모험은 계속됩니다!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld일 만이에요. 계산 문제를 몇 개 풀고 조개껍데기를 더 모아 볼까요?</string>
+			<key>other</key>
+			<string>%lld일 만이에요. 계산 문제를 몇 개 풀고 조개껍데기를 더 모아 볼까요?</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld분 동안 플레이하고 매일 연속 플레이를 계속하세요!</string>
+			<key>other</key>
+			<string>%lld분 동안 플레이하고 매일 연속 플레이를 계속하세요!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>일일 연속 플레이 횟수가 %lld일에 도달했습니다! 🔥</string>
+			<key>other</key>
+			<string>일일 연속 플레이 횟수가 %lld일에 도달했습니다! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기가 모두 %lld개 있어요. 조금 더 모아 볼까요?</string>
+			<key>other</key>
+			<string>조개껍데기가 모두 %lld개 있어요. 조금 더 모아 볼까요?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>이번 주 조개껍데기 %lld개! 🎉</string>
+			<key>other</key>
+			<string>이번 주 조개껍데기 %lld개! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기 %lld개부터 이용 가능</string>
+			<key>other</key>
+			<string>조개껍데기 %lld개부터 이용 가능</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>조개껍데기 %lld개를 모았어요</string>
+			<key>other</key>
+			<string>조개껍데기 %lld개를 모았어요</string>
+		</dict>
+	</dict>
+	<key>premium.feature.animals.subtitle %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>With premium you play freely with all %1$#@animals@.</string>
+		<key>animals</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld animal</string>
+			<key>other</key>
+			<string>%1$lld animals</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,48 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/GameView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "game.bubblesCollected %lld",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 481
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.pause",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 446
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.streakBoost.title",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 511
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.streakBoost.subtitle",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 513
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.livesRemaining %@",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 654
+        }
+      }
+    ]
+  },
+  "version": 1
+}

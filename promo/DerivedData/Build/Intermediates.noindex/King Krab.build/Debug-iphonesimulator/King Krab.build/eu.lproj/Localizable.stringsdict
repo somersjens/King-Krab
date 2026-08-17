@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld maskor bildu da</string>
+			<key>other</key>
+			<string>%lld maskor bildu dira</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %1$lld gehiago %2$@ desblokeatzeko</string>
+			<key>other</key>
+			<string>%1$lld maskor gehiago %2$@ desblokeatzeko</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld pausatuta</string>
+			<key>other</key>
+			<string>%lld maskor pausatuta</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maila honetan gehienez **maskor %lld** bil ditzakezu.</string>
+			<key>other</key>
+			<string>Maila honetan gehienez **%lld maskor** bil ditzakezu.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Gehienekora %lld aldiz iritsi zara</string>
+			<key>other</key>
+			<string>Gehienekora %lld aldiz iritsi zara</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld besterik ez falta! 🐚</string>
+			<key>other</key>
+			<string>%lld maskor besterik ez falta! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Jokatu gaur %lld minutu eta bildu beste batzuk.</string>
+			<key>other</key>
+			<string>Jokatu gaur %lld minutu eta bildu beste batzuk.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld bildu da! 🐚</string>
+			<key>other</key>
+			<string>%lld maskor bildu dira! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Hasi %lld minutuko jolas-saio bat eta luzatu zure eguneroko jolas bolada.</string>
+			<key>other</key>
+			<string>Hasi %lld minutuko jolas-saio bat eta luzatu zure eguneroko jolas bolada.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Premium-ek %lld maila biltzen ditu gai bakoitzeko eta 10 animalia guztientzat. Abenturak aurrera jarraitzen du!</string>
+			<key>other</key>
+			<string>Premium-ek %lld maila biltzen ditu gai bakoitzeko eta 10 animalia guztientzat. Abenturak aurrera jarraitzen du!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld egun igaro da. Ebatzi ditzagun kalkulu batzuk eta bil ditzagun maskor gehiago!</string>
+			<key>other</key>
+			<string>%lld egun igaro dira. Ebatzi ditzagun kalkulu batzuk eta bil ditzagun maskor gehiago!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Jokatu %lld minutuz eta mantendu zure eguneroko jolas-boluari!</string>
+			<key>other</key>
+			<string>Jokatu %lld minutuz eta mantendu zure eguneroko jolas-boluari!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Zure eguneroko jokatzeko bolada %lld egunetara iritsi da! 🔥</string>
+			<key>other</key>
+			<string>Zure eguneroko jokatzeko bolada %lld egunetara iritsi da! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Guztira maskor %lld duzu. Gehiago biltzeko prest?</string>
+			<key>other</key>
+			<string>Guztira %lld maskor dituzu. Gehiago biltzeko prest?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld aste honetan! 🎉</string>
+			<key>other</key>
+			<string>%lld maskor aste honetan! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld lortzean erabilgarri</string>
+			<key>other</key>
+			<string>%lld maskor lortzean erabilgarri</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Maskor %lld irabazi duzu</string>
+			<key>other</key>
+			<string>%lld maskor irabazi dituzu</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

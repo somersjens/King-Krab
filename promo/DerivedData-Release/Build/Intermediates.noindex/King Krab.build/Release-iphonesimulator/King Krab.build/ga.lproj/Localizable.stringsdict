@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld bhlaosc bailithe</string>
+			<key>other</key>
+			<string>%lld blaosc bailithe</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld bhlaosc eile chun %2$@ a dhíghlasáil</string>
+			<key>other</key>
+			<string>%1$lld blaosc eile chun %2$@ a dhíghlasáil</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld bhlaosc ar sos</string>
+			<key>other</key>
+			<string>%lld blaosc ar sos</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Is féidir leat suas le **%lld bhlaosc** a bhailiú sa leibhéal seo.</string>
+			<key>other</key>
+			<string>Is féidir leat suas le **%lld blaosc** a bhailiú sa leibhéal seo.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Baineadh an t-uasmhéid amach %lld uair</string>
+			<key>other</key>
+			<string>Baineadh an t-uasmhéid amach %lld uair</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Níl ach %lld bhlaosc fágtha! 🐚</string>
+			<key>other</key>
+			<string>Níl ach %lld blaosc fágtha! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Imir ar feadh %lld nóiméad inniu agus bailigh cúpla ceann eile.</string>
+			<key>other</key>
+			<string>Imir ar feadh %lld nóiméad inniu agus bailigh cúpla ceann eile.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld bhlaosc bailithe! 🐚</string>
+			<key>other</key>
+			<string>%lld blaosc bailithe! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Tosaigh seisiún súgartha %lld-nóiméad agus síneadh do stríoc imeartha laethúil.</string>
+			<key>other</key>
+			<string>Tosaigh seisiún súgartha %lld-nóiméad agus síneadh do stríoc imeartha laethúil.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Cuimsíonn Premium %lld leibhéal do gach ábhar agus do gach 10 n-ainmhí. Leanann an eachtra ar aghaidh!</string>
+			<key>other</key>
+			<string>Cuimsíonn Premium %lld leibhéal do gach ábhar agus do gach 10 n-ainmhí. Leanann an eachtra ar aghaidh!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Tá %lld lá caite. Déanaimis cúpla suim agus bailímis tuilleadh blaoscanna!</string>
+			<key>other</key>
+			<string>Tá %lld lá caite. Déanaimis cúpla suim agus bailímis tuilleadh blaoscanna!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Seinn ar feadh %lld nóiméad agus coinnigh do stríoc imeartha laethúil ag dul!</string>
+			<key>other</key>
+			<string>Seinn ar feadh %lld nóiméad agus coinnigh do stríoc imeartha laethúil ag dul!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Tá do stríoc imeartha laethúil %lld lá bainte amach! 🔥</string>
+			<key>other</key>
+			<string>Tá do stríoc imeartha laethúil %lld lá bainte amach! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Tá %lld bhlaosc agat san iomlán. Réidh le cúpla ceann eile?</string>
+			<key>other</key>
+			<string>Tá %lld blaosc agat san iomlán. Réidh le cúpla ceann eile?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld bhlaosc an tseachtain seo! 🎉</string>
+			<key>other</key>
+			<string>%lld blaosc an tseachtain seo! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Ar fáil ó %lld bhlaosc</string>
+			<key>other</key>
+			<string>Ar fáil ó %lld blaosc</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Tá %lld bhlaosc tuillte agat</string>
+			<key>other</key>
+			<string>Tá %lld blaosc tuillte agat</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

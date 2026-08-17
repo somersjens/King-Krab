@@ -1,0 +1,2 @@
+Target dependency graph (1 target)
+Target 'King Krab' in project 'King Krab' (no dependencies)

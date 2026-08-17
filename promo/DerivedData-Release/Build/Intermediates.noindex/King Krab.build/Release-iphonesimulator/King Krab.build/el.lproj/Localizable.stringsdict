@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Συλλέχθηκε %lld κοχύλι</string>
+			<key>other</key>
+			<string>Συλλέχθηκαν %lld κοχύλια</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Ακόμα %1$lld κοχύλι για να ξεκλειδώσεις τον %2$@</string>
+			<key>other</key>
+			<string>Ακόμα %1$lld κοχύλια για να ξεκλειδώσεις τον %2$@</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld κοχύλι σε παύση</string>
+			<key>other</key>
+			<string>%lld κοχύλια σε παύση</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Μπορείς να μαζέψεις έως **%lld κοχύλι** σε αυτό το επίπεδο.</string>
+			<key>other</key>
+			<string>Μπορείς να μαζέψεις έως **%lld κοχύλια** σε αυτό το επίπεδο.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Έφτασες το μέγιστο %lld φορές</string>
+			<key>other</key>
+			<string>Έφτασες το μέγιστο %lld φορές</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Μένει μόνο %lld κοχύλι! 🐚</string>
+			<key>other</key>
+			<string>Μένουν μόνο %lld κοχύλια! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Παίξε %lld λεπτό σήμερα και μάζεψε λίγα ακόμα.</string>
+			<key>other</key>
+			<string>Παίξε %lld λεπτό σήμερα και μάζεψε λίγα ακόμα.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Συλλέχθηκε %lld κοχύλι! 🐚</string>
+			<key>other</key>
+			<string>Συλλέχθηκαν %lld κοχύλια! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Ξεκινήστε ένα παιχνίδι %lld λεπτών και επεκτείνετε το καθημερινό σερί παιχνιδιού σας.</string>
+			<key>other</key>
+			<string>Ξεκινήστε ένα παιχνίδι %lld λεπτών και επεκτείνετε το καθημερινό σερί παιχνιδιού σας.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Το Premium περιλαμβάνει %lld επίπεδα για κάθε θέμα και τα 10 ζώα. Η περιπέτεια συνεχίζεται!</string>
+			<key>other</key>
+			<string>Το Premium περιλαμβάνει %lld επίπεδα για κάθε θέμα και τα 10 ζώα. Η περιπέτεια συνεχίζεται!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Πέρασε %lld μέρα. Πάμε να λύσουμε μερικές πράξεις και να μαζέψουμε κι άλλα κοχύλια!</string>
+			<key>other</key>
+			<string>Πέρασαν %lld μέρες. Πάμε να λύσουμε μερικές πράξεις και να μαζέψουμε κι άλλα κοχύλια!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Παίξτε για %lld λεπτά και συνεχίστε το καθημερινό σας σερί παιχνιδιού!</string>
+			<key>other</key>
+			<string>Παίξτε για %lld λεπτά και συνεχίστε το καθημερινό σας σερί παιχνιδιού!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Το καθημερινό σερί παιχνιδιού σας έφτασε τις %lld ημέρες! 🔥</string>
+			<key>other</key>
+			<string>Το καθημερινό σερί παιχνιδιού σας έφτασε τις %lld ημέρες! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Έχεις συνολικά %lld κοχύλι. Έτοιμος/η για λίγα ακόμα;</string>
+			<key>other</key>
+			<string>Έχεις συνολικά %lld κοχύλια. Έτοιμος/η για λίγα ακόμα;</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld κοχύλι αυτή την εβδομάδα! 🎉</string>
+			<key>other</key>
+			<string>%lld κοχύλια αυτή την εβδομάδα! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Διαθέσιμο από %lld κοχύλι</string>
+			<key>other</key>
+			<string>Διαθέσιμο από %lld κοχύλια</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Κέρδισες %lld κοχύλι</string>
+			<key>other</key>
+			<string>Κέρδισες %lld κοχύλια</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

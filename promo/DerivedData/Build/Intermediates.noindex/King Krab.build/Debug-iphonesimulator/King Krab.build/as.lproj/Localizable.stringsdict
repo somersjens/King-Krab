@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lldটা শামুকৰ খোলা সংগ্ৰহ কৰা হ’ল</string>
+			<key>other</key>
+			<string>%lldটা শামুকৰ খোলা সংগ্ৰহ কৰা হ’ল</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%2$@ খোলিবলৈ আৰু %1$lldটা শামুকৰ খোলা</string>
+			<key>other</key>
+			<string>%2$@ খোলিবলৈ আৰু %1$lldটা শামুকৰ খোলা</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lldটা শামুকৰ খোলা থমকাই ৰখা খেলত সুৰক্ষিত</string>
+			<key>other</key>
+			<string>%lldটা শামুকৰ খোলা থমকাই ৰখা খেলত সুৰক্ষিত</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>এই স্তৰত তুমি সৰ্বাধিক **%lldটা শামুকৰ খোলা** সংগ্ৰহ কৰিব পাৰা।</string>
+			<key>other</key>
+			<string>এই স্তৰত তুমি সৰ্বাধিক **%lldটা শামুকৰ খোলা** সংগ্ৰহ কৰিব পাৰা।</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>সৰ্বাধিক %lld বাৰ পোৱা হৈছে</string>
+			<key>other</key>
+			<string>সৰ্বাধিক %lld বাৰ পোৱা হৈছে</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>আৰু মাত্ৰ %lldটা শামুকৰ খোলা! 🐚</string>
+			<key>other</key>
+			<string>আৰু মাত্ৰ %lldটা শামুকৰ খোলা! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>আজিৰ দিনটোত %lld মিনিট খেলি আৰু কেইটামান গোটোৱা।</string>
+			<key>other</key>
+			<string>আজিৰ দিনটোত %lld মিনিট খেলি আৰু কেইটামান গোটোৱা।</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lldটা শামুকৰ খোলা সংগ্ৰহ হ’ল! 🐚</string>
+			<key>other</key>
+			<string>%lldটা শামুকৰ খোলা সংগ্ৰহ হ’ল! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld মিনিটৰ খেলা অধিবেশন আৰম্ভ কৰক আৰু আপোনাৰ দৈনিক খেলাৰ ধাৰা বৃদ্ধি কৰক।</string>
+			<key>other</key>
+			<string>%lld মিনিটৰ খেলা অধিবেশন আৰম্ভ কৰক আৰু আপোনাৰ দৈনিক খেলাৰ ধাৰা বৃদ্ধি কৰক।</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>প্ৰিমিয়ামত প্ৰতিটো বিষয় আৰু সকলো 10টা প্ৰাণীৰ বাবে %lldটা স্তৰ অন্তৰ্ভুক্ত কৰা হৈছে। দুঃসাহসিক অভিযান চলি থাকে!</string>
+			<key>other</key>
+			<string>প্ৰিমিয়ামত প্ৰতিটো বিষয় আৰু সকলো 10টা প্ৰাণীৰ বাবে %lldটা স্তৰ অন্তৰ্ভুক্ত কৰা হৈছে। দুঃসাহসিক অভিযান চলি থাকে!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld দিন হ’ল। আহা, কেইটামান অংক কৰোঁ আৰু অধিক শামুকৰ খোলা সংগ্ৰহ কৰোঁ!</string>
+			<key>other</key>
+			<string>%lld দিন হ’ল। আহা, কেইটামান অংক কৰোঁ আৰু অধিক শামুকৰ খোলা সংগ্ৰহ কৰোঁ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld মিনিট খেলক আৰু আপোনাৰ দৈনন্দিন খেলাৰ ধাৰাটো চলি থাকিব!</string>
+			<key>other</key>
+			<string>%lld মিনিট খেলক আৰু আপোনাৰ দৈনন্দিন খেলাৰ ধাৰাটো চলি থাকিব!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>আপোনাৰ দৈনিক খেলাৰ ধাৰা %lld দিন হ’ল! 🔥</string>
+			<key>other</key>
+			<string>আপোনাৰ দৈনিক খেলাৰ ধাৰা %lld দিন হ’ল! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>তোমাৰ মুঠ %lldটা শামুকৰ খোলা আছে। আৰু কেইটামান সংগ্ৰহ কৰিবলৈ সাজু নে?</string>
+			<key>other</key>
+			<string>তোমাৰ মুঠ %lldটা শামুকৰ খোলা আছে। আৰু কেইটামান সংগ্ৰহ কৰিবলৈ সাজু নে?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>এই সপ্তাহত %lldটা শামুকৰ খোলা! 🎉</string>
+			<key>other</key>
+			<string>এই সপ্তাহত %lldটা শামুকৰ খোলা! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lldটা শামুকৰ খোলাৰ পৰা উপলব্ধ</string>
+			<key>other</key>
+			<string>%lldটা শামুকৰ খোলাৰ পৰা উপলব্ধ</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>তুমি %lldটা শামুকৰ খোলা লাভ কৰিলা</string>
+			<key>other</key>
+			<string>তুমি %lldটা শামুকৰ খোলা লাভ কৰিলা</string>
+		</dict>
+	</dict>
+	<key>premium.feature.animals.subtitle %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>With premium you play freely with all %1$#@animals@.</string>
+		<key>animals</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld animal</string>
+			<key>other</key>
+			<string>%1$lld animals</string>
+		</dict>
+	</dict>
+	<key>premium.feature.levels.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@levels@ per topic</string>
+		<key>levels</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld level</string>
+			<key>other</key>
+			<string>%1$lld levels</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

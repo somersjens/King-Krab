@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Zebrano %lld muszlę</string>
+			<key>other</key>
+			<string>Zebrano %lld muszli</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Jeszcze %1$lld muszla, aby odblokować %2$@</string>
+			<key>other</key>
+			<string>Jeszcze %1$lld muszli, aby odblokować %2$@</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld muszla wstrzymana</string>
+			<key>other</key>
+			<string>%lld muszli wstrzymanych</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Na tym poziomie możesz zebrać do **%lld muszli**.</string>
+			<key>other</key>
+			<string>Na tym poziomie możesz zebrać do **%lld muszli**.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Maksimum osiągnięte %lld razy</string>
+			<key>many</key>
+			<string>Maksimum osiągnięte %lld razy</string>
+			<key>one</key>
+			<string>Maksimum osiągnięte %lld raz</string>
+			<key>other</key>
+			<string>Maksimum osiągnięte %lld razy</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Została tylko %lld muszla! 🐚</string>
+			<key>other</key>
+			<string>Zostało tylko %lld muszli! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Zagraj dziś %lld minuty i zbierz jeszcze kilka.</string>
+			<key>many</key>
+			<string>Zagraj dziś %lld minut i zbierz jeszcze kilka.</string>
+			<key>one</key>
+			<string>Zagraj dziś %lld minutę i zbierz jeszcze kilka.</string>
+			<key>other</key>
+			<string>Zagraj dziś %lld minuty i zbierz jeszcze kilka.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Zebrano %lld muszlę! 🐚</string>
+			<key>other</key>
+			<string>Zebrano %lld muszli! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Zagraj %lld minuty i przedłuż swoją passę.</string>
+			<key>many</key>
+			<string>Zagraj %lld minut i przedłuż swoją passę.</string>
+			<key>one</key>
+			<string>Zagraj %lld minutę i przedłuż swoją passę.</string>
+			<key>other</key>
+			<string>Zagraj %lld minuty i przedłuż swoją passę.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Premium otwiera %lld poziomy w każdym temacie i wszystkie dziesięć zwierząt.</string>
+			<key>many</key>
+			<string>Premium otwiera %lld poziomów w każdym temacie i wszystkie dziesięć zwierząt.</string>
+			<key>one</key>
+			<string>Premium otwiera %lld poziom w każdym temacie i wszystkie dziesięć zwierząt.</string>
+			<key>other</key>
+			<string>Premium otwiera %lld poziomu w każdym temacie i wszystkie dziesięć zwierząt.</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Minął %lld dzień. Rozwiążmy kilka działań i zbierzmy więcej muszli!</string>
+			<key>other</key>
+			<string>Minęło %lld dni. Rozwiążmy kilka działań i zbierzmy więcej muszli!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Zagraj %lld minuty i nie przerywaj passy!</string>
+			<key>many</key>
+			<string>Zagraj %lld minut i nie przerywaj passy!</string>
+			<key>one</key>
+			<string>Zagraj %lld minutę i nie przerywaj passy!</string>
+			<key>other</key>
+			<string>Zagraj %lld minuty i nie przerywaj passy!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Twoja passa %lld dni się pali! 🔥</string>
+			<key>many</key>
+			<string>Twoja passa %lld dni się pali! 🔥</string>
+			<key>one</key>
+			<string>Twoja passa %lld dnia się pali! 🔥</string>
+			<key>other</key>
+			<string>Twoja passa %lld dnia się pali! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Masz łącznie %lld muszlę. Gotowy/a na kilka następnych?</string>
+			<key>other</key>
+			<string>Masz łącznie %lld muszli. Gotowy/a na kilka następnych?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld muszla w tym tygodniu! 🎉</string>
+			<key>other</key>
+			<string>%lld muszli w tym tygodniu! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Dostępne od %lld muszli</string>
+			<key>other</key>
+			<string>Dostępne od %lld muszli</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Zdobyto %lld muszlę</string>
+			<key>other</key>
+			<string>Zdobyto %lld muszli</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

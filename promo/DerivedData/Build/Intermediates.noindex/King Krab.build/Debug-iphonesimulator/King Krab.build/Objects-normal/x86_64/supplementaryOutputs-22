@@ -1,0 +1,23 @@
+{
+  "/Users/jenssomers/Desktop/King Krab/King Krab/PlaytimeTracker.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PlaytimeTracker.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PlaytimeTracker.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PlaytimeTracker.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PlaytimeTracker.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PlaytimeTracker.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/PremiumStore.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumStore.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumStore.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumStore.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumStore.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumStore.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/PremiumView.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumView.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumView.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumView.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumView.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PremiumView.swiftdeps"
+  }
+}

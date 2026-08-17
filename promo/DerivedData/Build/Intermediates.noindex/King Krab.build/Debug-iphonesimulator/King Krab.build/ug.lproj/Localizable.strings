@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>character.bear</key>
+	<string>ئېيىق</string>
+	<key>character.bunny</key>
+	<string>توشقان</string>
+	<key>character.crab</key>
+	<string>قىسقۇچپاقا</string>
+	<key>character.dog</key>
+	<string>ئىت</string>
+	<key>character.elephant</key>
+	<string>پىل</string>
+	<key>character.fox</key>
+	<string>تۈلكە</string>
+	<key>character.frog</key>
+	<string>پاقا</string>
+	<key>character.lion</key>
+	<string>شىر</string>
+	<key>character.octopus</key>
+	<string>سەككىزئاياغ</string>
+	<key>character.penguin</key>
+	<string>پىنگۋىن</string>
+	<key>common.back</key>
+	<string>قايت</string>
+	<key>common.cancel</key>
+	<string>بىكار قىل</string>
+	<key>common.continue</key>
+	<string>داۋاملاشتۇر</string>
+	<key>common.done</key>
+	<string>بولدى</string>
+	<key>common.locked</key>
+	<string>قۇلۇپلانغان</string>
+	<key>common.minutesShort %lld %lld</key>
+	<string>%lld/%lld مىن</string>
+	<key>common.off</key>
+	<string>ئۆچۈك</string>
+	<key>common.ok</key>
+	<string>ماقۇل</string>
+	<key>common.on</key>
+	<string>ئوچۇق</string>
+	<key>common.save</key>
+	<string>ساقلا</string>
+	<key>common.unlocked</key>
+	<string>ئېچىلغان</string>
+	<key>game.accessibility.scoreOutOf %lld %lld</key>
+	<string>%lld دىن %lld</string>
+	<key>game.answer.correct</key>
+	<string>توغرا</string>
+	<key>game.answer.wrong</key>
+	<string>خاتا</string>
+	<key>game.encouragement.0</key>
+	<string>ياخشى سىناق</string>
+	<key>game.encouragement.1</key>
+	<string>باشلىنىشى ياخشى</string>
+	<key>game.encouragement.2</key>
+	<string>داۋاملىق مەشىق قىل</string>
+	<key>game.encouragement.3</key>
+	<string>يامان ئەمەس</string>
+	<key>game.encouragement.4</key>
+	<string>ياخشى كېتىۋاتىسەن</string>
+	<key>game.encouragement.5</key>
+	<string>قالتىس نەتىجە</string>
+	<key>game.encouragement.6</key>
+	<string>يارايسەن</string>
+	<key>game.encouragement.7</key>
+	<string>بەك ياخشى ئوينىدىڭ</string>
+	<key>game.encouragement.8</key>
+	<string>ئاخىرى كۆرۈندى</string>
+	<key>game.encouragement.9</key>
+	<string>ئاز قالدى</string>
+	<key>game.encouragement.complete</key>
+	<string>ھەممىسى توغرا!</string>
+	<key>game.end.completionSubtitle</key>
+	<string>بارلىق دېڭىز قېپىنى يىغدىڭىز.</string>
+	<key>game.end.completionTitle %@</key>
+	<string>%@ تامام!</string>
+	<key>game.end.gameOverTitle</key>
+	<string>ئويۇن ئاخىرلاشتى</string>
+	<key>game.end.mainMenu</key>
+	<string>باش تىزىملىك</string>
+	<key>game.end.playAgain</key>
+	<string>قايتا ئوينا</string>
+	<key>game.highScore</key>
+	<string>ئەڭ يۇقىرى نومۇر</string>
+	<key>game.intro.backToMainMenu</key>
+	<string>باش تىزىملىككە قايت</string>
+	<key>game.intro.continue</key>
+	<string>داۋاملاشتۇر</string>
+	<key>game.intro.progressPaused</key>
+	<string>ئىلگىرىلىشىڭ توختىتىلدى.</string>
+	<key>game.intro.start</key>
+	<string>دەرىجىنى باشلا</string>
+	<key>game.intro.startTutorial</key>
+	<string>قوللانمىنى باشلا</string>
+	<key>game.livesRemaining %@</key>
+	<string>قالغان جان: %@</string>
+	<key>game.pause</key>
+	<string>توختات</string>
+	<key>game.question %@</key>
+	<string>سوئال: %@</string>
+	<key>game.streakBoost.subtitle</key>
+	<string>2× دېڭىز قېپى • 1.5× سۈرئەت</string>
+	<key>game.streakBoost.title</key>
+	<string>ئۇدا مۇكاپات!</string>
+	<key>goal.period</key>
+	<string>نىشان مۇددىتى</string>
+	<key>goal.promptDaily</key>
+	<string>كۈنىگە قانچە مىنۇت ئوينىماقچىسەن؟</string>
+	<key>goal.promptWeekly</key>
+	<string>ھەپتىگە قانچە مىنۇت ئوينىماقچىسەن؟</string>
+	<key>goal.title</key>
+	<string>ئويۇن نىشانى</string>
+	<key>goalPeriod.daily</key>
+	<string>كۈندىلىك</string>
+	<key>goalPeriod.weekly</key>
+	<string>ھەپتىلىك</string>
+	<key>home.cardsRemaining %lld</key>
+	<string>يەنە %lld</string>
+	<key>home.levelAccessibility %lld</key>
+	<string>%lld-دەرىجە</string>
+	<key>info.mode.fractions.header</key>
+	<string>بۆلەكلەر</string>
+	<key>info.mode.fractions.multiple</key>
+	<string>بىر ۋە كۆپ بۆلەك</string>
+	<key>info.mode.fractions.single</key>
+	<string>ھەمىشە بىر بۆلەك</string>
+	<key>info.mode.header</key>
+	<string>تەرتىپ</string>
+	<key>info.mode.mixed</key>
+	<string>تۆۋەن دەرىجىلەر بىلەن ئارىلاش</string>
+	<key>info.mode.order</key>
+	<string>مۇقىم تەرتىپ</string>
+	<key>info.mode.percentages.decimal</key>
+	<string>ئونلۇق سانلار بىلەن</string>
+	<key>info.mode.percentages.header</key>
+	<string>تۈر</string>
+	<key>info.mode.percentages.whole</key>
+	<string>ئونلۇق سانسىز</string>
+	<key>info.mode.random</key>
+	<string>ئىختىيارىي تەرتىپ</string>
+	<key>info.super.all</key>
+	<string>قوشۇش، ئېلىش، كۆپەيتىش، بۆلۈش ۋە پىرسەنت</string>
+	<key>info.super.basic</key>
+	<string>قوشۇش ۋە ئېلىش</string>
+	<key>info.super.fraction</key>
+	<string>قوشۇش، ئېلىش، كۆپەيتىش ۋە بۆلۈش</string>
+	<key>info.super.times</key>
+	<string>قوشۇش، ئېلىش ۋە كۆپەيتىش</string>
+	<key>info.topic.header</key>
+	<string>مىسال تۈرلىرى</string>
+	<key>language.select</key>
+	<string>تىل تاللا</string>
+	<key>levelIntro.addition.intro</key>
+	<string>بىر ساننى **قوشىدىغان** مىساللار.</string>
+	<key>levelIntro.addition.title %lld</key>
+	<string>%lld نى قوش</string>
+	<key>levelIntro.fractions.intro</key>
+	<string>بىر ساننى **بۆلىدىغان** مىساللار.</string>
+	<key>levelIntro.fractions.title %lld</key>
+	<string>%lld گە بۆل</string>
+	<key>levelIntro.levelRange %lld</key>
+	<string>**%lld-دەرىجىگىچە** سوئاللار.</string>
+	<key>levelIntro.levelRange.first</key>
+	<string>**1-دەرىجىدىن** سوئاللار.</string>
+	<key>levelIntro.mixed.intro</key>
+	<string>**ھەممىسى ئارىلاش**: قوشۇش، ئېلىش، كۆپەيتىش، كەسىر ۋە پىرسەنت.</string>
+	<key>levelIntro.mixed.title %lld</key>
+	<string>Supermix %lld</string>
+	<key>levelIntro.mode.fractions.order</key>
+	<string>پۈتۈننىڭ ھەمىشە **بىر قىسمى**.</string>
+	<key>levelIntro.mode.fractions.random</key>
+	<string>پۈتۈننىڭ **بىر ياكى كۆپ قىسمى**.</string>
+	<key>levelIntro.mode.order</key>
+	<string>سوئاللار **مۇقىم تەرتىپتە**.</string>
+	<key>levelIntro.mode.percentages.order</key>
+	<string>جاۋابلار **ئونلۇقسىز**.</string>
+	<key>levelIntro.mode.percentages.random</key>
+	<string>جاۋابلار **ئونلۇق بىلەنمۇ**.</string>
+	<key>levelIntro.mode.random</key>
+	<string>سوئاللار **ئارىلاش تەرتىپتە**.</string>
+	<key>levelIntro.percentages.intro</key>
+	<string>**پىرسەنتلىك** مىساللار.</string>
+	<key>levelIntro.percentages.title %@</key>
+	<string>ساننىڭ %@</string>
+	<key>levelIntro.subtraction.intro</key>
+	<string>بىر ساننى **ئېلىۋېتىدىغان** مىساللار.</string>
+	<key>levelIntro.subtraction.title %lld</key>
+	<string>%lld نى ئېلىۋەت</string>
+	<key>levelIntro.tables.intro</key>
+	<string>**كۆپەيتىدىغان** مىساللار.</string>
+	<key>levelIntro.tables.title %lld</key>
+	<string>%lld نىڭ جەدۋىلى</string>
+	<key>menu.maximumCount</key>
+	<string>MAX</string>
+	<key>menu.moreLevels</key>
+	<string>تېخىمۇ كۆپ دەرىجە</string>
+	<key>menu.premiumLevels</key>
+	<string>Premium دەرىجىلەر</string>
+	<key>menu.startHere</key>
+	<string>بۇ يەردىن باشلا</string>
+	<key>menu.unlockWithPremium</key>
+	<string>Premium بىلەن تېخىمۇ كۆپنى ئاچ</string>
+	<key>mode.fractions.multiple</key>
+	<string>كۆپ بۆلەك</string>
+	<key>mode.fractions.single</key>
+	<string>بىر بۆلەك</string>
+	<key>mode.mixed</key>
+	<string>ئارىلاش</string>
+	<key>mode.order</key>
+	<string>تەرتىپ</string>
+	<key>mode.percentages.decimal</key>
+	<string>ئونلۇق</string>
+	<key>mode.percentages.whole</key>
+	<string>پۈتۈن</string>
+	<key>mode.random</key>
+	<string>ئىختىيارىي</string>
+	<key>name.placeholder</key>
+	<string>ئىسمىڭ</string>
+	<key>name.whatsYourName</key>
+	<string>ئىسمىڭ نېمە؟</string>
+	<key>notif.animal.body %@</key>
+	<string>%@ نى ئېچىش ئۈچۈن يەنە بىر نەچچە دېڭىز قېپى يىغىڭ! 🐼</string>
+	<key>notif.comeback.body</key>
+	<string>ھايۋانلىرىڭىز سىزنى ساقلاۋاتىدۇ. ئويۇنغا قايتىپ، دېڭىز قېپى يىغىشنى داۋاملاشتۇرۇڭ!</string>
+	<key>notif.comeback.title</key>
+	<string>سېنى سېغىندۇق! 👋</string>
+	<key>notif.day3.title</key>
+	<string>3-كۈنىنى قىلايلى! ⭐</string>
+	<key>notif.premium.title</key>
+	<string>تېخىمۇ كۆپ قاتلام ۋە ھايۋانلارنى ئېچىڭ! 🌈</string>
+	<key>notif.reactivate.title</key>
+	<string>قايتا ئويناشقا تەييارمۇ؟ 🎮</string>
+	<key>onboarding.level.advanced.subtitle</key>
+	<string>ئوخشىمىغان ئارىلاش مەسىلىلەر.</string>
+	<key>onboarding.level.advanced.title</key>
+	<string>خېلى ياخشى</string>
+	<key>onboarding.level.beginner.subtitle</key>
+	<string>تەرتىپلىك مەسىلىلەرنى مەشىق قىل.</string>
+	<key>onboarding.level.beginner.title</key>
+	<string>ئەمدى باشلىدىم</string>
+	<key>onboarding.level.intermediate.subtitle</key>
+	<string>مەسىلىلەر ئىختىيارىي تەرتىپتە.</string>
+	<key>onboarding.level.intermediate.title</key>
+	<string>ئازراق مەشىق قىلغان</string>
+	<key>onboarding.level.subtitle %@</key>
+	<string>%@ ئۈچۈن باشلىنىش نۇقتىسىنى تاللا.</string>
+	<key>onboarding.level.title</key>
+	<string>بۇنى قانچىلىك بىلىسەن؟</string>
+	<key>onboarding.name.subtitle</key>
+	<string>باشلايلى. ئىسمىڭ نېمە؟</string>
+	<key>onboarding.name.title</key>
+	<string>ھېسابلاش بۇنچە قىزىقارلىق بولۇپ باقمىغان!</string>
+	<key>onboarding.subject.subtitle</key>
+	<string>باشلايدىغان تېمىنى تاللا.</string>
+	<key>onboarding.subject.title</key>
+	<string>نېمىنى ئۆگەنمەكچىسەن؟</string>
+	<key>parentGate.approved</key>
+	<string>تەستىقلاندى</string>
+	<key>parentGate.attempts %lld %lld</key>
+	<string>سىناق: %1$lld / %2$lld</string>
+	<key>parentGate.holdInstruction %@ %lld</key>
+	<string>%@ نى %lld سېكۇنت بېسىپ تۇرۇڭ.</string>
+	<key>parentGate.holdProgress %lld</key>
+	<string>بېسىپ تۇرۇش: %lld</string>
+	<key>parentGate.shape.circle</key>
+	<string>چەمبەر</string>
+	<key>parentGate.shape.diamond</key>
+	<string>رومب</string>
+	<key>parentGate.shape.heart</key>
+	<string>يۈرەك</string>
+	<key>parentGate.shape.hexagon</key>
+	<string>ئالتە بۇلۇڭ</string>
+	<key>parentGate.shape.plus</key>
+	<string>قوشۇش بەلگىسى</string>
+	<key>parentGate.shape.square</key>
+	<string>تۆت بۇلۇڭ</string>
+	<key>parentGate.shape.star</key>
+	<string>يۇلتۇز</string>
+	<key>parentGate.shape.triangle</key>
+	<string>ئۈچ بۇلۇڭ</string>
+	<key>parentGate.subtitle</key>
+	<string>كىچىك ئوينىغۇچىلارنى قوغداش ئۈچۈن، سېتىۋېلىشنى داۋاملاشتۇرۇشتىن بۇرۇن چوڭ كىشى بۇ تەكشۈرۈشنى تاماملىشى كېرەك.</string>
+	<key>parentGate.tapInstruction %lld %@</key>
+	<string>ھازىر %2$@ نى %1$lld قېتىم چېكىڭ.</string>
+	<key>parentGate.tapProgress %lld %lld</key>
+	<string>چېكىش: %1$lld / %2$lld</string>
+	<key>parentGate.title</key>
+	<string>چوڭ كىشىنىڭ تەستىقى كېرەك</string>
+	<key>premium.availableFromStart</key>
+	<string>باشتىنلا ئىشلەتكىلى بولىدۇ</string>
+	<key>premium.characterUnlocked %@</key>
+	<string>%@ ئېچىلدى</string>
+	<key>premium.exclusiveWithPremium</key>
+	<string>پەقەت Premium بىلەن</string>
+	<key>premium.feature.animals.subtitle %lld</key>
+	<string>Premium بىلەن بارلىق %lld ھايۋاننىڭ بىلەن ئەركىن ئوينايسەن.</string>
+	<key>premium.feature.animals.title</key>
+	<string>بارلىق ھايۋانلار ئېچىلىدۇ</string>
+	<key>premium.feature.levels.subtitle</key>
+	<string>مەشىق قىلىدىغان يېڭى مەسىلىلەر ھەمىشە يېتەرلىك.</string>
+	<key>premium.feature.levels.title %lld</key>
+	<string>ھەر تېمىدا %lld دەرىجىسىنى</string>
+	<key>premium.feature.noAds.subtitle</key>
+	<string>ئۈزۈلمەي ئوينا.</string>
+	<key>premium.feature.noAds.title</key>
+	<string>ئېلان يوق</string>
+	<key>premium.oneTime</key>
+	<string>بىر قېتىملىق سېتىۋېلىش. مەڭگۈ سىزنىڭ.</string>
+	<key>premium.restore</key>
+	<string>سېتىۋېلىشنى ئەسلىگە كەلتۈر</string>
+	<key>premium.start</key>
+	<string>باشلاش</string>
+	<key>premium.storeUnavailable</key>
+	<string>دۇكان ھازىر ئېچىلمايدۇ. كېيىن قايتا سىناڭ.</string>
+	<key>premium.unlock</key>
+	<string>Premium نى ئاچ</string>
+	<key>premium.unlockBanner</key>
+	<string>يېڭى پېرسوناژ ئېچىلدى</string>
+	<key>premium.unlockWithCards</key>
+	<string>دېڭىز قېپى بىلەن ئېچىڭ</string>
+	<key>premium.unlockWithPrice %@</key>
+	<string>Premium نى ئاچ · %@</string>
+	<key>premium.unlockedWithPremium</key>
+	<string>Premium بىلەن ئېچىلدى</string>
+	<key>result.complete</key>
+	<string>دەرىجە تامام!</string>
+	<key>result.stopped</key>
+	<string>توختىتىلدى</string>
+	<key>result.unlocked</key>
+	<string>يېڭى پېرسوناژ ئېچىلدى!</string>
+	<key>settings.character</key>
+	<string>قەھرىمان</string>
+	<key>settings.characterInfo</key>
+	<string>ھەر بىر ھايۋان پۈتۈن ئويۇنغا ئۆزىنىڭ رەڭ ئۇسلۇبىنى بېرىدۇ.</string>
+	<key>settings.customMinutes %lld</key>
+	<string>ئۆزگىچە: %lld مىن</string>
+	<key>settings.dailyGoal</key>
+	<string>كۈندىلىك نىشان</string>
+	<key>settings.goalInfo %lld</key>
+	<string>كۈندىلىك نىشان: %lld مىنۇت. پەقەت ھەقىقىي ئوينىغان ۋاقتىڭ ھېسابلىنىدۇ.</string>
+	<key>settings.music</key>
+	<string>مۇزىكا</string>
+	<key>settings.playGoals</key>
+	<string>ئويۇن نىشانلىرى</string>
+	<key>settings.premiumUnlocked</key>
+	<string>Premium ئېچىلدى. رەھمەت!</string>
+	<key>settings.sound</key>
+	<string>ئاۋاز</string>
+	<key>settings.soundEffects</key>
+	<string>مۇزىكا ۋە ئۈنلەر</string>
+	<key>settings.soundInfo</key>
+	<string>جىم ئويناش ئۈچۈن ئاۋازنى ئۆچۈر. ئويۇن ئوخشاشلا ئىشلەيدۇ.</string>
+	<key>settings.spokenSums</key>
+	<string>مىساللارنى ئوقۇپ بەر</string>
+	<key>settings.title</key>
+	<string>تەڭشەكلەر</string>
+	<key>streak.accessibility.choosePeriod</key>
+	<string>كۈندىلىك ياكى ھەپتىلىك نىشان تاللا</string>
+	<key>streak.accessibility.compact %@ %lld %lld %lld</key>
+	<string>%1$@، %3$lld مىنۇتنىڭ %2$lld، ئۇدا %4$lld كۈن</string>
+	<key>streak.dayOne</key>
+	<string>1-كۈن</string>
+	<key>topic.addition</key>
+	<string>قوشۇش</string>
+	<key>topic.addition.detail</key>
+	<string>پەقەت قوشۇش</string>
+	<key>topic.fractions</key>
+	<string>كەسىرلەر</string>
+	<key>topic.fractions.detail</key>
+	<string>پەقەت بۆلۈش</string>
+	<key>topic.mixed</key>
+	<string>Supermix</string>
+	<key>topic.mixed.detail</key>
+	<string>ئارىلاش ئەمەللەر</string>
+	<key>topic.percentages</key>
+	<string>پىرسەنت</string>
+	<key>topic.percentages.detail</key>
+	<string>پەقەت پىرسەنت</string>
+	<key>topic.subtraction</key>
+	<string>ئېلىش</string>
+	<key>topic.subtraction.detail</key>
+	<string>پەقەت ئېلىش</string>
+	<key>topic.tables</key>
+	<string>جەدۋەل</string>
+	<key>topic.tables.detail</key>
+	<string>پەقەت كۆپەيتىش</string>
+	<key>tutorial.button</key>
+	<string>قوللانما</string>
+	<key>tutorial.notice.message</key>
+	<string>بۇ دەرىجىنى ئاللىبۇرۇن ئويناۋاتىسەن. تۈگەت ياكى يېڭى ئويۇن باشلا، ئاندىن قوللانما ئۈچۈن قالپاقنى يەنە باس.</string>
+	<key>tutorial.notice.title</key>
+	<string>پەقەت يېڭى ئويۇندا</string>
+	<key>tutorial.step.1</key>
+	<string>خاتا جاۋابلار پادىشاھىڭىزغا قاراپ كېلىۋاتىدۇ! قىسقۇچپاقىغا تېگىپ، ئۇنىڭغا قۇم ئېتىڭ. ھەممىسىنى تازىلاڭ!</string>
+	<key>tutorial.step.10</key>
+	<string>نومۇرۇڭ مۇشۇ يەردە!</string>
+	<key>tutorial.step.2</key>
+	<string>بىر قىسقۇچپاقا توغرا جاۋابنى ئېلىپ كېلىۋاتىدۇ. خاتا جاۋابلىقنى ئۇرۇپ، توغرا جاۋابلىقنى پادىشاھىڭىزغا يەتكۈزۈڭ!</string>
+	<key>tutorial.step.3</key>
+	<string>پادىشاھىڭىزغا يېتىپ بارغان قىسقۇچپاقىلار، قانچىسى ئۆتۈشىدىن قەتئىينەزەر، يېرىم جاننى ئالىدۇ. توغرا جاۋابقا قۇم ئاتسىڭىز، بىر پۈتۈن جاننى يوقىتىسىز!</string>
+	<key>tutorial.step.4</key>
+	<string>بۇ ھالرەڭ قىسقۇچپاقا پادىشاھىڭىزغا قوشۇمچە بىر جان ئېلىپ كېلىۋاتىدۇ. ئۇنىڭغا تېگىڭ، يۈرەكنى بىۋاسىتە پادىشاھىڭىزغا يەتكۈزسۇن!</string>
+	<key>tutorial.step.5</key>
+	<string>ھەسەن-ھۈسەن 2× قىسقۇچپاقا كېيىنكى توغرا جاۋابىڭىزنى ئىككى ھەسسە قىلىدۇ. ئۇنىڭغا تېگىڭ، تەڭگىنى پادىشاھىڭىزغا يەتكۈزسۇن!</string>
+	<key>tutorial.step.6</key>
+	<string>ئۇدا بەش توغرا جاۋاب بېرىپ، دەرىجىدىن تاشقىرى مۇكاپاتقا ئېرىشىڭ!</string>
+	<key>tutorial.step.7</key>
+	<string>دەرىجىدىن تاشقىرى مۇكاپات! قىسقۇچپاقىلار ئالتۇن رەڭگە كىرىدۇ، تېزرەك ماڭىدۇ، ھەر بىر توغرا جاۋاب ئىككى ھەسسە قىممەت بولىدۇ.</string>
+	<key>tutorial.step.8</key>
+	<string>دەرىجىدىن تاشقىرى مۇكاپات خاتالىق قىلغىچە داۋاملىشىدۇ. پادىشاھىڭىزنى قوغداڭ. ئامەت تىلەيمەن!</string>
+	<key>tutorial.step.9</key>
+	<string>ئۆگىتىش تاماملاندى! ئەمدى ئەڭ يۇقىرى نومۇرغا تىرىشىڭ!</string>
+</dict>
+</plist>

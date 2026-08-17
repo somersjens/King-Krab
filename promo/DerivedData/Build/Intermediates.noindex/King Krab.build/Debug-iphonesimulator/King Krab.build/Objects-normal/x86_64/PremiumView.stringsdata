@@ -1,0 +1,144 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/PremiumView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "premium.characterUnlocked %@",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 577
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.earnedCards %lld",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.availableAt %lld",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 182
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.levels.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 218
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.levels.subtitle",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 219
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.animals.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 221
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.animals.subtitle %lld",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 222
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.noAds.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.noAds.subtitle",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.unlocked",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.locked",
+        "location": {
+          "startingColumn": 69,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.done",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 379
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.oneTime",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 413
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.restore",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 417
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockWithPrice %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 435
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlock",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 437
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockBanner",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 549
+        }
+      }
+    ]
+  },
+  "version": 1
+}

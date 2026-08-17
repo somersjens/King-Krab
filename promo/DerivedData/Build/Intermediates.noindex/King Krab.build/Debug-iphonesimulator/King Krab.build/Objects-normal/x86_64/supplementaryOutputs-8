@@ -1,0 +1,23 @@
+{
+  "/Users/jenssomers/Desktop/King Krab/King Krab/AmbientReefBackground.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AmbientReefBackground.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AmbientReefBackground.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AmbientReefBackground.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AmbientReefBackground.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AmbientReefBackground.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/AnswerCrabRig.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AnswerCrabRig.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AnswerCrabRig.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AnswerCrabRig.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AnswerCrabRig.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/AnswerCrabRig.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/Promo/PromoTrailerView.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PromoTrailerView.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PromoTrailerView.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PromoTrailerView.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PromoTrailerView.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/PromoTrailerView.swiftdeps"
+  }
+}

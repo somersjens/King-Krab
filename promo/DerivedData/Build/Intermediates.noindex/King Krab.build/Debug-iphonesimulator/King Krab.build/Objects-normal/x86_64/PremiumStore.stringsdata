@@ -1,0 +1,16 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/PremiumStore.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "premium.storeUnavailable",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 69
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,23 @@
+{
+  "/Users/jenssomers/Desktop/King Krab/King Krab/Notifications.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/Notifications.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/Notifications.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/Notifications.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/Notifications.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/Notifications.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/OnboardingView.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/OnboardingView.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/OnboardingView.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/OnboardingView.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/OnboardingView.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/OnboardingView.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/ParentApprovalGate.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ParentApprovalGate.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ParentApprovalGate.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ParentApprovalGate.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ParentApprovalGate.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ParentApprovalGate.swiftdeps"
+  }
+}

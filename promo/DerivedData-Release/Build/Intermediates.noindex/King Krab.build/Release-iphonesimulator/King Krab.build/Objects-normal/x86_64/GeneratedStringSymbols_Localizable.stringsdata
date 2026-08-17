@@ -1,0 +1,1829 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/promo/DerivedData-Release/Build/Intermediates.noindex/King Krab.build/Release-iphonesimulator/King Krab.build/DerivedSources/GeneratedStringSymbols_Localizable.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "character.bear",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.bunny",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.crab",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.dog",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.elephant",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.fox",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.frog",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.lion",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.octopus",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 99
+        }
+      },
+      {
+        "comment": "",
+        "key": "character.penguin",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.back",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.cancel",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.continue",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 135
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.done",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.locked",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.minutesShort %lld %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 162
+        },
+        "value": "%lld%lld"
+      },
+      {
+        "comment": "",
+        "key": "common.off",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 171
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.ok",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 180
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.on",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 189
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.save",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.unlocked",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 207
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.accessibility.scoreOutOf %lld %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 216
+        },
+        "value": "%lld%lld"
+      },
+      {
+        "comment": "",
+        "key": "game.answer.correct",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.answer.wrong",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 234
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.bubblesCollected %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 243
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.0",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.1",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 261
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.2",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 270
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.3",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.4",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 288
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.5",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 297
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.6",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 306
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.7",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 315
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.8",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 324
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.9",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 333
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.encouragement.complete",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 342
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.end.completionSubtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 351
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.end.completionTitle %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 360
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "game.end.gameOverTitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 369
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.end.mainMenu",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 378
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.end.playAgain",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 387
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.highScore",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 396
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.backToMainMenu",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 405
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.continue",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 414
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.progressPaused",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 423
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.start",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 432
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.startTutorial",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 441
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.livesRemaining %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 450
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "game.pause",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 459
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.question %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 468
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "game.streakBoost.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 477
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.streakBoost.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 486
+        }
+      },
+      {
+        "comment": "",
+        "key": "goal.period",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 495
+        }
+      },
+      {
+        "comment": "",
+        "key": "goal.promptDaily",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 504
+        }
+      },
+      {
+        "comment": "",
+        "key": "goal.promptWeekly",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 513
+        }
+      },
+      {
+        "comment": "",
+        "key": "goal.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 522
+        }
+      },
+      {
+        "comment": "",
+        "key": "goalPeriod.daily",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 531
+        }
+      },
+      {
+        "comment": "",
+        "key": "goalPeriod.weekly",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 540
+        }
+      },
+      {
+        "comment": "",
+        "key": "home.cardsRemaining %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 549
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "home.levelAccessibility %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 558
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "home.nextCharacter %lld %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 567
+        },
+        "value": "%lld%@"
+      },
+      {
+        "comment": "",
+        "key": "home.pausedCards %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 576
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "info.mode.fractions.header",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 585
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.fractions.multiple",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 594
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.fractions.single",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 603
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.header",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 612
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.mixed",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 621
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.order",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 630
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.percentages.decimal",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 639
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.percentages.header",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 648
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.percentages.whole",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 657
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.mode.random",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 666
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.super.all",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 675
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.super.basic",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 684
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.super.fraction",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 693
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.super.times",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 702
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.topic.header",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 711
+        }
+      },
+      {
+        "comment": "",
+        "key": "language.select",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 720
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.addition.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 729
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.addition.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 738
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.cardsBullet %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 747
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.fractions.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 756
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.fractions.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 765
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.levelRange %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 774
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.levelRange.first",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 783
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mixed.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 792
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mixed.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 801
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.fractions.order",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 810
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.fractions.random",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 819
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.order",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 828
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.percentages.order",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 837
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.percentages.random",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 846
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mode.random",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 855
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.percentages.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 864
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.percentages.title %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 873
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.subtraction.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 882
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.subtraction.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 891
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.tables.intro",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 900
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.tables.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 909
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "menu.maximumCount",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 918
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.maximumCount.accessibility %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 927
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "menu.moreLevels",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 936
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.premiumLevels",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 945
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.startHere",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 954
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.unlockWithPremium",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 963
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.fractions.multiple",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 972
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.fractions.single",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 981
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.mixed",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 990
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.order",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 999
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.percentages.decimal",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1008
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.percentages.whole",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1017
+        }
+      },
+      {
+        "comment": "",
+        "key": "mode.random",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1026
+        }
+      },
+      {
+        "comment": "",
+        "key": "name.placeholder",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1035
+        }
+      },
+      {
+        "comment": "",
+        "key": "name.whatsYourName",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1044
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.animal.body %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1053
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "notif.animal.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1062
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.cards.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1071
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.cards.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1080
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.comeback.body",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1089
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.comeback.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1098
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.day3.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1107
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.day3.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1116
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.premium.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1125
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.premium.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1134
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.reactivate.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1143
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.reactivate.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1152
+        }
+      },
+      {
+        "comment": "",
+        "key": "notif.streak.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1161
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.streak.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1170
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.weekly.body %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1179
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "notif.weekly.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1188
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.advanced.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1197
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.advanced.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1206
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.beginner.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1215
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.beginner.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1224
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.intermediate.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1233
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.intermediate.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1242
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.subtitle %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1251
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "onboarding.level.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1260
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.name.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1269
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.name.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1278
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.subject.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1287
+        }
+      },
+      {
+        "comment": "",
+        "key": "onboarding.subject.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1296
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.approved",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1305
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.attempts %lld %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1314
+        },
+        "value": "%lld%lld"
+      },
+      {
+        "comment": "",
+        "key": "parentGate.holdInstruction %@ %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1323
+        },
+        "value": "%@%lld"
+      },
+      {
+        "comment": "",
+        "key": "parentGate.holdProgress %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1332
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.circle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1341
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.diamond",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1350
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.heart",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1359
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.hexagon",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1368
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.plus",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1377
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.square",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1386
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.star",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1395
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.shape.triangle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1404
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1413
+        }
+      },
+      {
+        "comment": "",
+        "key": "parentGate.tapInstruction %lld %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1422
+        },
+        "value": "%lld%@"
+      },
+      {
+        "comment": "",
+        "key": "parentGate.tapProgress %lld %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1431
+        },
+        "value": "%lld%lld"
+      },
+      {
+        "comment": "",
+        "key": "parentGate.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1440
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.availableAt %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1449
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "premium.availableFromStart",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1458
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.characterUnlocked %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1467
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "premium.earnedCards %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1476
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "premium.exclusiveWithPremium",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1485
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.animals.subtitle %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1494
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.animals.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1503
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.levels.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1512
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.levels.title %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1521
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.noAds.subtitle",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1530
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.feature.noAds.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1539
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.oneTime",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1548
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.restore",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1557
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.start",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1566
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.storeUnavailable",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1575
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlock",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1584
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockBanner",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1593
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockWithCards",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1602
+        }
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockWithPrice %@",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1611
+        },
+        "value": "%@"
+      },
+      {
+        "comment": "",
+        "key": "premium.unlockedWithPremium",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1620
+        }
+      },
+      {
+        "comment": "",
+        "key": "result.complete",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1629
+        }
+      },
+      {
+        "comment": "",
+        "key": "result.stopped",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1638
+        }
+      },
+      {
+        "comment": "",
+        "key": "result.unlocked",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1647
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.character",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1656
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.characterInfo",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1665
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.customMinutes %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1674
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "settings.dailyGoal",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1683
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.goalInfo %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1692
+        },
+        "value": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "settings.music",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1701
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.playGoals",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1710
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.premiumUnlocked",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1719
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.sound",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1728
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.soundEffects",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1737
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.soundInfo",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1746
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.spokenSums",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1755
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1764
+        }
+      },
+      {
+        "comment": "",
+        "key": "streak.accessibility.choosePeriod",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1773
+        }
+      },
+      {
+        "comment": "",
+        "key": "streak.accessibility.compact %@ %lld %lld %lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1782
+        },
+        "value": "%@%lld%lld%lld"
+      },
+      {
+        "comment": "",
+        "key": "streak.dayOne",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1791
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.addition",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1800
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.addition.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1809
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.fractions",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1818
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.fractions.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1827
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.mixed",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1836
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.mixed.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1845
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.percentages",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1854
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.percentages.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1863
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.subtraction",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1872
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.subtraction.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1881
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.tables",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1890
+        }
+      },
+      {
+        "comment": "",
+        "key": "topic.tables.detail",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1899
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.button",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1908
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.notice.message",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1917
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.notice.title",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1926
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.1",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1935
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.10",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1944
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.2",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1953
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.3",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1962
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.4",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1971
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.5",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1980
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.6",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1989
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.7",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1998
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.8",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 2007
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.step.9",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 2016
+        }
+      }
+    ]
+  },
+  "version": 1
+}

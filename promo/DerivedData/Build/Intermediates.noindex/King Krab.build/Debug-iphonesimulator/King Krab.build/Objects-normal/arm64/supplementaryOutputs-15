@@ -1,0 +1,23 @@
+{
+  "/Users/jenssomers/Desktop/King Krab/King Krab/ProgressSync.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ProgressSync.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ProgressSync.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ProgressSync.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ProgressSync.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ProgressSync.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/PromotedPurchaseCoordinator.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/PromotedPurchaseCoordinator.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/PromotedPurchaseCoordinator.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/PromotedPurchaseCoordinator.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/PromotedPurchaseCoordinator.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/PromotedPurchaseCoordinator.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/ReefTheme.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ReefTheme.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ReefTheme.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ReefTheme.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ReefTheme.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/arm64/ReefTheme.swiftdeps"
+  }
+}

@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>character.bear</key>
+	<string>Gấu</string>
+	<key>character.bunny</key>
+	<string>Thỏ</string>
+	<key>character.crab</key>
+	<string>Cua</string>
+	<key>character.dog</key>
+	<string>Chó</string>
+	<key>character.elephant</key>
+	<string>Voi</string>
+	<key>character.fox</key>
+	<string>Cáo</string>
+	<key>character.frog</key>
+	<string>Ếch</string>
+	<key>character.lion</key>
+	<string>Sư tử</string>
+	<key>character.octopus</key>
+	<string>Bạch tuộc</string>
+	<key>character.penguin</key>
+	<string>Chim cánh cụt</string>
+	<key>common.back</key>
+	<string>Quay lại</string>
+	<key>common.cancel</key>
+	<string>Hủy</string>
+	<key>common.continue</key>
+	<string>Tiếp tục</string>
+	<key>common.done</key>
+	<string>Xong</string>
+	<key>common.locked</key>
+	<string>Đã khóa</string>
+	<key>common.minutesShort %lld %lld</key>
+	<string>%lld/%lld phút</string>
+	<key>common.off</key>
+	<string>Tắt</string>
+	<key>common.ok</key>
+	<string>OK</string>
+	<key>common.on</key>
+	<string>Bật</string>
+	<key>common.save</key>
+	<string>Lưu</string>
+	<key>common.unlocked</key>
+	<string>Đã mở khóa</string>
+	<key>game.accessibility.scoreOutOf %lld %lld</key>
+	<string>%lld trên %lld</string>
+	<key>game.answer.correct</key>
+	<string>đúng</string>
+	<key>game.answer.wrong</key>
+	<string>sai</string>
+	<key>game.encouragement.0</key>
+	<string>Cố gắng tốt</string>
+	<key>game.encouragement.1</key>
+	<string>Khởi đầu tốt</string>
+	<key>game.encouragement.2</key>
+	<string>Tiếp tục luyện tập</string>
+	<key>game.encouragement.3</key>
+	<string>Không tệ chút nào</string>
+	<key>game.encouragement.4</key>
+	<string>Làm tốt lắm</string>
+	<key>game.encouragement.5</key>
+	<string>Thành tích đẹp</string>
+	<key>game.encouragement.6</key>
+	<string>Giỏi lắm</string>
+	<key>game.encouragement.7</key>
+	<string>Chơi rất giỏi</string>
+	<key>game.encouragement.8</key>
+	<string>Sắp về đích rồi</string>
+	<key>game.encouragement.9</key>
+	<string>Bạn gần tới rồi</string>
+	<key>game.encouragement.complete</key>
+	<string>Điểm tuyệt đối!</string>
+	<key>game.end.completionSubtitle</key>
+	<string>Bạn đã nhặt hết tất cả vỏ sò.</string>
+	<key>game.end.completionTitle %@</key>
+	<string>Hoàn thành %@!</string>
+	<key>game.end.gameOverTitle</key>
+	<string>Hết lượt</string>
+	<key>game.end.mainMenu</key>
+	<string>Menu chính</string>
+	<key>game.end.playAgain</key>
+	<string>Chơi lại</string>
+	<key>game.highScore</key>
+	<string>Điểm cao</string>
+	<key>game.intro.backToMainMenu</key>
+	<string>Về menu chính</string>
+	<key>game.intro.continue</key>
+	<string>Chơi tiếp</string>
+	<key>game.intro.progressPaused</key>
+	<string>Tiến độ đang tạm dừng.</string>
+	<key>game.intro.start</key>
+	<string>Bắt đầu màn</string>
+	<key>game.intro.startTutorial</key>
+	<string>Bắt đầu hướng dẫn</string>
+	<key>game.livesRemaining %@</key>
+	<string>Còn %@ mạng</string>
+	<key>game.pause</key>
+	<string>Tạm dừng</string>
+	<key>game.question %@</key>
+	<string>Câu hỏi: %@</string>
+	<key>game.streakBoost.subtitle</key>
+	<string>2× vỏ sò • 1,5× tốc độ</string>
+	<key>game.streakBoost.title</key>
+	<string>Thưởng liên tiếp!</string>
+	<key>goal.period</key>
+	<string>Khoảng thời gian</string>
+	<key>goal.promptDaily</key>
+	<string>Bạn muốn chơi bao nhiêu phút mỗi ngày?</string>
+	<key>goal.promptWeekly</key>
+	<string>Bạn muốn chơi bao nhiêu phút mỗi tuần?</string>
+	<key>goal.title</key>
+	<string>Mục tiêu chơi</string>
+	<key>goalPeriod.daily</key>
+	<string>Hằng ngày</string>
+	<key>goalPeriod.weekly</key>
+	<string>Hằng tuần</string>
+	<key>home.cardsRemaining %lld</key>
+	<string>Còn %lld</string>
+	<key>home.levelAccessibility %lld</key>
+	<string>Màn %lld</string>
+	<key>info.mode.fractions.header</key>
+	<string>Phần</string>
+	<key>info.mode.fractions.multiple</key>
+	<string>Một hoặc nhiều phần</string>
+	<key>info.mode.fractions.single</key>
+	<string>Luôn chỉ một phần</string>
+	<key>info.mode.header</key>
+	<string>Thứ tự</string>
+	<key>info.mode.mixed</key>
+	<string>Trộn với các cấp thấp hơn</string>
+	<key>info.mode.order</key>
+	<string>Thứ tự cố định</string>
+	<key>info.mode.percentages.decimal</key>
+	<string>Có số thập phân</string>
+	<key>info.mode.percentages.header</key>
+	<string>Loại</string>
+	<key>info.mode.percentages.whole</key>
+	<string>Không có số thập phân</string>
+	<key>info.mode.random</key>
+	<string>Thứ tự ngẫu nhiên</string>
+	<key>info.super.all</key>
+	<string>Cộng, trừ, nhân, chia và phần trăm</string>
+	<key>info.super.basic</key>
+	<string>Cộng và trừ</string>
+	<key>info.super.fraction</key>
+	<string>Cộng, trừ, nhân và chia</string>
+	<key>info.super.times</key>
+	<string>Cộng, trừ và nhân</string>
+	<key>info.topic.header</key>
+	<string>Các dạng bài</string>
+	<key>language.select</key>
+	<string>Chọn ngôn ngữ</string>
+	<key>levelIntro.addition.intro</key>
+	<string>Bài toán **cộng** một số.</string>
+	<key>levelIntro.addition.title %lld</key>
+	<string>Cộng %lld</string>
+	<key>levelIntro.fractions.intro</key>
+	<string>Bài toán **chia** một số.</string>
+	<key>levelIntro.fractions.title %lld</key>
+	<string>Chia cho %lld</string>
+	<key>levelIntro.levelRange %lld</key>
+	<string>Câu hỏi đến **màn %lld**.</string>
+	<key>levelIntro.levelRange.first</key>
+	<string>Câu hỏi từ **màn 1**.</string>
+	<key>levelIntro.mixed.intro</key>
+	<string>**Trộn tất cả**: cộng, trừ, nhân, phân số và phần trăm.</string>
+	<key>levelIntro.mixed.title %lld</key>
+	<string>Siêu trộn %lld</string>
+	<key>levelIntro.mode.fractions.order</key>
+	<string>Luôn là **một phần** của một tổng thể.</string>
+	<key>levelIntro.mode.fractions.random</key>
+	<string>**Một hoặc nhiều phần** của một tổng thể.</string>
+	<key>levelIntro.mode.order</key>
+	<string>Câu hỏi theo **thứ tự cố định**.</string>
+	<key>levelIntro.mode.percentages.order</key>
+	<string>Đáp án **không có số thập phân**.</string>
+	<key>levelIntro.mode.percentages.random</key>
+	<string>Có cả đáp án **có số thập phân**.</string>
+	<key>levelIntro.mode.random</key>
+	<string>Câu hỏi theo **thứ tự ngẫu nhiên**.</string>
+	<key>levelIntro.percentages.intro</key>
+	<string>Bài toán về **phần trăm**.</string>
+	<key>levelIntro.percentages.title %@</key>
+	<string>%@ của một số</string>
+	<key>levelIntro.subtraction.intro</key>
+	<string>Bài toán **trừ** một số.</string>
+	<key>levelIntro.subtraction.title %lld</key>
+	<string>Trừ %lld</string>
+	<key>levelIntro.tables.intro</key>
+	<string>Bài toán **nhân**.</string>
+	<key>levelIntro.tables.title %lld</key>
+	<string>Bảng nhân %lld</string>
+	<key>menu.maximumCount</key>
+	<string>TỐI ĐA</string>
+	<key>menu.moreLevels</key>
+	<string>Thêm cấp độ</string>
+	<key>menu.premiumLevels</key>
+	<string>Màn cao cấp</string>
+	<key>menu.startHere</key>
+	<string>Bắt đầu ở đây</string>
+	<key>menu.unlockWithPremium</key>
+	<string>Mở khóa thêm với Premium</string>
+	<key>mode.fractions.multiple</key>
+	<string>Nhiều phần</string>
+	<key>mode.fractions.single</key>
+	<string>Một phần</string>
+	<key>mode.mixed</key>
+	<string>Hỗn hợp</string>
+	<key>mode.order</key>
+	<string>Thứ tự</string>
+	<key>mode.percentages.decimal</key>
+	<string>Thập phân</string>
+	<key>mode.percentages.whole</key>
+	<string>Số nguyên</string>
+	<key>mode.random</key>
+	<string>Ngẫu nhiên</string>
+	<key>name.placeholder</key>
+	<string>Tên của bạn</string>
+	<key>name.whatsYourName</key>
+	<string>Bạn tên gì?</string>
+	<key>notif.animal.body %@</key>
+	<string>Nhặt thêm vài vỏ sò để mở khóa %@ nhé! 🐼</string>
+	<key>notif.comeback.body</key>
+	<string>Các bạn thú đang chờ bạn. Quay lại chơi và tiếp tục nhặt vỏ sò nhé!</string>
+	<key>notif.comeback.title</key>
+	<string>Chúng tôi nhớ bạn! 👋</string>
+	<key>notif.day3.title</key>
+	<string>Hãy biến ngày thứ 3 thành hiện thực! ⭐</string>
+	<key>notif.premium.title</key>
+	<string>Mở khóa nhiều cấp độ và động vật hơn! 🌈</string>
+	<key>notif.reactivate.title</key>
+	<string>Sẵn sàng chơi lại chưa? 🎮</string>
+	<key>onboarding.level.advanced.subtitle</key>
+	<string>Các phép tính hỗn hợp khác nhau.</string>
+	<key>onboarding.level.advanced.title</key>
+	<string>Đã khá giỏi rồi</string>
+	<key>onboarding.level.beginner.subtitle</key>
+	<string>Luyện các phép tính theo thứ tự.</string>
+	<key>onboarding.level.beginner.title</key>
+	<string>Mới bắt đầu</string>
+	<key>onboarding.level.intermediate.subtitle</key>
+	<string>Các phép tính theo thứ tự ngẫu nhiên.</string>
+	<key>onboarding.level.intermediate.title</key>
+	<string>Đã luyện một chút</string>
+	<key>onboarding.level.subtitle %@</key>
+	<string>Chọn điểm bắt đầu cho %@.</string>
+	<key>onboarding.level.title</key>
+	<string>Bạn đã giỏi phần này đến đâu?</string>
+	<key>onboarding.name.subtitle</key>
+	<string>Bắt đầu nhé. Bạn tên gì?</string>
+	<key>onboarding.name.title</key>
+	<string>Làm toán chưa bao giờ vui thế này!</string>
+	<key>onboarding.subject.subtitle</key>
+	<string>Chọn một chủ đề để bắt đầu.</string>
+	<key>onboarding.subject.title</key>
+	<string>Bạn muốn học gì?</string>
+	<key>parentGate.approved</key>
+	<string>Đã xác nhận</string>
+	<key>parentGate.attempts %lld %lld</key>
+	<string>Lần thử: %1$lld trên %2$lld</string>
+	<key>parentGate.holdInstruction %@ %lld</key>
+	<string>Giữ %@ trong %lld giây.</string>
+	<key>parentGate.holdProgress %lld</key>
+	<string>Giữ: %lld</string>
+	<key>parentGate.shape.circle</key>
+	<string>hình tròn</string>
+	<key>parentGate.shape.diamond</key>
+	<string>hình thoi</string>
+	<key>parentGate.shape.heart</key>
+	<string>trái tim</string>
+	<key>parentGate.shape.hexagon</key>
+	<string>hình lục giác</string>
+	<key>parentGate.shape.plus</key>
+	<string>dấu cộng</string>
+	<key>parentGate.shape.square</key>
+	<string>hình vuông</string>
+	<key>parentGate.shape.star</key>
+	<string>ngôi sao</string>
+	<key>parentGate.shape.triangle</key>
+	<string>hình tam giác</string>
+	<key>parentGate.subtitle</key>
+	<string>Để bảo vệ người chơi nhỏ tuổi, người lớn phải hoàn thành bước kiểm tra này trước khi tiếp tục mua.</string>
+	<key>parentGate.tapInstruction %lld %@</key>
+	<string>Bây giờ chạm %2$@ %1$lld lần.</string>
+	<key>parentGate.tapProgress %lld %lld</key>
+	<string>Số lần chạm: %1$lld trên %2$lld</string>
+	<key>parentGate.title</key>
+	<string>Cần người lớn xác nhận</string>
+	<key>premium.availableFromStart</key>
+	<string>Có thể dùng ngay từ đầu</string>
+	<key>premium.characterUnlocked %@</key>
+	<string>Đã mở khóa %@</string>
+	<key>premium.exclusiveWithPremium</key>
+	<string>Độc quyền với Premium</string>
+	<key>premium.feature.animals.subtitle %lld</key>
+	<string>Với premium, bạn được chơi tự do với tất cả %lld con.</string>
+	<key>premium.feature.animals.title</key>
+	<string>Mở khóa mọi con vật</string>
+	<key>premium.feature.levels.subtitle</key>
+	<string>Luôn có đủ bài toán mới để luyện tập.</string>
+	<key>premium.feature.levels.title %lld</key>
+	<string>%lld cấp mỗi chủ đề</string>
+	<key>premium.feature.noAds.subtitle</key>
+	<string>Chơi hoàn toàn không bị gián đoạn.</string>
+	<key>premium.feature.noAds.title</key>
+	<string>Không quảng cáo</string>
+	<key>premium.oneTime</key>
+	<string>Mua một lần. Dùng mãi mãi.</string>
+	<key>premium.restore</key>
+	<string>Khôi phục giao dịch mua</string>
+	<key>premium.start</key>
+	<string>Bắt đầu</string>
+	<key>premium.storeUnavailable</key>
+	<string>Cửa hàng hiện không khả dụng. Vui lòng thử lại sau.</string>
+	<key>premium.unlock</key>
+	<string>Mở khóa Premium</string>
+	<key>premium.unlockBanner</key>
+	<string>ĐÃ MỞ KHÓA NHÂN VẬT MỚI</string>
+	<key>premium.unlockWithCards</key>
+	<string>Mở khóa bằng vỏ sò</string>
+	<key>premium.unlockWithPrice %@</key>
+	<string>Mở khóa Premium · %@</string>
+	<key>premium.unlockedWithPremium</key>
+	<string>Đã mở khóa bằng Premium</string>
+	<key>result.complete</key>
+	<string>Hoàn thành màn!</string>
+	<key>result.stopped</key>
+	<string>Tạm dừng</string>
+	<key>result.unlocked</key>
+	<string>Đã mở khóa nhân vật mới!</string>
+	<key>settings.character</key>
+	<string>Nhân vật</string>
+	<key>settings.characterInfo</key>
+	<string>Mỗi con vật mang một chủ đề màu riêng cho toàn bộ trò chơi.</string>
+	<key>settings.customMinutes %lld</key>
+	<string>Tùy chỉnh: %lld phút</string>
+	<key>settings.dailyGoal</key>
+	<string>Mục tiêu hằng ngày</string>
+	<key>settings.goalInfo %lld</key>
+	<string>Mục tiêu chuỗi bắt đầu ở %lld phút mỗi ngày. Chỉ tính thời gian chơi thực tế.</string>
+	<key>settings.music</key>
+	<string>Nhạc</string>
+	<key>settings.playGoals</key>
+	<string>Mục tiêu chơi</string>
+	<key>settings.premiumUnlocked</key>
+	<string>Đã mở khóa Premium. Cảm ơn bạn!</string>
+	<key>settings.sound</key>
+	<string>Âm thanh</string>
+	<key>settings.soundEffects</key>
+	<string>Nhạc và hiệu ứng</string>
+	<key>settings.soundInfo</key>
+	<string>Tắt âm thanh để chơi yên lặng. Trò chơi vẫn hoạt động như cũ.</string>
+	<key>settings.spokenSums</key>
+	<string>Đọc phép tính thành tiếng</string>
+	<key>settings.title</key>
+	<string>Cài đặt</string>
+	<key>streak.accessibility.choosePeriod</key>
+	<string>Chọn mục tiêu hằng ngày hoặc hằng tuần</string>
+	<key>streak.accessibility.compact %@ %lld %lld %lld</key>
+	<string>%1$@, %2$lld trên %3$lld phút, %4$lld ngày liên tiếp</string>
+	<key>streak.dayOne</key>
+	<string>Ngày 1</string>
+	<key>topic.addition</key>
+	<string>Phép cộng</string>
+	<key>topic.addition.detail</key>
+	<string>Chỉ phép cộng</string>
+	<key>topic.fractions</key>
+	<string>Phân số</string>
+	<key>topic.fractions.detail</key>
+	<string>Chỉ phép chia</string>
+	<key>topic.mixed</key>
+	<string>Siêu trộn</string>
+	<key>topic.mixed.detail</key>
+	<string>Nhiều phép tính</string>
+	<key>topic.percentages</key>
+	<string>Phần trăm</string>
+	<key>topic.percentages.detail</key>
+	<string>Chỉ phần trăm</string>
+	<key>topic.subtraction</key>
+	<string>Phép trừ</string>
+	<key>topic.subtraction.detail</key>
+	<string>Chỉ phép trừ</string>
+	<key>topic.tables</key>
+	<string>Bảng nhân</string>
+	<key>topic.tables.detail</key>
+	<string>Chỉ phép nhân</string>
+	<key>tutorial.button</key>
+	<string>Hướng dẫn</string>
+	<key>tutorial.notice.message</key>
+	<string>Bạn đang chơi màn này. Hãy chơi xong hoặc bắt đầu trò mới, rồi bấm lại vào mũ để xem hướng dẫn.</string>
+	<key>tutorial.notice.title</key>
+	<string>Chỉ khi bắt đầu trò chơi</string>
+	<key>tutorial.step.1</key>
+	<string>Các đáp án sai đang tiến về phía Đức Vua của bạn! Chạm vào một con cua để ném cát vào nó. Dọn sạch tất cả nhé!</string>
+	<key>tutorial.step.10</key>
+	<string>Điểm của bạn ở đây!</string>
+	<key>tutorial.step.2</key>
+	<string>Một con cua mang đáp án đúng. Đánh con mang đáp án sai và để con mang đáp án đúng đến được với Đức Vua!</string>
+	<key>tutorial.step.3</key>
+	<string>Cua đến được với Đức Vua sẽ làm mất nửa mạng, dù có bao nhiêu con lọt qua. Nếu ném cát vào đáp án đúng, bạn sẽ mất cả một mạng!</string>
+	<key>tutorial.step.4</key>
+	<string>Con cua hồng này đang mang thêm một mạng cho Đức Vua. Chạm vào nó để nó mang trái tim đến thẳng chỗ Đức Vua!</string>
+	<key>tutorial.step.5</key>
+	<string>Con cua cầu vồng 2× sẽ nhân đôi đáp án đúng tiếp theo của bạn. Chạm vào nó để nó mang đồng xu đến cho Đức Vua!</string>
+	<key>tutorial.step.6</key>
+	<string>Trả lời đúng năm câu liên tiếp để nhận siêu thưởng!</string>
+	<key>tutorial.step.7</key>
+	<string>Siêu thưởng! Cua chuyển thành màu vàng, đi nhanh hơn và mỗi đáp án đúng được tính gấp đôi.</string>
+	<key>tutorial.step.8</key>
+	<string>Siêu thưởng kéo dài cho đến khi bạn trả lời sai. Hãy bảo vệ Đức Vua. Chúc may mắn!</string>
+	<key>tutorial.step.9</key>
+	<string>Đã hoàn thành hướng dẫn! Giờ hãy chinh phục điểm cao nhất!</string>
+</dict>
+</plist>

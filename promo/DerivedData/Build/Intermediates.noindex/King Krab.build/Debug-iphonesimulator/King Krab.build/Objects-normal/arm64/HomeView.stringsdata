@@ -1,0 +1,56 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/HomeView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "tutorial.step.10",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 183
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.topic.header",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 506
+        }
+      },
+      {
+        "comment": "",
+        "key": "info.topic.header",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 612
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.premiumLevels",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 820
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.moreLevels",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 851
+        }
+      },
+      {
+        "comment": "",
+        "key": "menu.unlockWithPremium",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 854
+        }
+      }
+    ]
+  },
+  "version": 1
+}

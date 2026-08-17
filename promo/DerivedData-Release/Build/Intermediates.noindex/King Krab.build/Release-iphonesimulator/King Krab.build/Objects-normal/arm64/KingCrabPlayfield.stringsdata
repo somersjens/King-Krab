@@ -1,0 +1,24 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/KingCrabPlayfield.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "game.question %@",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 493
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.answer.wrong",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 561
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,16 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/Localization.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "language.select",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 540
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/promo/DerivedData-Release/Build/Intermediates.noindex/King Krab.build/Release-iphonesimulator/King Krab.build/DerivedSources/GeneratedStringSymbols_InfoPlist.swift",
+  "tables": {
+    "InfoPlist": [
+      {
+        "comment": "",
+        "key": "CFBundleDisplayName",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "CFBundleName",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 38
+        }
+      }
+    ]
+  },
+  "version": 1
+}

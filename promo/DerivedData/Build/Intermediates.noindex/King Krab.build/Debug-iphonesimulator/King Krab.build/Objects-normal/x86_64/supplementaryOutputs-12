@@ -1,0 +1,23 @@
+{
+  "/Users/jenssomers/Desktop/King Krab/King Krab/CrabLegWalk.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/CrabLegWalk.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/CrabLegWalk.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/CrabLegWalk.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/CrabLegWalk.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/CrabLegWalk.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/ElephantChallengeApp.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/ElephantChallengeApp.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/ElephantChallengeApp.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/ElephantChallengeApp.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/ElephantChallengeApp.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/ElephantChallengeApp.swiftdeps"
+  },
+  "/Users/jenssomers/Desktop/King Krab/King Krab/EmphasizedText.swift" : {
+    "const-values" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/EmphasizedText.swiftconstvalues",
+    "dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/EmphasizedText.d",
+    "diagnostics" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/EmphasizedText.dia",
+    "object" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/EmphasizedText.o",
+    "swift-dependencies" : "/Users/jenssomers/Desktop/King Krab/promo/DerivedData/Build/Intermediates.noindex/King Krab.build/Debug-iphonesimulator/King Krab.build/Objects-normal/x86_64/EmphasizedText.swiftdeps"
+  }
+}

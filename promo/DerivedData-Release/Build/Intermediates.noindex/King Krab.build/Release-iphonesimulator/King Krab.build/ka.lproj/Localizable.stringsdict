@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>შეგროვდა %lld ნიჟარა</string>
+			<key>other</key>
+			<string>შეგროვდა %lld ნიჟარა</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>კიდევ %1$lld ნიჟარა, რომ გახსნა %2$@</string>
+			<key>other</key>
+			<string>კიდევ %1$lld ნიჟარა, რომ გახსნა %2$@</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ნიჟარა პაუზაზეა</string>
+			<key>other</key>
+			<string>%lld ნიჟარა პაუზაზეა</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ამ დონეზე შეგიძლია შეაგროვო მაქსიმუმ **%lld ნიჟარა**.</string>
+			<key>other</key>
+			<string>ამ დონეზე შეგიძლია შეაგროვო მაქსიმუმ **%lld ნიჟარა**.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>მაქსიმუმი მიღწეულია %lld-ჯერ</string>
+			<key>other</key>
+			<string>მაქსიმუმი მიღწეულია %lld-ჯერ</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>დარჩა მხოლოდ %lld ნიჟარა! 🐚</string>
+			<key>other</key>
+			<string>დარჩა მხოლოდ %lld ნიჟარა! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>დღეს %lld წუთი ითამაშე და კიდევ რამდენიმე შეაგროვე.</string>
+			<key>other</key>
+			<string>დღეს %lld წუთი ითამაშე და კიდევ რამდენიმე შეაგროვე.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>შეგროვდა %lld ნიჟარა! 🐚</string>
+			<key>other</key>
+			<string>შეგროვდა %lld ნიჟარა! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>დაიწყეთ %lld წუთიანი სათამაშო სესია და გააგრძელეთ თქვენი ყოველდღიური სათამაშო სერია.</string>
+			<key>other</key>
+			<string>დაიწყეთ %lld წუთიანი სათამაშო სესია და გააგრძელეთ თქვენი ყოველდღიური სათამაშო სერია.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Premium მოიცავს %lld დონეს ყველა თემისთვის და 10-ვე ცხოველისთვის. თავგადასავალი გრძელდება!</string>
+			<key>other</key>
+			<string>Premium მოიცავს %lld დონეს ყველა თემისთვის და 10-ვე ცხოველისთვის. თავგადასავალი გრძელდება!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>გავიდა %lld დღე. მოდი რამდენიმე მაგალითი ამოვხსნათ და მეტი ნიჟარა შევაგროვოთ!</string>
+			<key>other</key>
+			<string>გავიდა %lld დღე. მოდი რამდენიმე მაგალითი ამოვხსნათ და მეტი ნიჟარა შევაგროვოთ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ითამაშეთ %lld წუთის განმავლობაში და გააგრძელეთ თქვენი ყოველდღიური სათამაშო სერია!</string>
+			<key>other</key>
+			<string>ითამაშეთ %lld წუთის განმავლობაში და გააგრძელეთ თქვენი ყოველდღიური სათამაშო სერია!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>თქვენი ყოველდღიური სათამაშო სერია %lld დღეს მიაღწია! 🔥</string>
+			<key>other</key>
+			<string>თქვენი ყოველდღიური სათამაშო სერია %lld დღეს მიაღწია! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>სულ გაქვს %lld ნიჟარა. მზად ხარ კიდევ რამდენიმესთვის?</string>
+			<key>other</key>
+			<string>სულ გაქვს %lld ნიჟარა. მზად ხარ კიდევ რამდენიმესთვის?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ამ კვირაში %lld ნიჟარა! 🎉</string>
+			<key>other</key>
+			<string>ამ კვირაში %lld ნიჟარა! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ხელმისაწვდომია %lld ნიჟარიდან</string>
+			<key>other</key>
+			<string>ხელმისაწვდომია %lld ნიჟარიდან</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>შენ მოიპოვე %lld ნიჟარა</string>
+			<key>other</key>
+			<string>შენ მოიპოვე %lld ნიჟარა</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

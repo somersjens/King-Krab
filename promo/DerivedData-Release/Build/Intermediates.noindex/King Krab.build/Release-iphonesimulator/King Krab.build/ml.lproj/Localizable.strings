@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>character.bear</key>
+	<string>കരടി</string>
+	<key>character.bunny</key>
+	<string>മുയൽ</string>
+	<key>character.crab</key>
+	<string>ഞണ്ട്</string>
+	<key>character.dog</key>
+	<string>നായ</string>
+	<key>character.elephant</key>
+	<string>ആന</string>
+	<key>character.fox</key>
+	<string>കുറുക്കൻ</string>
+	<key>character.frog</key>
+	<string>തവള</string>
+	<key>character.lion</key>
+	<string>സിംഹം</string>
+	<key>character.octopus</key>
+	<string>നീരാളി</string>
+	<key>character.penguin</key>
+	<string>പെൻഗ്വിൻ</string>
+	<key>common.back</key>
+	<string>പിന്നോട്ട്</string>
+	<key>common.cancel</key>
+	<string>റദ്ദാക്കുക</string>
+	<key>common.continue</key>
+	<string>തുടരുക</string>
+	<key>common.done</key>
+	<string>പൂർത്തിയായി</string>
+	<key>common.locked</key>
+	<string>പൂട്ടിയത്</string>
+	<key>common.minutesShort %lld %lld</key>
+	<string>%lld/%lld മിനിറ്റ്</string>
+	<key>common.off</key>
+	<string>ഓഫ്</string>
+	<key>common.ok</key>
+	<string>ശരി</string>
+	<key>common.on</key>
+	<string>ഓൺ</string>
+	<key>common.save</key>
+	<string>സേവ്</string>
+	<key>common.unlocked</key>
+	<string>തുറന്നു</string>
+	<key>game.accessibility.scoreOutOf %lld %lld</key>
+	<string>%lldൽ %lld</string>
+	<key>game.answer.correct</key>
+	<string>ശരി</string>
+	<key>game.answer.wrong</key>
+	<string>തെറ്റ്</string>
+	<key>game.encouragement.0</key>
+	<string>നല്ല ശ്രമം</string>
+	<key>game.encouragement.1</key>
+	<string>നല്ല തുടക്കം</string>
+	<key>game.encouragement.2</key>
+	<string>പരിശീലിച്ചുകൊണ്ടിരിക്കുക</string>
+	<key>game.encouragement.3</key>
+	<string>ഒട്ടും മോശമല്ല</string>
+	<key>game.encouragement.4</key>
+	<string>നന്നായി ചെയ്യുന്നു</string>
+	<key>game.encouragement.5</key>
+	<string>മികച്ച പ്രകടനം</string>
+	<key>game.encouragement.6</key>
+	<string>വളരെ നന്നായി</string>
+	<key>game.encouragement.7</key>
+	<string>അതിമനോഹരമായി കളിച്ചു</string>
+	<key>game.encouragement.8</key>
+	<string>അവസാനം അടുത്തു</string>
+	<key>game.encouragement.9</key>
+	<string>ഇനി കുറച്ചേ ഉള്ളൂ</string>
+	<key>game.encouragement.complete</key>
+	<string>പൂർണ്ണ സ്കോർ!</string>
+	<key>game.end.completionSubtitle</key>
+	<string>നീ എല്ലാ ചിപ്പികളും ശേഖരിച്ചു.</string>
+	<key>game.end.completionTitle %@</key>
+	<string>%@ പൂർത്തിയായി!</string>
+	<key>game.end.gameOverTitle</key>
+	<string>കളി കഴിഞ്ഞു</string>
+	<key>game.end.mainMenu</key>
+	<string>പ്രധാന മെനു</string>
+	<key>game.end.playAgain</key>
+	<string>വീണ്ടും കളിക്കൂ</string>
+	<key>game.highScore</key>
+	<string>മികച്ച സ്കോർ</string>
+	<key>game.intro.backToMainMenu</key>
+	<string>പ്രധാന മെനുവിലേക്ക്</string>
+	<key>game.intro.continue</key>
+	<string>തുടർന്ന് കളിക്കൂ</string>
+	<key>game.intro.progressPaused</key>
+	<string>നിന്റെ പുരോഗതി നിർത്തിവച്ചു.</string>
+	<key>game.intro.start</key>
+	<string>ലെവൽ തുടങ്ങൂ</string>
+	<key>game.intro.startTutorial</key>
+	<string>ട്യൂട്ടോറിയൽ തുടങ്ങൂ</string>
+	<key>game.livesRemaining %@</key>
+	<string>ജീവൻ ബാക്കി: %@</string>
+	<key>game.pause</key>
+	<string>നിർത്തുക</string>
+	<key>game.question %@</key>
+	<string>ചോദ്യം: %@</string>
+	<key>game.streakBoost.subtitle</key>
+	<string>2× ചിപ്പികൾ • 1.5× വേഗം</string>
+	<key>game.streakBoost.title</key>
+	<string>തുടർച്ചാ ബൂസ്റ്റ്!</string>
+	<key>goal.period</key>
+	<string>ലക്ഷ്യകാലം</string>
+	<key>goal.promptDaily</key>
+	<string>ദിവസം എത്ര മിനിറ്റ് കളിക്കണം?</string>
+	<key>goal.promptWeekly</key>
+	<string>ആഴ്ചയിൽ എത്ര മിനിറ്റ് കളിക്കണം?</string>
+	<key>goal.title</key>
+	<string>കളിലക്ഷ്യം</string>
+	<key>goalPeriod.daily</key>
+	<string>ദിവസേന</string>
+	<key>goalPeriod.weekly</key>
+	<string>ആഴ്ചതോറും</string>
+	<key>home.cardsRemaining %lld</key>
+	<string>ഇനി %lld</string>
+	<key>home.levelAccessibility %lld</key>
+	<string>ലെവൽ %lld</string>
+	<key>info.mode.fractions.header</key>
+	<string>ഭാഗങ്ങൾ</string>
+	<key>info.mode.fractions.multiple</key>
+	<string>ഒന്നോ പലതോ ഭാഗങ്ങൾ</string>
+	<key>info.mode.fractions.single</key>
+	<string>എപ്പോഴും ഒരു ഭാഗം</string>
+	<key>info.mode.header</key>
+	<string>ക്രമം</string>
+	<key>info.mode.mixed</key>
+	<string>താഴത്തെ ലെവലുകളുമായി കലർത്തിയത്</string>
+	<key>info.mode.order</key>
+	<string>നിശ്ചിത ക്രമം</string>
+	<key>info.mode.percentages.decimal</key>
+	<string>ദശാംശ സംഖ്യകളും ഉൾപ്പെടെ</string>
+	<key>info.mode.percentages.header</key>
+	<string>തരം</string>
+	<key>info.mode.percentages.whole</key>
+	<string>ദശാംശ സംഖ്യകളില്ലാതെ</string>
+	<key>info.mode.random</key>
+	<string>ക്രമരഹിതം</string>
+	<key>info.super.all</key>
+	<string>കൂട്ടൽ, കുറയ്ക്കൽ, ഗുണനം, ഹരണം, ശതമാനങ്ങൾ</string>
+	<key>info.super.basic</key>
+	<string>കൂട്ടലും കുറയ്ക്കലും</string>
+	<key>info.super.fraction</key>
+	<string>കൂട്ടൽ, കുറയ്ക്കൽ, ഗുണനം, ഹരണം</string>
+	<key>info.super.times</key>
+	<string>കൂട്ടൽ, കുറയ്ക്കൽ, ഗുണനം</string>
+	<key>info.topic.header</key>
+	<string>കണക്കുകളുടെ തരങ്ങൾ</string>
+	<key>language.select</key>
+	<string>ഭാഷ തിരഞ്ഞെടുക്കൂ</string>
+	<key>levelIntro.addition.intro</key>
+	<string>ഒരു സംഖ്യ **കൂട്ടുന്ന** കണക്കുകൾ.</string>
+	<key>levelIntro.addition.title %lld</key>
+	<string>%lld കൂട്ടുക</string>
+	<key>levelIntro.fractions.intro</key>
+	<string>ഒരു സംഖ്യ **ഹരിക്കുന്ന** കണക്കുകൾ.</string>
+	<key>levelIntro.fractions.title %lld</key>
+	<string>%lld കൊണ്ട് ഹരിക്കുക</string>
+	<key>levelIntro.levelRange %lld</key>
+	<string>**ലെവൽ %lld** വരെ ചോദ്യങ്ങൾ.</string>
+	<key>levelIntro.levelRange.first</key>
+	<string>**ലെവൽ 1** മുതൽ ചോദ്യങ്ങൾ.</string>
+	<key>levelIntro.mixed.intro</key>
+	<string>**എല്ലാം കലർത്തി**: കൂട്ടൽ, കുറയ്ക്കൽ, ഗുണനം, ഭിന്നങ്ങൾ, ശതമാനം.</string>
+	<key>levelIntro.mixed.title %lld</key>
+	<string>സൂപ്പർമിക്സ് %lld</string>
+	<key>levelIntro.mode.fractions.order</key>
+	<string>മുഴുവന്റെ **ഒരു ഭാഗം** മാത്രം.</string>
+	<key>levelIntro.mode.fractions.random</key>
+	<string>മുഴുവന്റെ **ഒന്നോ അതിലധികമോ ഭാഗങ്ങൾ**.</string>
+	<key>levelIntro.mode.order</key>
+	<string>ചോദ്യങ്ങൾ **നിശ്ചിത ക്രമത്തിൽ**.</string>
+	<key>levelIntro.mode.percentages.order</key>
+	<string>**ദശാംശമില്ലാത്ത** ഉത്തരങ്ങൾ.</string>
+	<key>levelIntro.mode.percentages.random</key>
+	<string>**ദശാംശമുള്ള** ഉത്തരങ്ങളും.</string>
+	<key>levelIntro.mode.random</key>
+	<string>ചോദ്യങ്ങൾ **ക്രമമില്ലാതെ**.</string>
+	<key>levelIntro.percentages.intro</key>
+	<string>**ശതമാനങ്ങളുള്ള** കണക്കുകൾ.</string>
+	<key>levelIntro.percentages.title %@</key>
+	<string>ഒരു സംഖ്യയുടെ %@</string>
+	<key>levelIntro.subtraction.intro</key>
+	<string>ഒരു സംഖ്യ **കുറയ്ക്കുന്ന** കണക്കുകൾ.</string>
+	<key>levelIntro.subtraction.title %lld</key>
+	<string>%lld കുറയ്ക്കുക</string>
+	<key>levelIntro.tables.intro</key>
+	<string>**ഗുണിക്കുന്ന** കണക്കുകൾ.</string>
+	<key>levelIntro.tables.title %lld</key>
+	<string>%lld ഗുണനപ്പട്ടിക</string>
+	<key>menu.maximumCount</key>
+	<string>പരമം</string>
+	<key>menu.moreLevels</key>
+	<string>കൂടുതൽ ലെവലുകൾ</string>
+	<key>menu.premiumLevels</key>
+	<string>പ്രീമിയം ലെവലുകൾ</string>
+	<key>menu.startHere</key>
+	<string>ഇവിടെ തുടങ്ങൂ</string>
+	<key>menu.unlockWithPremium</key>
+	<string>പ്രീമിയം ഉപയോഗിച്ച് കൂടുതൽ തുറക്കൂ</string>
+	<key>mode.fractions.multiple</key>
+	<string>പല ഭാഗങ്ങൾ</string>
+	<key>mode.fractions.single</key>
+	<string>ഒരു ഭാഗം</string>
+	<key>mode.mixed</key>
+	<string>കലർന്നത്</string>
+	<key>mode.order</key>
+	<string>ക്രമം</string>
+	<key>mode.percentages.decimal</key>
+	<string>ദശാംശം</string>
+	<key>mode.percentages.whole</key>
+	<string>പൂർണ്ണം</string>
+	<key>mode.random</key>
+	<string>ക്രമരഹിതം</string>
+	<key>name.placeholder</key>
+	<string>നിന്റെ പേര്</string>
+	<key>name.whatsYourName</key>
+	<string>നിന്റെ പേരെന്താണ്?</string>
+	<key>notif.animal.body %@</key>
+	<string>%@ അൺലോക്ക് ചെയ്യാൻ കുറച്ച് ചിപ്പികൾ കൂടി ശേഖരിക്കൂ! 🐼</string>
+	<key>notif.comeback.body</key>
+	<string>നിന്റെ മൃഗങ്ങൾ കാത്തിരിക്കുന്നു. വീണ്ടും കളിക്കൂ, ചിപ്പികൾ ശേഖരിച്ചുകൊണ്ടിരിക്കുക!</string>
+	<key>notif.comeback.title</key>
+	<string>എനിക്ക് നിന്നെ മിസ്സാകും! 👋</string>
+	<key>notif.day3.title</key>
+	<string>നമുക്ക് ദിവസം 3 ആക്കാം! ⭐</string>
+	<key>notif.premium.title</key>
+	<string>കൂടുതൽ ലെവലുകളും മൃഗങ്ങളും അൺലോക്ക് ചെയ്യുക! 🌈</string>
+	<key>notif.reactivate.title</key>
+	<string>വീണ്ടും കളിക്കാൻ തയ്യാറാണോ? 🎮</string>
+	<key>onboarding.level.advanced.subtitle</key>
+	<string>വ്യത്യസ്ത മിക്സ് കണക്കുകൾ ഒരുമിച്ച്.</string>
+	<key>onboarding.level.advanced.title</key>
+	<string>ഇതിനകം നന്നായി അറിയാം</string>
+	<key>onboarding.level.beginner.subtitle</key>
+	<string>ക്രമത്തിലുള്ള കണക്കുകൾ പരിശീലിക്കൂ.</string>
+	<key>onboarding.level.beginner.title</key>
+	<string>ഇപ്പോൾ തുടങ്ങിയതാണ്</string>
+	<key>onboarding.level.intermediate.subtitle</key>
+	<string>ക്രമരഹിത കണക്കുകൾ.</string>
+	<key>onboarding.level.intermediate.title</key>
+	<string>കുറച്ച് പരിശീലിച്ചിട്ടുണ്ട്</string>
+	<key>onboarding.level.subtitle %@</key>
+	<string>%@ ന് ഒരു തുടക്കസ്ഥാനം തിരഞ്ഞെടുക്കൂ.</string>
+	<key>onboarding.level.title</key>
+	<string>ഇത് നിനക്ക് ഇതിനകം എത്ര നന്നായി അറിയാം?</string>
+	<key>onboarding.name.subtitle</key>
+	<string>തുടങ്ങാം. നിന്റെ പേരെന്താണ്?</string>
+	<key>onboarding.name.title</key>
+	<string>കണക്കുകൾ ഇത്ര രസകരമായിട്ടില്ല!</string>
+	<key>onboarding.subject.subtitle</key>
+	<string>തുടങ്ങാൻ ഒരു വിഷയം തിരഞ്ഞെടുക്കൂ.</string>
+	<key>onboarding.subject.title</key>
+	<string>നിനക്ക് എന്താണ് പഠിക്കേണ്ടത്?</string>
+	<key>parentGate.approved</key>
+	<string>അംഗീകരിച്ചു</string>
+	<key>parentGate.attempts %lld %lld</key>
+	<string>ശ്രമങ്ങൾ: %1$lldൽ %2$lld</string>
+	<key>parentGate.holdInstruction %@ %lld</key>
+	<string>%@ %lld സെക്കൻഡ് അമർത്തിപ്പിടിക്കൂ.</string>
+	<key>parentGate.holdProgress %lld</key>
+	<string>അമർത്തിപ്പിടിക്കുക: %lld</string>
+	<key>parentGate.shape.circle</key>
+	<string>വൃത്തം</string>
+	<key>parentGate.shape.diamond</key>
+	<string>വജ്രം</string>
+	<key>parentGate.shape.heart</key>
+	<string>ഹൃദയം</string>
+	<key>parentGate.shape.hexagon</key>
+	<string>ഷട്ഭുജം</string>
+	<key>parentGate.shape.plus</key>
+	<string>പ്ലസ്</string>
+	<key>parentGate.shape.square</key>
+	<string>ചതുരം</string>
+	<key>parentGate.shape.star</key>
+	<string>നക്ഷത്രം</string>
+	<key>parentGate.shape.triangle</key>
+	<string>ത്രികോണം</string>
+	<key>parentGate.subtitle</key>
+	<string>ചെറിയ കളിക്കാരെ സംരക്ഷിക്കാൻ, വാങ്ങലിലേക്ക് പോകുന്നതിന് മുമ്പ് ഒരു മുതിർന്നയാൾ ഈ പരിശോധന പൂർത്തിയാക്കണം.</string>
+	<key>parentGate.tapInstruction %lld %@</key>
+	<string>ഇപ്പോൾ %2$@ %1$lld തവണ തട്ടൂ.</string>
+	<key>parentGate.tapProgress %lld %lld</key>
+	<string>തട്ടുകൾ: %1$lldൽ %2$lld</string>
+	<key>parentGate.title</key>
+	<string>മുതിർന്നയാളുടെ അനുമതി വേണം</string>
+	<key>premium.availableFromStart</key>
+	<string>തുടക്കം മുതൽ ലഭ്യം</string>
+	<key>premium.characterUnlocked %@</key>
+	<string>%@ തുറന്നു</string>
+	<key>premium.exclusiveWithPremium</key>
+	<string>Premium-ൽ മാത്രം</string>
+	<key>premium.feature.animals.subtitle %lld</key>
+	<string>പ്രീമിയത്തിൽ എല്ലാ %lld മൃഗങ്ങൾക്കും ഉപയോഗിച്ച് സ്വതന്ത്രമായി കളിക്കാം.</string>
+	<key>premium.feature.animals.title</key>
+	<string>എല്ലാ മൃഗങ്ങളും ലഭ്യം</string>
+	<key>premium.feature.levels.subtitle</key>
+	<string>പരിശീലിക്കാൻ എപ്പോഴും പുതിയ കണക്കുകൾ.</string>
+	<key>premium.feature.levels.title %lld</key>
+	<string>ഓരോ വിഷയത്തിനും %lld ലെവലുകൾ</string>
+	<key>premium.feature.noAds.subtitle</key>
+	<string>തടസ്സങ്ങളില്ലാതെ കളിക്കൂ.</string>
+	<key>premium.feature.noAds.title</key>
+	<string>പരസ്യങ്ങളില്ല</string>
+	<key>premium.oneTime</key>
+	<string>ഒറ്റത്തവണ വാങ്ങൽ. എന്നേക്കും നിന്റേത്.</string>
+	<key>premium.restore</key>
+	<string>വാങ്ങലുകൾ പുനഃസ്ഥാപിക്കൂ</string>
+	<key>premium.start</key>
+	<string>തുടങ്ങുക</string>
+	<key>premium.storeUnavailable</key>
+	<string>സ്റ്റോർ ഇപ്പോൾ ലഭ്യമല്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കൂ.</string>
+	<key>premium.unlock</key>
+	<string>പ്രീമിയം തുറക്കൂ</string>
+	<key>premium.unlockBanner</key>
+	<string>പുതിയ കഥാപാത്രം തുറന്നു</string>
+	<key>premium.unlockWithCards</key>
+	<string>ചിപ്പികൾ ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യൂ</string>
+	<key>premium.unlockWithPrice %@</key>
+	<string>പ്രീമിയം തുറക്കൂ · %@</string>
+	<key>premium.unlockedWithPremium</key>
+	<string>Premium ഉപയോഗിച്ച് തുറന്നു</string>
+	<key>result.complete</key>
+	<string>ലെവൽ പൂർത്തിയായി!</string>
+	<key>result.stopped</key>
+	<string>നിർത്തിവച്ചു</string>
+	<key>result.unlocked</key>
+	<string>പുതിയ കഥാപാത്രം തുറന്നു!</string>
+	<key>settings.character</key>
+	<string>കഥാപാത്രം</string>
+	<key>settings.characterInfo</key>
+	<string>ഓരോ മൃഗവും കളിക്ക് സ്വന്തം നിറത്തീം നൽകും.</string>
+	<key>settings.customMinutes %lld</key>
+	<string>ഇഷ്ടാനുസരണം: %lld മിനിറ്റ്</string>
+	<key>settings.dailyGoal</key>
+	<string>ദിവസലക്ഷ്യം</string>
+	<key>settings.goalInfo %lld</key>
+	<string>സ്റ്റ്രീക്ക് ലക്ഷ്യം ദിവസവും %lld മിനിറ്റ് ആയി തുടങ്ങും. കളിച്ച സമയം മാത്രം കണക്കാക്കും.</string>
+	<key>settings.music</key>
+	<string>സംഗീതം</string>
+	<key>settings.playGoals</key>
+	<string>കളിലക്ഷ്യങ്ങൾ</string>
+	<key>settings.premiumUnlocked</key>
+	<string>പ്രീമിയം തുറന്നു. നന്ദി!</string>
+	<key>settings.sound</key>
+	<string>ശബ്ദം</string>
+	<key>settings.soundEffects</key>
+	<string>സംഗീതവും ഇഫക്റ്റുകളും</string>
+	<key>settings.soundInfo</key>
+	<string>ശാന്തമായി കളിക്കാൻ ശബ്ദം ഓഫ് ചെയ്യൂ. കളി അതേപോലെ തന്നെ പ്രവർത്തിക്കും.</string>
+	<key>settings.spokenSums</key>
+	<string>കണക്കുകൾ വായിച്ചുകേൾപ്പിക്കുക</string>
+	<key>settings.title</key>
+	<string>ക്രമീകരണങ്ങൾ</string>
+	<key>streak.accessibility.choosePeriod</key>
+	<string>ദിവസലക്ഷ്യമോ ആഴ്ചലക്ഷ്യമോ തിരഞ്ഞെടുക്കൂ</string>
+	<key>streak.accessibility.compact %@ %lld %lld %lld</key>
+	<string>%1$@, %3$lld മിനിറ്റിൽ %2$lld, തുടർച്ചയായി %4$lld ദിവസം</string>
+	<key>streak.dayOne</key>
+	<string>ദിവസം 1</string>
+	<key>topic.addition</key>
+	<string>കൂട്ടൽ</string>
+	<key>topic.addition.detail</key>
+	<string>കൂട്ടൽ മാത്രം</string>
+	<key>topic.fractions</key>
+	<string>ഭിന്നങ്ങൾ</string>
+	<key>topic.fractions.detail</key>
+	<string>ഹരണം മാത്രം</string>
+	<key>topic.mixed</key>
+	<string>സൂപ്പർമിക്സ്</string>
+	<key>topic.mixed.detail</key>
+	<string>കലർന്ന കണക്കുകൾ</string>
+	<key>topic.percentages</key>
+	<string>ശതമാനം</string>
+	<key>topic.percentages.detail</key>
+	<string>ശതമാനം മാത്രം</string>
+	<key>topic.subtraction</key>
+	<string>കുറയ്ക്കൽ</string>
+	<key>topic.subtraction.detail</key>
+	<string>കുറയ്ക്കൽ മാത്രം</string>
+	<key>topic.tables</key>
+	<string>ഗുണനപ്പട്ടിക</string>
+	<key>topic.tables.detail</key>
+	<string>ഗുണനം മാത്രം</string>
+	<key>tutorial.button</key>
+	<string>ട്യൂട്ടോറിയൽ</string>
+	<key>tutorial.notice.message</key>
+	<string>ഈ ലെവൽ നീ ഇതിനകം കളിക്കുകയാണ്. അത് തീർക്കൂ അല്ലെങ്കിൽ പുതിയ കളി തുടങ്ങൂ. പിന്നെ ട്യൂട്ടോറിയലിന് തൊപ്പിയിൽ വീണ്ടും ടാപ്പ് ചെയ്യൂ.</string>
+	<key>tutorial.notice.title</key>
+	<string>പുതിയ കളിയുടെ തുടക്കത്തിൽ മാത്രം</string>
+	<key>tutorial.step.1</key>
+	<string>തെറ്റായ ഉത്തരങ്ങൾ നിന്റെ രാജാവിന്റെ അടുത്തേക്ക് വരുന്നു! ഞണ്ടിനെ ടാപ്പ് ചെയ്ത് അതിലേക്ക് മണൽ എറിയൂ. എല്ലാം നീക്കിക്കളയൂ!</string>
+	<key>tutorial.step.10</key>
+	<string>ഇവിടെ നിന്റെ സ്കോർ കാണാം!</string>
+	<key>tutorial.step.2</key>
+	<string>ഒരു ഞണ്ട് ശരിയായ ഉത്തരം കൊണ്ടുവരുന്നു. തെറ്റായതിനെ അടിക്കൂ, ശരിയായത് നിന്റെ രാജാവിന്റെ അടുത്തെത്താൻ അനുവദിക്കൂ!</string>
+	<key>tutorial.step.3</key>
+	<string>നിന്റെ രാജാവിന്റെ അടുത്തെത്തുന്ന ഞണ്ടുകൾ എത്ര എണ്ണം കടന്നാലും അര ജീവൻ കുറക്കും. ശരിയായ ഉത്തരത്തിലേക്ക് മണൽ എറിഞ്ഞാൽ ഒരു മുഴുവൻ ജീവൻ നഷ്ടപ്പെടും!</string>
+	<key>tutorial.step.4</key>
+	<string>ഈ പിങ്ക് ഞണ്ട് നിന്റെ രാജാവിന് ഒരു അധിക ജീവൻ കൊണ്ടുവരുന്നു. അതിനെ ടാപ്പ് ചെയ്യൂ, ഹൃദയം നേരെ രാജാവിന്റെ അടുത്തേക്ക് കൊണ്ടുപോകും!</string>
+	<key>tutorial.step.5</key>
+	<string>മഴവിൽ 2× ഞണ്ട് നിന്റെ അടുത്ത ശരിയായ ഉത്തരത്തെ ഇരട്ടിയാക്കുന്നു. അതിനെ ടാപ്പ് ചെയ്യൂ, നാണയം നിന്റെ രാജാവിന്റെ അടുത്തേക്ക് കൊണ്ടുപോകും!</string>
+	<key>tutorial.step.6</key>
+	<string>തുടർച്ചയായി അഞ്ച് ശരിയായ ഉത്തരങ്ങൾ നൽകി സൂപ്പർ ബോണസ് നേടൂ!</string>
+	<key>tutorial.step.7</key>
+	<string>സൂപ്പർ ബോണസ്! ഞണ്ടുകൾ സ്വർണനിറമാകും, കൂടുതൽ വേഗത്തിൽ നീങ്ങും, ഓരോ ശരിയായ ഉത്തരത്തിനും ഇരട്ടി മൂല്യം ലഭിക്കും.</string>
+	<key>tutorial.step.8</key>
+	<string>നീ തെറ്റ് ചെയ്യുന്നതുവരെ സൂപ്പർ ബോണസ് തുടരും. നിന്റെ രാജാവിനെ കാക്കൂ. ആശംസകൾ!</string>
+	<key>tutorial.step.9</key>
+	<string>ട്യൂട്ടോറിയൽ പൂർത്തിയായി! ഇനി ഏറ്റവും ഉയർന്ന സ്കോർ നേടാൻ ശ്രമിക്കൂ!</string>
+</dict>
+</plist>

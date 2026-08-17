@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เก็บเปลือกหอยได้ %lld ชิ้น</string>
+			<key>other</key>
+			<string>เก็บเปลือกหอยได้ %lld ชิ้น</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เหลือเปลือกหอยอีก %1$lld ชิ้นเพื่อปลดล็อก %2$@</string>
+			<key>other</key>
+			<string>เหลือเปลือกหอยอีก %1$lld ชิ้นเพื่อปลดล็อก %2$@</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เก็บเปลือกหอย %lld ชิ้นไว้ในเกมที่หยุดพัก</string>
+			<key>other</key>
+			<string>เก็บเปลือกหอย %lld ชิ้นไว้ในเกมที่หยุดพัก</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ด่านนี้เก็บเปลือกหอยได้สูงสุด **%lld ชิ้น**</string>
+			<key>other</key>
+			<string>ด่านนี้เก็บเปลือกหอยได้สูงสุด **%lld ชิ้น**</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ถึงค่าสูงสุด %lld ครั้ง</string>
+			<key>other</key>
+			<string>ถึงค่าสูงสุด %lld ครั้ง</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เหลือเปลือกหอยอีกแค่ %lld ชิ้น! 🐚</string>
+			<key>other</key>
+			<string>เหลือเปลือกหอยอีกแค่ %lld ชิ้น! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>วันนี้เล่น %lld นาที แล้วเก็บเพิ่มอีกนิด</string>
+			<key>other</key>
+			<string>วันนี้เล่น %lld นาที แล้วเก็บเพิ่มอีกนิด</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เก็บเปลือกหอยได้ %lld ชิ้น! 🐚</string>
+			<key>other</key>
+			<string>เก็บเปลือกหอยได้ %lld ชิ้น! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เริ่มเซสชั่นการเล่น %lld นาทีและขยายแนวการเล่นประจำวันของคุณ</string>
+			<key>other</key>
+			<string>เริ่มเซสชั่นการเล่น %lld นาทีและขยายแนวการเล่นประจำวันของคุณ</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Premium มี %lld ด่านสำหรับทุกหัวข้อและสัตว์ทั้งหมด 10 ตัวการผจญภัยดำเนินต่อไป!</string>
+			<key>other</key>
+			<string>Premium มี %lld ด่านสำหรับทุกหัวข้อและสัตว์ทั้งหมด 10 ตัวการผจญภัยดำเนินต่อไป!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ผ่านไป %lld วันแล้ว มาทำโจทย์คณิตศาสตร์สักหน่อยแล้วเก็บเปลือกหอยเพิ่มกันเถอะ!</string>
+			<key>other</key>
+			<string>ผ่านไป %lld วันแล้ว มาทำโจทย์คณิตศาสตร์สักหน่อยแล้วเก็บเปลือกหอยเพิ่มกันเถอะ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>เล่นเป็นเวลา %lld นาทีและเล่นต่อเนื่องทุกวัน!</string>
+			<key>other</key>
+			<string>เล่นเป็นเวลา %lld นาทีและเล่นต่อเนื่องทุกวัน!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>แนวการเล่นประจำวันของคุณถึง %lld วันแล้ว! 🔥</string>
+			<key>other</key>
+			<string>แนวการเล่นประจำวันของคุณถึง %lld วันแล้ว! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>คุณมีเปลือกหอยทั้งหมด %lld ชิ้น พร้อมเก็บเพิ่มอีกหน่อยไหม?</string>
+			<key>other</key>
+			<string>คุณมีเปลือกหอยทั้งหมด %lld ชิ้น พร้อมเก็บเพิ่มอีกหน่อยไหม?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>สัปดาห์นี้เก็บเปลือกหอยได้ %lld ชิ้น! 🎉</string>
+			<key>other</key>
+			<string>สัปดาห์นี้เก็บเปลือกหอยได้ %lld ชิ้น! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ใช้ได้เมื่อมีเปลือกหอย %lld ชิ้น</string>
+			<key>other</key>
+			<string>ใช้ได้เมื่อมีเปลือกหอย %lld ชิ้น</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>คุณได้เปลือกหอย %lld ชิ้น</string>
+			<key>other</key>
+			<string>คุณได้เปลือกหอย %lld ชิ้น</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

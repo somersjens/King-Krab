@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld دېڭىز قېپى يىغىلدى</string>
+			<key>other</key>
+			<string>%lld دېڭىز قېپى يىغىلدى</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%2$@ نى ئېچىشقا يەنە %1$lld دېڭىز قېپى كېرەك</string>
+			<key>other</key>
+			<string>%2$@ نى ئېچىشقا يەنە %1$lld دېڭىز قېپى كېرەك</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld دېڭىز قېپى توختىتىلغان ئويۇندا ساقلانغان</string>
+			<key>other</key>
+			<string>%lld دېڭىز قېپى توختىتىلغان ئويۇندا ساقلانغان</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>بۇ باسقۇچتا ئەڭ كۆپ **%lld دېڭىز قېپى** يىغالايسىز.</string>
+			<key>other</key>
+			<string>بۇ باسقۇچتا ئەڭ كۆپ **%lld دېڭىز قېپى** يىغالايسىز.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ئەڭ يۇقىرى چەككە %lld قېتىم يەتتى</string>
+			<key>other</key>
+			<string>ئەڭ يۇقىرى چەككە %lld قېتىم يەتتى</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>پەقەت %lld دېڭىز قېپى قالدى! 🐚</string>
+			<key>other</key>
+			<string>پەقەت %lld دېڭىز قېپى قالدى! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>بۈگۈن %lld مىنۇت ئويناپ، يەنە بىرنەچچە توپلا.</string>
+			<key>other</key>
+			<string>بۈگۈن %lld مىنۇت ئويناپ، يەنە بىرنەچچە توپلا.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld دېڭىز قېپى يىغىلدى! 🐚</string>
+			<key>other</key>
+			<string>%lld دېڭىز قېپى يىغىلدى! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld مىنۇتلۇق ئويۇننى باشلاڭ ۋە كۈندىلىك ئويناش ۋاقتىڭىزنى ئۇزارتىڭ.</string>
+			<key>other</key>
+			<string>%lld مىنۇتلۇق ئويۇننى باشلاڭ ۋە كۈندىلىك ئويناش ۋاقتىڭىزنى ئۇزارتىڭ.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>مۇكاپاتى ھەر بىر تېما ۋە 10 ھايۋاننىڭ %lld دەرىجىسىنى ئۆز ئىچىگە ئالىدۇ. تەۋەككۈلچىلىك داۋاملىشىدۇ!</string>
+			<key>other</key>
+			<string>مۇكاپاتى ھەر بىر تېما ۋە 10 ھايۋاننىڭ %lld دەرىجىسىنى ئۆز ئىچىگە ئالىدۇ. تەۋەككۈلچىلىك داۋاملىشىدۇ!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld كۈن ئۆتتى. بىر نەچچە ھېساب مەسىلىسىنى يېشىپ، تېخىمۇ كۆپ دېڭىز قېپى يىغايلى!</string>
+			<key>other</key>
+			<string>%lld كۈن ئۆتتى. بىر نەچچە ھېساب مەسىلىسىنى يېشىپ، تېخىمۇ كۆپ دېڭىز قېپى يىغايلى!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld مىنۇت ئويناڭ ھەمدە كۈندىلىك ئويۇنلىرىڭىزنى داۋاملاشتۇرۇڭ!</string>
+			<key>other</key>
+			<string>%lld مىنۇت ئويناڭ ھەمدە كۈندىلىك ئويۇنلىرىڭىزنى داۋاملاشتۇرۇڭ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>كۈندىلىك ئويناش ۋاقتىڭىز %lld كۈنگە يەتتى! 🔥</string>
+			<key>other</key>
+			<string>كۈندىلىك ئويناش ۋاقتىڭىز %lld كۈنگە يەتتى! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>جەمئىي %lld دېڭىز قېپىڭىز بار. يەنە بىر نەچچىنى يىغىشقا تەييارمۇ؟</string>
+			<key>other</key>
+			<string>جەمئىي %lld دېڭىز قېپىڭىز بار. يەنە بىر نەچچىنى يىغىشقا تەييارمۇ؟</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>بۇ ھەپتە %lld دېڭىز قېپى! 🎉</string>
+			<key>other</key>
+			<string>بۇ ھەپتە %lld دېڭىز قېپى! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld دېڭىز قېپىدىن باشلاپ ئېچىلىدۇ</string>
+			<key>other</key>
+			<string>%lld دېڭىز قېپىدىن باشلاپ ئېچىلىدۇ</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld دېڭىز قېپى تاپتىڭىز</string>
+			<key>other</key>
+			<string>%lld دېڭىز قېپى تاپتىڭىز</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,224 @@
+{
+  "source": "/Users/jenssomers/Desktop/King Krab/King Krab/LevelIntroCard.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "levelIntro.addition.title %lld",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.addition.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.subtraction.title %lld",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.subtraction.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.tables.title %lld",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.tables.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.fractions.title %lld",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.fractions.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.percentages.title %@",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 42
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.percentages.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mixed.title %lld",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.mixed.intro",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.cardsBullet %lld",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.levelRange.first",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "levelIntro.levelRange %lld",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.startTutorial",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.continue",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.start",
+        "location": {
+          "startingColumn": 57,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.backToMainMenu",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 185
+        }
+      },
+      {
+        "comment": "",
+        "key": "game.intro.progressPaused",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 233
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.music",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 260
+        }
+      },
+      {
+        "comment": "",
+        "key": "settings.soundEffects",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 265
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.on",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 318
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.off",
+        "location": {
+          "startingColumn": 55,
+          "startingLine": 318
+        }
+      },
+      {
+        "comment": "",
+        "key": "tutorial.button",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 290
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.on",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 291
+        }
+      },
+      {
+        "comment": "",
+        "key": "common.off",
+        "location": {
+          "startingColumn": 66,
+          "startingLine": 291
+        }
+      }
+    ]
+  },
+  "version": 1
+}

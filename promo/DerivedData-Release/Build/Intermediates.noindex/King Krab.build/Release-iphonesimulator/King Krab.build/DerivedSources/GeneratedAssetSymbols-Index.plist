@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>colors</key>
+	<array/>
+	<key>images</key>
+	<array>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName10Body</string>
+			<key>relativePath</key>
+			<string>./10_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_10Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName10Full</string>
+			<key>relativePath</key>
+			<string>./10_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_10Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName10LeftClaw</string>
+			<key>relativePath</key>
+			<string>./10_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_10LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName10LeftLeg</string>
+			<key>relativePath</key>
+			<string>./10_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_10LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName10Thumb</string>
+			<key>relativePath</key>
+			<string>./10_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_10Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1BodyOnly2</string>
+			<key>relativePath</key>
+			<string>./1_body_only_2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1BodyOnly2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1LeftClaw2</string>
+			<key>relativePath</key>
+			<string>./1_left_claw_2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1LeftClaw2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1LeftLegs2</string>
+			<key>relativePath</key>
+			<string>./1_left_legs_2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1LeftLegs2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1Main</string>
+			<key>relativePath</key>
+			<string>./1_main.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1Main</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1RightLegs2</string>
+			<key>relativePath</key>
+			<string>./1_right_legs_2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1RightLegs2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName1Thumb</string>
+			<key>relativePath</key>
+			<string>./1_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_1Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2Body</string>
+			<key>relativePath</key>
+			<string>./2_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2Full</string>
+			<key>relativePath</key>
+			<string>./2_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2LeftClaw</string>
+			<key>relativePath</key>
+			<string>./2_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2LeftLeg</string>
+			<key>relativePath</key>
+			<string>./2_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2Thumb</string>
+			<key>relativePath</key>
+			<string>./2_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2XBody</string>
+			<key>relativePath</key>
+			<string>./2x_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2XBody</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2XLeftClaw</string>
+			<key>relativePath</key>
+			<string>./2x_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2XLeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName2XLeftLeg</string>
+			<key>relativePath</key>
+			<string>./2x_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_2XLeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName3Body</string>
+			<key>relativePath</key>
+			<string>./3_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_3Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName3Full</string>
+			<key>relativePath</key>
+			<string>./3_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_3Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName3LeftClaw</string>
+			<key>relativePath</key>
+			<string>./3_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_3LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName3LeftLeg</string>
+			<key>relativePath</key>
+			<string>./3_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_3LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName3Thumb</string>
+			<key>relativePath</key>
+			<string>./3_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_3Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName4Body</string>
+			<key>relativePath</key>
+			<string>./4_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_4Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName4Full</string>
+			<key>relativePath</key>
+			<string>./4_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_4Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName4LeftClaw</string>
+			<key>relativePath</key>
+			<string>./4_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_4LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName4LeftLeg</string>
+			<key>relativePath</key>
+			<string>./4_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_4LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName4Thumb</string>
+			<key>relativePath</key>
+			<string>./4_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_4Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName5Body</string>
+			<key>relativePath</key>
+			<string>./5_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_5Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName5Full</string>
+			<key>relativePath</key>
+			<string>./5_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_5Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName5LeftClaw</string>
+			<key>relativePath</key>
+			<string>./5_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_5LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName5LeftLeg</string>
+			<key>relativePath</key>
+			<string>./5_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_5LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName5Thumb</string>
+			<key>relativePath</key>
+			<string>./5_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_5Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName6Body</string>
+			<key>relativePath</key>
+			<string>./6_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_6Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName6Full</string>
+			<key>relativePath</key>
+			<string>./6_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_6Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName6LeftClaw</string>
+			<key>relativePath</key>
+			<string>./6_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_6LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName6LeftLeg</string>
+			<key>relativePath</key>
+			<string>./6_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_6LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName6Thumb</string>
+			<key>relativePath</key>
+			<string>./6_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_6Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName7Body</string>
+			<key>relativePath</key>
+			<string>./7_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_7Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName7Full</string>
+			<key>relativePath</key>
+			<string>./7_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_7Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName7LeftClaw</string>
+			<key>relativePath</key>
+			<string>./7_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_7LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName7LeftLeg</string>
+			<key>relativePath</key>
+			<string>./7_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_7LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName7Thumb</string>
+			<key>relativePath</key>
+			<string>./7_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_7Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName8Body</string>
+			<key>relativePath</key>
+			<string>./8_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_8Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName8Full</string>
+			<key>relativePath</key>
+			<string>./8_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_8Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName8LeftClaw</string>
+			<key>relativePath</key>
+			<string>./8_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_8LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName8LeftLeg</string>
+			<key>relativePath</key>
+			<string>./8_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_8LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName8Thumb</string>
+			<key>relativePath</key>
+			<string>./8_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_8Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName9Body</string>
+			<key>relativePath</key>
+			<string>./9_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_9Body</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName9Full</string>
+			<key>relativePath</key>
+			<string>./9_full.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_9Full</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName9LeftClaw</string>
+			<key>relativePath</key>
+			<string>./9_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_9LeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName9LeftLeg</string>
+			<key>relativePath</key>
+			<string>./9_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_9LeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageName9Thumb</string>
+			<key>relativePath</key>
+			<string>./9_thumb.imageset</string>
+			<key>swiftSymbol</key>
+			<string>_9Thumb</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNamePromoAppIcon</string>
+			<key>relativePath</key>
+			<string>./PromoAppIcon.imageset</string>
+			<key>swiftSymbol</key>
+			<string>promoAppIcon</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerEyeLeft</string>
+			<key>relativePath</key>
+			<string>./answer_eye_left.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerEyeLeft</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerEyeRight</string>
+			<key>relativePath</key>
+			<string>./answer_eye_right.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerEyeRight</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldBody</string>
+			<key>relativePath</key>
+			<string>./answer_gold_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldBody</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldClaw</string>
+			<key>relativePath</key>
+			<string>./answer_gold_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldLeg1</string>
+			<key>relativePath</key>
+			<string>./answer_gold_leg1.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldLeg1</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldLeg2</string>
+			<key>relativePath</key>
+			<string>./answer_gold_leg2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldLeg2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldLeg3</string>
+			<key>relativePath</key>
+			<string>./answer_gold_leg3.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldLeg3</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerGoldLegs</string>
+			<key>relativePath</key>
+			<string>./answer_gold_legs.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerGoldLegs</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedBody</string>
+			<key>relativePath</key>
+			<string>./answer_red_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedBody</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedClaw</string>
+			<key>relativePath</key>
+			<string>./answer_red_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedLeg1</string>
+			<key>relativePath</key>
+			<string>./answer_red_leg1.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedLeg1</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedLeg2</string>
+			<key>relativePath</key>
+			<string>./answer_red_leg2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedLeg2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedLeg3</string>
+			<key>relativePath</key>
+			<string>./answer_red_leg3.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedLeg3</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameAnswerRedLegs</string>
+			<key>relativePath</key>
+			<string>./answer_red_legs.imageset</string>
+			<key>swiftSymbol</key>
+			<string>answerRedLegs</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeBody</string>
+			<key>relativePath</key>
+			<string>./life_body.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeBody</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeLeftClaw</string>
+			<key>relativePath</key>
+			<string>./life_left_claw.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeLeftClaw</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeLeftLeg</string>
+			<key>relativePath</key>
+			<string>./life_left_leg.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeLeftLeg</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeLeg1</string>
+			<key>relativePath</key>
+			<string>./life_leg1.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeLeg1</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeLeg2</string>
+			<key>relativePath</key>
+			<string>./life_leg2.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeLeg2</string>
+		</dict>
+		<dict>
+			<key>catalogPath</key>
+			<string>/Users/jenssomers/Desktop/King Krab/King Krab/Assets 2.xcassets</string>
+			<key>objcSymbol</key>
+			<string>ACImageNameLifeLeg3</string>
+			<key>relativePath</key>
+			<string>./life_leg3.imageset</string>
+			<key>swiftSymbol</key>
+			<string>lifeLeg3</string>
+		</dict>
+	</array>
+	<key>symbols</key>
+	<array/>
+</dict>
+</plist>

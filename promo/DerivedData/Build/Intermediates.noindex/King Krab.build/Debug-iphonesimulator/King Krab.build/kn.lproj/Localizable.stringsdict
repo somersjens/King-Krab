@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ಚಿಪ್ಪು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ</string>
+			<key>other</key>
+			<string>%lld ಚಿಪ್ಪುಗಳು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%2$@ ಅನ್ನು ತೆರೆಯಲು ಇನ್ನೂ %1$lld ಚಿಪ್ಪು</string>
+			<key>other</key>
+			<string>%2$@ ಅನ್ನು ತೆರೆಯಲು ಇನ್ನೂ %1$lld ಚಿಪ್ಪುಗಳು</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ಚಿಪ್ಪು ವಿರಾಮದಲ್ಲಿರುವ ಆಟದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ</string>
+			<key>other</key>
+			<string>%lld ಚಿಪ್ಪುಗಳು ವಿರಾಮದಲ್ಲಿರುವ ಆಟದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಈ ಹಂತದಲ್ಲಿ ನೀನು ಗರಿಷ್ಠ **%lld ಚಿಪ್ಪು** ಸಂಗ್ರಹಿಸಬಹುದು.</string>
+			<key>other</key>
+			<string>ಈ ಹಂತದಲ್ಲಿ ನೀನು ಗರಿಷ್ಠ **%lld ಚಿಪ್ಪುಗಳು** ಸಂಗ್ರಹಿಸಬಹುದು.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಗರಿಷ್ಠವನ್ನು %lld ಬಾರಿ ತಲುಪಿದೆ</string>
+			<key>other</key>
+			<string>ಗರಿಷ್ಠವನ್ನು %lld ಬಾರಿ ತಲುಪಿದೆ</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಇನ್ನೂ %lld ಚಿಪ್ಪು ಮಾತ್ರ! 🐚</string>
+			<key>other</key>
+			<string>ಇನ್ನೂ %lld ಚಿಪ್ಪುಗಳು ಮಾತ್ರ! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಇಂದು %lld ನಿಮಿಷ ಆಡು, ಇನ್ನೂ ಕೆಲವು ಸಂಗ್ರಹಿಸು.</string>
+			<key>other</key>
+			<string>ಇಂದು %lld ನಿಮಿಷ ಆಡು, ಇನ್ನೂ ಕೆಲವು ಸಂಗ್ರಹಿಸು.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ಚಿಪ್ಪು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ! 🐚</string>
+			<key>other</key>
+			<string>%lld ಚಿಪ್ಪುಗಳು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ನಿಮಿಷಗಳ ಆಟದ ಅವಧಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯನ್ನು ವಿಸ್ತರಿಸಿ.</string>
+			<key>other</key>
+			<string>%lld ನಿಮಿಷಗಳ ಆಟದ ಅವಧಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯನ್ನು ವಿಸ್ತರಿಸಿ.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಪ್ರೀಮಿಯಂ ಪ್ರತಿ ವಿಷಯ ಮತ್ತು ಎಲ್ಲಾ 10 ಪ್ರಾಣಿಗಳಿಗೆ %lld ಹಂತಗಳನ್ನು ಒಳಗೊಂಡಿದೆ. ಸಾಹಸವು ಮುಂದುವರಿಯುತ್ತದೆ!</string>
+			<key>other</key>
+			<string>ಪ್ರೀಮಿಯಂ ಪ್ರತಿ ವಿಷಯ ಮತ್ತು ಎಲ್ಲಾ 10 ಪ್ರಾಣಿಗಳಿಗೆ %lld ಹಂತಗಳನ್ನು ಒಳಗೊಂಡಿದೆ. ಸಾಹಸವು ಮುಂದುವರಿಯುತ್ತದೆ!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ದಿನವಾಗಿದೆ. ಕೆಲವು ಲೆಕ್ಕಗಳನ್ನು ಬಿಡಿಸಿ ಇನ್ನಷ್ಟು ಚಿಪ್ಪುಗಳನ್ನು ಸಂಗ್ರಹಿಸೋಣ!</string>
+			<key>other</key>
+			<string>%lld ದಿನಗಳಾಗಿವೆ. ಕೆಲವು ಲೆಕ್ಕಗಳನ್ನು ಬಿಡಿಸಿ ಇನ್ನಷ್ಟು ಚಿಪ್ಪುಗಳನ್ನು ಸಂಗ್ರಹಿಸೋಣ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ನಿಮಿಷಗಳ ಕಾಲ ಆಟವಾಡಿ ಮತ್ತು ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯನ್ನು ಮುಂದುವರಿಸಿ!</string>
+			<key>other</key>
+			<string>%lld ನಿಮಿಷಗಳ ಕಾಲ ಆಟವಾಡಿ ಮತ್ತು ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯನ್ನು ಮುಂದುವರಿಸಿ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯು %lld ದಿನಗಳನ್ನು ತಲುಪಿದೆ! 🔥</string>
+			<key>other</key>
+			<string>ನಿಮ್ಮ ದೈನಂದಿನ ಆಟದ ಸರಣಿಯು %lld ದಿನಗಳನ್ನು ತಲುಪಿದೆ! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ನಿನ್ನ ಬಳಿ ಒಟ್ಟು %lld ಚಿಪ್ಪು ಇದೆ. ಇನ್ನಷ್ಟು ಸಂಗ್ರಹಿಸಲು ಸಿದ್ಧವೇ?</string>
+			<key>other</key>
+			<string>ನಿನ್ನ ಬಳಿ ಒಟ್ಟು %lld ಚಿಪ್ಪುಗಳು ಇವೆ. ಇನ್ನಷ್ಟು ಸಂಗ್ರಹಿಸಲು ಸಿದ್ಧವೇ?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ಈ ವಾರ %lld ಚಿಪ್ಪು! 🎉</string>
+			<key>other</key>
+			<string>ಈ ವಾರ %lld ಚಿಪ್ಪುಗಳು! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld ಚಿಪ್ಪಿನಿಂದ ಲಭ್ಯ</string>
+			<key>other</key>
+			<string>%lld ಚಿಪ್ಪುಗಳಿಂದ ಲಭ್ಯ</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ನೀನು %lld ಚಿಪ್ಪು ಗಳಿಸಿದ್ದೀಯ</string>
+			<key>other</key>
+			<string>ನೀನು %lld ಚಿಪ್ಪುಗಳನ್ನು ಗಳಿಸಿದ್ದೀಯ</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

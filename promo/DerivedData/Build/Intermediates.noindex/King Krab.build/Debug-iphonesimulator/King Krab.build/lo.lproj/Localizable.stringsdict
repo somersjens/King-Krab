@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>game.bubblesCollected %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເກັບເປືອກຫອຍໄດ້ %lld</string>
+			<key>other</key>
+			<string>ເກັບເປືອກຫອຍໄດ້ %lld</string>
+		</dict>
+	</dict>
+	<key>home.nextCharacter %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ຕ້ອງການເປືອກຫອຍອີກ %1$lld ເພື່ອປົດລັອກ %2$@</string>
+			<key>other</key>
+			<string>ຕ້ອງການເປືອກຫອຍອີກ %1$lld ເພື່ອປົດລັອກ %2$@</string>
+		</dict>
+	</dict>
+	<key>home.pausedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເປືອກຫອຍ %lld ຖືກເກັບໄວ້ໃນເກມທີ່ຢຸດພັກ</string>
+			<key>other</key>
+			<string>ເປືອກຫອຍ %lld ຖືກເກັບໄວ້ໃນເກມທີ່ຢຸດພັກ</string>
+		</dict>
+	</dict>
+	<key>levelIntro.cardsBullet %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ໃນດ່ານນີ້ ເຈົ້າເກັບໄດ້ສູງສຸດ **ເປືອກຫອຍ %lld**.</string>
+			<key>other</key>
+			<string>ໃນດ່ານນີ້ ເຈົ້າເກັບໄດ້ສູງສຸດ **ເປືອກຫອຍ %lld**.</string>
+		</dict>
+	</dict>
+	<key>menu.maximumCount.accessibility %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ຮອດສູງສຸດ %lld ຄັ້ງ</string>
+			<key>other</key>
+			<string>ຮອດສູງສຸດ %lld ຄັ້ງ</string>
+		</dict>
+	</dict>
+	<key>notif.animal.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເຫຼືອເປືອກຫອຍອີກພຽງ %lld! 🐚</string>
+			<key>other</key>
+			<string>ເຫຼືອເປືອກຫອຍອີກພຽງ %lld! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.cards.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ຫຼິ້ນ %lld ນາທີມື້ນີ້ ແລ້ວເກັບເພີ່ມອີກ.</string>
+			<key>other</key>
+			<string>ຫຼິ້ນ %lld ນາທີມື້ນີ້ ແລ້ວເກັບເພີ່ມອີກ.</string>
+		</dict>
+	</dict>
+	<key>notif.cards.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເກັບເປືອກຫອຍໄດ້ %lld! 🐚</string>
+			<key>other</key>
+			<string>ເກັບເປືອກຫອຍໄດ້ %lld! 🐚</string>
+		</dict>
+	</dict>
+	<key>notif.day3.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເລີ່ມການຫຼິ້ນ %lld ນາທີ ແລະຂະຫຍາຍການຫຼິ້ນປະຈໍາວັນຂອງທ່ານ.</string>
+			<key>other</key>
+			<string>ເລີ່ມການຫຼິ້ນ %lld ນາທີ ແລະຂະຫຍາຍການຫຼິ້ນປະຈໍາວັນຂອງທ່ານ.</string>
+		</dict>
+	</dict>
+	<key>notif.premium.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Premium ປະກອບມີ %lld ລະດັບສຳລັບທຸກໆຫົວຂໍ້ ແລະສັດທັງໝົດ 10 ໂຕ. ການຜະຈົນໄພສືບຕໍ່!</string>
+			<key>other</key>
+			<string>Premium ປະກອບມີ %lld ລະດັບສຳລັບທຸກໆຫົວຂໍ້ ແລະສັດທັງໝົດ 10 ໂຕ. ການຜະຈົນໄພສືບຕໍ່!</string>
+		</dict>
+	</dict>
+	<key>notif.reactivate.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ຜ່ານໄປ %lld ມື້ແລ້ວ. ມາແກ້ໂຈດຄະນິດສາດຈັກໜ່ອຍ ແລະເກັບເປືອກຫອຍເພີ່ມກັນ!</string>
+			<key>other</key>
+			<string>ຜ່ານໄປ %lld ມື້ແລ້ວ. ມາແກ້ໂຈດຄະນິດສາດຈັກໜ່ອຍ ແລະເກັບເປືອກຫອຍເພີ່ມກັນ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ຫຼິ້ນເປັນເວລາ %lld ນາທີ ແລະສືບຕໍ່ການຫຼິ້ນປະຈຳວັນຂອງເຈົ້າຕໍ່ໄປ!</string>
+			<key>other</key>
+			<string>ຫຼິ້ນເປັນເວລາ %lld ນາທີ ແລະສືບຕໍ່ການຫຼິ້ນປະຈຳວັນຂອງເຈົ້າຕໍ່ໄປ!</string>
+		</dict>
+	</dict>
+	<key>notif.streak.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ສະຖິຕິການຫຼິ້ນປະຈໍາວັນຂອງເຈົ້າຮອດ %lld ມື້ແລ້ວ! 🔥</string>
+			<key>other</key>
+			<string>ສະຖິຕິການຫຼິ້ນປະຈໍາວັນຂອງເຈົ້າຮອດ %lld ມື້ແລ້ວ! 🔥</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.body %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເຈົ້າມີເປືອກຫອຍທັງໝົດ %lld. ພ້ອມເກັບເພີ່ມອີກບໍ?</string>
+			<key>other</key>
+			<string>ເຈົ້າມີເປືອກຫອຍທັງໝົດ %lld. ພ້ອມເກັບເພີ່ມອີກບໍ?</string>
+		</dict>
+	</dict>
+	<key>notif.weekly.title %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ອາທິດນີ້ເກັບເປືອກຫອຍໄດ້ %lld! 🎉</string>
+			<key>other</key>
+			<string>ອາທິດນີ້ເກັບເປືອກຫອຍໄດ້ %lld! 🎉</string>
+		</dict>
+	</dict>
+	<key>premium.availableAt %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ໃຊ້ໄດ້ເມື່ອມີເປືອກຫອຍ %lld</string>
+			<key>other</key>
+			<string>ໃຊ້ໄດ້ເມື່ອມີເປືອກຫອຍ %lld</string>
+		</dict>
+	</dict>
+	<key>premium.earnedCards %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@value@</string>
+		<key>value</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>ເຈົ້າໄດ້ເປືອກຫອຍ %lld</string>
+			<key>other</key>
+			<string>ເຈົ້າໄດ້ເປືອກຫອຍ %lld</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
